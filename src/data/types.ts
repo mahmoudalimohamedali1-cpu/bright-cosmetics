@@ -1,0 +1,257 @@
+import type { Bi } from '../i18n'
+
+export type Origin = 'KR' | 'FR' | 'US' | 'JP' | 'CA' | 'DE'
+
+export type Category =
+  | 'cleanser'
+  | 'toner'
+  | 'essence'
+  | 'serum'
+  | 'moisturizer'
+  | 'sunscreen'
+  | 'mask'
+  | 'makeup'
+  | 'lip'
+
+export type SkinType = 'oily' | 'dry' | 'combination' | 'sensitive' | 'normal'
+export type Concern = 'acne' | 'hydration' | 'brightening' | 'aging' | 'pores' | 'redness' | 'sun' | 'barrier'
+
+/** Container drawn by <ProductVisual/> */
+export type Shape = 'dropper' | 'pump' | 'jar' | 'tube' | 'toner' | 'mask' | 'cushion' | 'tint' | 'pad'
+
+export type Visual = {
+  shape: Shape
+  body: string // container ink
+  cap: string // cap / pump ink
+  label: string // label panel ink
+  text: string // label text ink
+}
+
+export type Batch = {
+  id: string
+  lot: string
+  qty: number
+  expiry: string // ISO date
+  receivedAt: string // ISO date
+  shipmentId: string
+}
+
+export type ProductStatus = 'active' | 'draft' | 'archived'
+
+export type Product = {
+  id: string
+  slug: string
+  sku: string
+  barcode: string
+  brand: string
+  origin: Origin
+  name: Bi
+  short: Bi
+  description: Bi
+  howToUse: Bi
+  category: Category
+  /** 1 cleanse · 2 tone · 3 treat (essence/serum) · 4 mask · 5 moisturize · 6 protect */
+  routineStep: 1 | 2 | 3 | 4 | 5 | 6
+  routineTime: ('am' | 'pm')[]
+  skinTypes: SkinType[]
+  concerns: Concern[]
+  ingredients: Bi[]
+  size: string
+  price: number
+  compareAt?: number
+  /** Landed unit cost in EGP (purchase + freight + customs) */
+  cost: number
+  batches: Batch[]
+  lowStockAt: number
+  visual: Visual
+  rating: number
+  reviewCount: number
+  tags: string[]
+  status: ProductStatus
+  createdAt: string
+  /** Units sold in last 30 days — seeded, then derived from orders */
+  featured?: boolean
+}
+
+export type Governorate = {
+  id: string
+  name: Bi
+  zone: 'cairo' | 'delta' | 'canal' | 'upper' | 'remote'
+}
+
+export type ShippingZone = {
+  id: 'cairo' | 'delta' | 'canal' | 'upper' | 'remote'
+  name: Bi
+  rate: number
+  freeOver: number
+  etaDays: [number, number]
+  codFee: number
+  enabled: boolean
+}
+
+export type Customer = {
+  id: string
+  name: Bi
+  email: string
+  phone: string
+  governorateId: string
+  skinType: SkinType
+  concerns: Concern[]
+  createdAt: string
+  tags: string[]
+  acceptsMarketing: boolean
+  note?: string
+}
+
+export type PaymentMethod = 'cod' | 'card' | 'wallet' | 'instapay'
+export type PaymentStatus = 'pending' | 'paid' | 'refunded' | 'partially_refunded'
+export type FulfillmentStatus = 'unfulfilled' | 'packed' | 'shipped' | 'delivered' | 'returned'
+export type OrderStatus = 'open' | 'confirmed' | 'cancelled' | 'archived'
+
+export type OrderLine = {
+  productId: string
+  qty: number
+  price: number
+  cost: number
+  batchId?: string
+}
+
+export type OrderEvent = {
+  at: string
+  type:
+    | 'placed'
+    | 'confirmed'
+    | 'whatsapp_confirmed'
+    | 'paid'
+    | 'packed'
+    | 'shipped'
+    | 'delivered'
+    | 'cancelled'
+    | 'returned'
+    | 'refunded'
+    | 'note'
+  note?: string
+  by?: string
+}
+
+export type Channel = 'web' | 'instagram' | 'tiktok' | 'whatsapp' | 'pos'
+
+export type Order = {
+  id: string
+  number: number
+  customerId: string
+  createdAt: string
+  lines: OrderLine[]
+  subtotal: number
+  discount: number
+  discountCode?: string
+  shipping: number
+  codFee: number
+  total: number
+  payment: PaymentMethod
+  paymentStatus: PaymentStatus
+  fulfillment: FulfillmentStatus
+  status: OrderStatus
+  governorateId: string
+  address: string
+  channel: Channel
+  tracking?: string
+  courier?: 'Bosta' | 'Aramex' | 'J&T' | 'Mylerz'
+  events: OrderEvent[]
+  note?: string
+  tags: string[]
+  risk: 'low' | 'medium' | 'high'
+}
+
+export type Review = {
+  id: string
+  productId: string
+  customerId: string
+  rating: number
+  title: string
+  body: string
+  lang: 'ar' | 'en'
+  createdAt: string
+  status: 'published' | 'pending' | 'hidden'
+  skinType: SkinType
+  verified: boolean
+  reply?: string
+}
+
+export type DiscountKind = 'percent' | 'fixed' | 'free_shipping' | 'bogo' | 'bundle'
+
+export type Discount = {
+  id: string
+  code: string
+  title: Bi
+  kind: DiscountKind
+  value: number
+  minSubtotal: number
+  usageLimit?: number
+  used: number
+  startsAt: string
+  endsAt?: string
+  active: boolean
+  automatic: boolean
+  appliesTo: 'all' | 'category' | 'brand' | 'products'
+  target?: string[]
+}
+
+export type CartLine = { productId: string; qty: number }
+
+export type AbandonedCart = {
+  id: string
+  customerId?: string
+  phone?: string
+  createdAt: string
+  lines: CartLine[]
+  total: number
+  stage: 'cart' | 'checkout_info' | 'checkout_shipping' | 'checkout_payment'
+  recovered: boolean
+  remindersSent: number
+}
+
+export type Shipment = {
+  id: string
+  supplier: string
+  origin: Origin
+  createdAt: string
+  arrivedAt?: string
+  status: 'ordered' | 'in_transit' | 'customs' | 'received'
+  freight: number
+  customs: number
+  lines: { productId: string; qty: number; unitCost: number }[]
+}
+
+export type Staff = {
+  id: string
+  name: string
+  email: string
+  role: 'owner' | 'manager' | 'fulfillment' | 'support' | 'marketing'
+  lastActive: string
+}
+
+export type Activity = {
+  id: string
+  at: string
+  who: string
+  what: Bi
+  link?: string
+}
+
+export type Settings = {
+  storeName: Bi
+  email: string
+  phone: string
+  whatsapp: string
+  currency: 'EGP'
+  taxIncluded: boolean
+  vatRate: number
+  lowStockDefault: number
+  expiryWarnDays: number
+  codEnabled: boolean
+  codMax: number
+  autoConfirmWhatsapp: boolean
+  defaultLang: 'ar' | 'en'
+  announcement: Bi
+}
