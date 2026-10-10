@@ -21,26 +21,19 @@ type Props = {
 
 export function LatticePattern({ cell = 64, stroke = 'currentColor', width = 2, className, medallion, style }: Props) {
   const id = useId().replace(/:/g, '')
-  const a = cell / 3
-  const b = (cell * 2) / 3
+  const u = cell / 6
   return (
     <svg className={className} style={style} width="100%" height="100%" aria-hidden="true" focusable="false">
       <defs>
         <pattern id={`aja-${id}`} width={cell} height={cell} patternUnits="userSpaceOnUse">
+          {/* 亞 cross of five panes; four tiles meeting leave one large open pane */}
           <path
-            d={[
-              `M${a} 0 V${a} H0`,
-              `M${b} 0 V${a} H${cell}`,
-              `M0 ${b} H${a} V${cell}`,
-              `M${cell} ${b} H${b} V${cell}`,
-              `M${a} ${a} H${b} V${b} H${a} Z`,
-            ].join(' ')}
+            d={`M${2 * u} 0 H${4 * u} V${2 * u} H${6 * u} V${4 * u} H${4 * u} V${6 * u} H${2 * u} V${4 * u} H0 V${2 * u} H${2 * u} Z M${2 * u} ${2 * u} H${4 * u} V${4 * u} H${2 * u} Z`}
             fill="none"
             stroke={stroke}
             strokeWidth={width}
             strokeLinecap="square"
           />
-          <rect x={0} y={0} width={cell} height={cell} fill="none" stroke={stroke} strokeWidth={width} />
         </pattern>
       </defs>
       <rect width="100%" height="100%" fill={`url(#aja-${id})`} />

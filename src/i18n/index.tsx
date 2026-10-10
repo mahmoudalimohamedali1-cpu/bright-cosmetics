@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 
 export type Lang = 'ar' | 'en'
@@ -39,7 +39,8 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   const dir = lang === 'ar' ? 'rtl' : 'ltr'
 
-  useEffect(() => {
+  // Layout effect: direction must be right before the first paint
+  useLayoutEffect(() => {
     document.documentElement.lang = lang
     document.documentElement.dir = dir
     try {

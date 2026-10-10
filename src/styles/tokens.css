@@ -221,3 +221,10 @@ td,
     scroll-behavior: auto !important;
   }
 }
+
+/* Reem Kufi's Latin word space is tight at display sizes */
+[dir="ltr"] h1,
+[dir="ltr"] h2,
+[dir="ltr"] h3 {
+  word-spacing: 0.08em;
+}
