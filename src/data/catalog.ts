@@ -34,35 +34,35 @@ type Seed = {
 
 const S: Seed[] = [
   {
-    brand: 'COSRX', origin: 'KR', en: 'Advanced Snail 96 Mucin Power Essence', ar: 'إيسنس الحلزون ٩٦ ميوسين',
-    shortEn: 'Lightweight essence with 96% snail secretion filtrate that repairs and plumps.', shortAr: 'إيسنس خفيف بنسبة ٩٦٪ من مستخلص الحلزون، يرمم البشرة ويمنحها امتلاءً.',
+    brand: 'COSRX', origin: 'KR', en: 'Advanced Snail 96 Mucin Power Essence', ar: 'إيسنس الحلزون 96 ميوسين',
+    shortEn: 'Lightweight essence with 96% snail secretion filtrate that repairs and plumps.', shortAr: 'إيسنس خفيف بنسبة 96% من مستخلص الحلزون، يرمم البشرة ويمنحها امتلاءً.',
     category: 'essence', step: 3, time: ['am', 'pm'], skin: ['dry', 'normal', 'combination', 'sensitive'], concerns: ['hydration', 'barrier', 'aging'],
-    ing: [['Snail Secretion Filtrate 96%', 'مستخلص الحلزون ٩٦٪'], ['Sodium Hyaluronate', 'هيالورونات الصوديوم'], ['Panthenol', 'بانثينول']],
+    ing: [['Snail Secretion Filtrate 96%', 'مستخلص الحلزون 96%'], ['Sodium Hyaluronate', 'هيالورونات الصوديوم'], ['Panthenol', 'بانثينول']],
     size: '100 ml', price: 890, compareAt: 990, shape: 'toner', body: '#d9d4c9', cap: '#2b2b2b', featured: true, tags: ['bestseller'],
   },
   {
     brand: 'Beauty of Joseon', origin: 'KR', en: 'Relief Sun: Rice + Probiotics SPF50+ PA++++', ar: 'واقي شمس الأرز والبروبيوتيك SPF50+',
     shortEn: 'Creamy organic sunscreen with rice extract. No white cast, no sting.', shortAr: 'واقي شمس كريمي بمستخلص الأرز، بدون أثر أبيض ولا لسعة.',
     category: 'sunscreen', step: 6, time: ['am'], skin: ['dry', 'normal', 'combination', 'sensitive'], concerns: ['sun', 'brightening'],
-    ing: [['Rice Extract 30%', 'مستخلص الأرز ٣٠٪'], ['Grain Ferments', 'مخمرات الحبوب'], ['Niacinamide', 'نياسيناميد']],
+    ing: [['Rice Extract 30%', 'مستخلص الأرز 30%'], ['Grain Ferments', 'مخمرات الحبوب'], ['Niacinamide', 'نياسيناميد']],
     size: '50 ml', price: 780, shape: 'tube', body: '#efe6d2', cap: '#c9a46b', label: '#efe6d2', text: '#5a4a2e', featured: true, tags: ['bestseller'],
   },
   {
     brand: 'Beauty of Joseon', origin: 'KR', en: 'Glow Serum: Propolis + Niacinamide', ar: 'سيروم التوهج بالبروبوليس والنياسيناميد',
     shortEn: 'Honey-toned serum that calms breakouts and brings back glow.', shortAr: 'سيروم بلون العسل يهدّي الحبوب ويرجّع لمعة البشرة.',
     category: 'serum', step: 3, time: ['am', 'pm'], skin: ['oily', 'combination', 'normal'], concerns: ['acne', 'brightening', 'pores'],
-    ing: [['Propolis Extract 60%', 'مستخلص البروبوليس ٦٠٪'], ['Niacinamide 2%', 'نياسيناميد ٢٪'], ['Tea Tree', 'شجرة الشاي']],
+    ing: [['Propolis Extract 60%', 'مستخلص البروبوليس 60%'], ['Niacinamide 2%', 'نياسيناميد 2%'], ['Tea Tree', 'شجرة الشاي']],
     size: '30 ml', price: 820, shape: 'dropper', body: '#c98a2c', cap: '#1f1f1f', label: '#f3e6c9', text: '#5b3b0e',
   },
   {
-    brand: 'Anua', origin: 'KR', en: 'Heartleaf 77% Soothing Toner', ar: 'تونر هارت ليف ٧٧٪ المهدئ',
+    brand: 'Anua', origin: 'KR', en: 'Heartleaf 77% Soothing Toner', ar: 'تونر هارت ليف 77% المهدئ',
     shortEn: 'pH-balanced toner that calms redness and visible irritation.', shortAr: 'تونر متوازن الحموضة يهدّي الاحمرار والتهيّج الظاهر.',
     category: 'toner', step: 2, time: ['am', 'pm'], skin: ['sensitive', 'oily', 'combination'], concerns: ['redness', 'acne', 'barrier'],
-    ing: [['Heartleaf Extract 77%', 'مستخلص هارت ليف ٧٧٪'], ['Panthenol', 'بانثينول'], ['Betaine', 'بيتايين']],
+    ing: [['Heartleaf Extract 77%', 'مستخلص هارت ليف 77%'], ['Panthenol', 'بانثينول'], ['Betaine', 'بيتايين']],
     size: '250 ml', price: 950, shape: 'toner', body: '#e6efe2', cap: '#7fa27a', label: '#f8faf5', text: '#3b5a36', featured: true, tags: ['bestseller'],
   },
   {
-    brand: 'Round Lab', origin: 'KR', en: '1025 Dokdo Toner', ar: 'تونر دوكدو ١٠٢٥',
+    brand: 'Round Lab', origin: 'KR', en: '1025 Dokdo Toner', ar: 'تونر دوكدو 1025',
     shortEn: 'Gentle exfoliating toner with deep-sea water from Ulleungdo.', shortAr: 'تونر مقشّر لطيف بمياه البحر العميق من جزيرة أولونغدو.',
     category: 'toner', step: 2, time: ['am', 'pm'], skin: ['normal', 'combination', 'dry', 'sensitive'], concerns: ['hydration', 'pores'],
     ing: [['Deep Sea Water', 'مياه البحر العميق'], ['Betaine Salicylate', 'ساليسيلات البيتايين'], ['Panthenol', 'بانثينول']],
@@ -105,13 +105,13 @@ const S: Seed[] = [
   },
   {
     brand: 'SKIN1004', origin: 'KR', en: 'Madagascar Centella Ampoule', ar: 'أمبول السنتيلا من مدغشقر',
-    shortEn: '100% centella extract. One ingredient, calmer skin.', shortAr: 'مستخلص سنتيلا ١٠٠٪. مكوّن واحد وبشرة أهدى.',
+    shortEn: '100% centella extract. One ingredient, calmer skin.', shortAr: 'مستخلص سنتيلا 100%. مكوّن واحد وبشرة أهدى.',
     category: 'serum', step: 3, time: ['am', 'pm'], skin: ['sensitive', 'oily', 'combination', 'normal'], concerns: ['redness', 'acne', 'barrier'],
-    ing: [['Centella Asiatica Extract 100%', 'مستخلص السنتيلا ١٠٠٪']],
+    ing: [['Centella Asiatica Extract 100%', 'مستخلص السنتيلا 100%']],
     size: '55 ml', price: 690, shape: 'dropper', body: '#d8c8a8', cap: '#3c3c3c', label: '#f5efe2', text: '#3a4a2e', tags: ['bestseller'],
   },
   {
-    brand: 'SOME BY MI', origin: 'KR', en: 'AHA BHA PHA 30 Days Miracle Toner', ar: 'تونر المعجزة ٣٠ يوم AHA BHA PHA',
+    brand: 'SOME BY MI', origin: 'KR', en: 'AHA BHA PHA 30 Days Miracle Toner', ar: 'تونر المعجزة 30 يوم AHA BHA PHA',
     shortEn: 'Triple-acid toner for clearer pores in a month.', shortAr: 'تونر بثلاث أحماض لمسام أنظف خلال شهر.',
     category: 'toner', step: 2, time: ['pm'], skin: ['oily', 'combination'], concerns: ['acne', 'pores'],
     ing: [['Tea Tree 10,000ppm', 'شجرة الشاي'], ['AHA BHA PHA', 'أحماض AHA BHA PHA'], ['Niacinamide', 'نياسيناميد']],
@@ -121,14 +121,14 @@ const S: Seed[] = [
     brand: 'Isntree', origin: 'KR', en: 'Hyaluronic Acid Watery Sun Gel SPF50+', ar: 'جل واقي الشمس المائي بالهيالورونيك SPF50+',
     shortEn: 'Water-light sun gel that layers under makeup.', shortAr: 'جل واقي شمس خفيف زي المية، يمشي تحت المكياج.',
     category: 'sunscreen', step: 6, time: ['am'], skin: ['oily', 'combination', 'normal'], concerns: ['sun', 'hydration'],
-    ing: [['8 Hyaluronic Acids', '٨ أنواع هيالورونيك'], ['Centella', 'سنتيلا']],
+    ing: [['8 Hyaluronic Acids', '8 أنواع هيالورونيك'], ['Centella', 'سنتيلا']],
     size: '50 ml', price: 690, shape: 'tube', body: '#d6e9f5', cap: '#ffffff', label: '#d6e9f5', text: '#24658f',
   },
   {
-    brand: 'medicube', origin: 'KR', en: 'Zero Pore Pad 2.0', ar: 'باد زيرو بور ٢.٠',
+    brand: 'medicube', origin: 'KR', en: 'Zero Pore Pad 2.0', ar: 'باد زيرو بور 2.0',
     shortEn: 'Dual-texture pads that resurface and tighten the look of pores.', shortAr: 'باد بوجهين يقشّر ويقلّل مظهر المسام.',
     category: 'toner', step: 2, time: ['pm'], skin: ['oily', 'combination'], concerns: ['pores', 'acne'],
-    ing: [['AHA 4.5%', 'AHA ٤.٥٪'], ['BHA 0.45%', 'BHA ٠.٤٥٪'], ['Willow Bark', 'لحاء الصفصاف']],
+    ing: [['AHA 4.5%', 'AHA 4.5%'], ['BHA 0.45%', 'BHA 0.45%'], ['Willow Bark', 'لحاء الصفصاف']],
     size: '70 pads', price: 1100, shape: 'pad', body: '#f2d7de', cap: '#d65a7a', label: '#ffffff', text: '#b23c5d',
   },
   {
@@ -142,7 +142,7 @@ const S: Seed[] = [
     brand: 'MISSHA', origin: 'KR', en: 'Time Revolution The First Treatment Essence', ar: 'إيسنس تايم ريفولوشن الأول',
     shortEn: 'Fermented yeast essence for brighter, smoother skin texture.', shortAr: 'إيسنس خميرة مخمّرة لبشرة أنعم وأفتح.',
     category: 'essence', step: 3, time: ['am', 'pm'], skin: ['dry', 'normal', 'combination'], concerns: ['brightening', 'aging'],
-    ing: [['Saccharomyces Ferment 97%', 'خميرة مخمّرة ٩٧٪'], ['Niacinamide', 'نياسيناميد']],
+    ing: [['Saccharomyces Ferment 97%', 'خميرة مخمّرة 97%'], ['Niacinamide', 'نياسيناميد']],
     size: '150 ml', price: 1350, shape: 'toner', body: '#d4c39a', cap: '#c9a85a', label: '#f3ecdc', text: '#6b5320',
   },
   {
@@ -160,7 +160,7 @@ const S: Seed[] = [
     size: '150 ml', price: 520, shape: 'tube', body: '#e9f1df', cap: '#3d6b3a', label: '#e9f1df', text: '#3d6b3a',
   },
   {
-    brand: 'Mediheal', origin: 'KR', en: 'Teatree Essential Mask (10 sheets)', ar: 'ماسك شجرة الشاي (١٠ شيتات)',
+    brand: 'Mediheal', origin: 'KR', en: 'Teatree Essential Mask (10 sheets)', ar: 'ماسك شجرة الشاي (10 شيتات)',
     shortEn: 'Ten soothing sheet masks for breakout-prone days.', shortAr: 'عشرة ماسكات شيت مهدّية لأيام الحبوب.',
     category: 'mask', step: 4, time: ['pm'], skin: ['oily', 'combination', 'sensitive'], concerns: ['acne', 'redness'],
     ing: [['Tea Tree Leaf Water', 'ماء أوراق شجرة الشاي'], ['Centella', 'سنتيلا']],
@@ -202,24 +202,24 @@ const S: Seed[] = [
     size: '5.5 g', price: 520, shape: 'tint', body: '#c2384a', cap: '#f4f1ef', label: '#c2384a', text: '#ffffff', tags: ['gift'],
   },
   {
-    brand: 'The Ordinary', origin: 'CA', en: 'Niacinamide 10% + Zinc 1%', ar: 'نياسيناميد ١٠٪ + زنك ١٪',
+    brand: 'The Ordinary', origin: 'CA', en: 'Niacinamide 10% + Zinc 1%', ar: 'نياسيناميد 10% + زنك 1%',
     shortEn: 'High-strength serum for blemishes and visible shine.', shortAr: 'سيروم مركّز للبقع ولمعة البشرة الدهنية.',
     category: 'serum', step: 3, time: ['am', 'pm'], skin: ['oily', 'combination'], concerns: ['acne', 'pores', 'brightening'],
-    ing: [['Niacinamide 10%', 'نياسيناميد ١٠٪'], ['Zinc PCA 1%', 'زنك ١٪']],
+    ing: [['Niacinamide 10%', 'نياسيناميد 10%'], ['Zinc PCA 1%', 'زنك 1%']],
     size: '30 ml', price: 540, shape: 'dropper', body: '#e9e6df', cap: '#1a1a1a', label: '#ffffff', text: '#1a1a1a', tags: ['bestseller'],
   },
   {
-    brand: 'The Ordinary', origin: 'CA', en: 'Hyaluronic Acid 2% + B5', ar: 'هيالورونيك أسيد ٢٪ + B5',
+    brand: 'The Ordinary', origin: 'CA', en: 'Hyaluronic Acid 2% + B5', ar: 'هيالورونيك أسيد 2% + B5',
     shortEn: 'Multi-depth hydration serum with vitamin B5.', shortAr: 'سيروم ترطيب متعدد الطبقات بفيتامين B5.',
     category: 'serum', step: 3, time: ['am', 'pm'], skin: ['dry', 'normal', 'combination', 'oily', 'sensitive'], concerns: ['hydration'],
-    ing: [['Hyaluronic Acid 2%', 'هيالورونيك ٢٪'], ['Panthenol (B5)', 'بانثينول B5']],
+    ing: [['Hyaluronic Acid 2%', 'هيالورونيك 2%'], ['Panthenol (B5)', 'بانثينول B5']],
     size: '30 ml', price: 560, shape: 'dropper', body: '#e9e6df', cap: '#1a1a1a', label: '#ffffff', text: '#1a1a1a',
   },
   {
     brand: 'CeraVe', origin: 'US', en: 'Moisturising Cream', ar: 'كريم سيرافي المرطّب',
     shortEn: 'Three essential ceramides to restore the skin barrier.', shortAr: 'ثلاث سيراميدات أساسية لترميم حاجز البشرة.',
     category: 'moisturizer', step: 5, time: ['am', 'pm'], skin: ['dry', 'normal', 'sensitive'], concerns: ['barrier', 'hydration'],
-    ing: [['Ceramides 1, 3, 6-II', 'سيراميد ١، ٣، ٦'], ['Hyaluronic Acid', 'هيالورونيك'], ['MVE Technology', 'تقنية MVE']],
+    ing: [['Ceramides 1, 3, 6-II', 'سيراميد 1، 3، 6'], ['Hyaluronic Acid', 'هيالورونيك'], ['MVE Technology', 'تقنية MVE']],
     size: '340 g', price: 980, shape: 'jar', body: '#f7f8fa', cap: '#2f6db3', label: '#f7f8fa', text: '#2f6db3', tags: ['bestseller'],
   },
   {
@@ -230,10 +230,10 @@ const S: Seed[] = [
     size: '236 ml', price: 760, shape: 'pump', body: '#f7f8fa', cap: '#2f6db3', label: '#f7f8fa', text: '#2f6db3',
   },
   {
-    brand: 'La Roche-Posay', origin: 'FR', en: 'Anthelios UVMune 400 Invisible Fluid SPF50+', ar: 'أنثيليوس يو في ميون ٤٠٠ فلويد SPF50+',
+    brand: 'La Roche-Posay', origin: 'FR', en: 'Anthelios UVMune 400 Invisible Fluid SPF50+', ar: 'أنثيليوس يو في ميون 400 فلويد SPF50+',
     shortEn: 'Ultra-long UVA protection in an invisible fluid.', shortAr: 'حماية طويلة من UVA في فلويد غير مرئي.',
     category: 'sunscreen', step: 6, time: ['am'], skin: ['sensitive', 'normal', 'combination', 'oily', 'dry'], concerns: ['sun'],
-    ing: [['Mexoryl 400', 'ميكسوريل ٤٠٠'], ['La Roche-Posay Thermal Water', 'مياه لاروش بوزيه الحرارية']],
+    ing: [['Mexoryl 400', 'ميكسوريل 400'], ['La Roche-Posay Thermal Water', 'مياه لاروش بوزيه الحرارية']],
     size: '50 ml', price: 1290, shape: 'tube', body: '#f4f6f8', cap: '#f0a33a', label: '#f4f6f8', text: '#1e5a96',
   },
   {
@@ -251,10 +251,10 @@ const S: Seed[] = [
     size: '500 ml', price: 890, shape: 'toner', body: '#f6f0f2', cap: '#e38aa4', label: '#ffffff', text: '#c2577a',
   },
   {
-    brand: 'Vichy', origin: 'FR', en: 'Minéral 89 Hyaluronic Acid Booster', ar: 'معزّز مينيرال ٨٩ بالهيالورونيك',
+    brand: 'Vichy', origin: 'FR', en: 'Minéral 89 Hyaluronic Acid Booster', ar: 'معزّز مينيرال 89 بالهيالورونيك',
     shortEn: 'Volcanic mineral water and hyaluronic acid for daily strength.', shortAr: 'مياه بركانية وهيالورونيك لبشرة أقوى يوميًا.',
     category: 'serum', step: 3, time: ['am', 'pm'], skin: ['sensitive', 'dry', 'normal', 'combination', 'oily'], concerns: ['hydration', 'barrier'],
-    ing: [['Vichy Volcanic Water 89%', 'مياه فيشي البركانية ٨٩٪'], ['Hyaluronic Acid', 'هيالورونيك']],
+    ing: [['Vichy Volcanic Water 89%', 'مياه فيشي البركانية 89%'], ['Hyaluronic Acid', 'هيالورونيك']],
     size: '50 ml', price: 1390, shape: 'dropper', body: '#e9ecef', cap: '#2b2f33', label: '#ffffff', text: '#2b2f33',
   },
   {
@@ -272,10 +272,10 @@ const S: Seed[] = [
     size: '70 g', price: 690, shape: 'tube', body: '#2c74c8', cap: '#ffffff', label: '#2c74c8', text: '#ffffff',
   },
   {
-    brand: 'Paula’s Choice', origin: 'US', en: 'Skin Perfecting 2% BHA Liquid Exfoliant', ar: 'مقشّر BHA ٢٪ السائل',
+    brand: 'Paula’s Choice', origin: 'US', en: 'Skin Perfecting 2% BHA Liquid Exfoliant', ar: 'مقشّر BHA 2% السائل',
     shortEn: 'Leave-on exfoliant that unclogs pores and smooths texture.', shortAr: 'مقشّر سائل بيفتح المسام وينعّم ملمس البشرة.',
     category: 'toner', step: 2, time: ['pm'], skin: ['oily', 'combination', 'normal'], concerns: ['pores', 'acne'],
-    ing: [['Salicylic Acid 2%', 'حمض الساليسيليك ٢٪'], ['Green Tea', 'شاي أخضر']],
+    ing: [['Salicylic Acid 2%', 'حمض الساليسيليك 2%'], ['Green Tea', 'شاي أخضر']],
     size: '118 ml', price: 1650, shape: 'toner', body: '#ffffff', cap: '#2a2a2a', label: '#ffffff', text: '#7a3a8a',
   },
   {
@@ -297,13 +297,13 @@ function slugify(s: string) {
 }
 
 const CAT_DESC: Record<Category, [string, string]> = {
-  cleanser: ['Massage onto damp skin for 30–60 seconds, then rinse with lukewarm water.', 'دلّكيه على بشرة مبلولة ٣٠–٦٠ ثانية وبعدين اشطفي بمية فاترة.'],
-  toner: ['Pat into clean skin with palms or a cotton pad. Layer up to three times on dry days.', 'ربّتي على بشرة نظيفة بإيدك أو بقطنة. كرّريه لحد ٣ مرات في الأيام الجافة.'],
-  essence: ['After toner, press 2–3 drops into the face and neck until absorbed.', 'بعد التونر، اضغطي ٢–٣ نقط على الوش والرقبة لحد ما تتشرب.'],
-  serum: ['Apply 2–3 drops after toner. Follow with moisturizer.', 'حطّي ٢–٣ نقط بعد التونر، وبعدين المرطّب.'],
+  cleanser: ['Massage onto damp skin for 30–60 seconds, then rinse with lukewarm water.', 'دلّكيه على بشرة مبلولة 30–60 ثانية وبعدين اشطفي بمية فاترة.'],
+  toner: ['Pat into clean skin with palms or a cotton pad. Layer up to three times on dry days.', 'ربّتي على بشرة نظيفة بإيدك أو بقطنة. كرّريه لحد 3 مرات في الأيام الجافة.'],
+  essence: ['After toner, press 2–3 drops into the face and neck until absorbed.', 'بعد التونر، اضغطي 2–3 نقط على الوش والرقبة لحد ما تتشرب.'],
+  serum: ['Apply 2–3 drops after toner. Follow with moisturizer.', 'حطّي 2–3 نقط بعد التونر، وبعدين المرطّب.'],
   moisturizer: ['Smooth a pea-sized amount over face and neck as the last step before sunscreen.', 'وزّعي كمية قد حبة البسلة على الوش والرقبة كآخر خطوة قبل واقي الشمس.'],
   sunscreen: ['Apply two finger-lengths 15 minutes before sun. Reapply every 2 hours outdoors.', 'حطّي طول صباعين قبل الشمس بربع ساعة، وجدّدي كل ساعتين برّه.'],
-  mask: ['Use 2–3 times a week on cleansed, toned skin.', 'استخدميه ٢–٣ مرات في الأسبوع على بشرة نظيفة بعد التونر.'],
+  mask: ['Use 2–3 times a week on cleansed, toned skin.', 'استخدميه 2–3 مرات في الأسبوع على بشرة نظيفة بعد التونر.'],
   makeup: ['Press lightly from the centre of the face outward. Build in thin layers.', 'اضغطي بخفة من نص الوش لبرّه، وابني التغطية بطبقات رفيعة.'],
   lip: ['Apply a generous layer before bed or whenever lips feel dry.', 'حطّي طبقة كويسة قبل النوم أو كل ما شفايفك تنشف.'],
 }

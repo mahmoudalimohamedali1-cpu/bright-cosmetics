@@ -55,13 +55,13 @@ type State = Db & {
   placeOrder: (input: CheckoutInput) => Order
 
   // admin: orders
-  updateFulfillment: (orderId: string, f: FulfillmentStatus, by?: string) => void
+  updateFulfillment: (orderId: string, f: FulfillmentStatus, by?: string, courier?: Order['courier']) => void
   confirmOrder: (orderId: string, via: 'whatsapp' | 'phone', by?: string) => void
   cancelOrder: (orderId: string, reason: string, by?: string) => void
   markPaid: (orderId: string, by?: string) => void
   refundOrder: (orderId: string, by?: string) => void
   addOrderNote: (orderId: string, note: string, by?: string) => void
-  bulkFulfill: (orderIds: string[], f: FulfillmentStatus, by?: string) => void
+  bulkFulfill: (orderIds: string[], f: FulfillmentStatus, by?: string, courier?: Order['courier']) => void
 
   // admin: catalog
   upsertProduct: (p: Product) => void
@@ -237,7 +237,7 @@ export const useStore = create<State>()(
         return order
       },
 
-      updateFulfillment: (orderId, f, by) =>
+      updateFulfillment: (orderId, f, by, courier) =>
         set((s) => ({
           orders: s.orders.map((o) => {
             if (o.id !== orderId) return o
@@ -248,7 +248,7 @@ export const useStore = create<State>()(
               fulfillment: f,
               paymentStatus,
               status: o.status === 'open' ? 'confirmed' : o.status,
-              courier: f === 'shipped' ? (o.courier ?? 'Bosta') : o.courier,
+              courier: f === 'shipped' ? (courier ?? o.courier ?? 'Bosta') : o.courier,
               tracking: f === 'shipped' ? (o.tracking ?? `TRK${Math.floor(Math.random() * 1e9)}`) : o.tracking,
               events: [...o.events, event(type as OrderEvent['type'], by)],
             }
@@ -285,8 +285,8 @@ export const useStore = create<State>()(
         set((s) => ({ orders: s.orders.map((o) => (o.id === orderId ? { ...o, paymentStatus: 'refunded', events: [...o.events, event('refunded', by)] } : o)) })),
       addOrderNote: (orderId, note, by) =>
         set((s) => ({ orders: s.orders.map((o) => (o.id === orderId ? { ...o, events: [...o.events, event('note', by, note)] } : o)) })),
-      bulkFulfill: (orderIds, f, by) => {
-        orderIds.forEach((id) => get().updateFulfillment(id, f, by))
+      bulkFulfill: (orderIds, f, by, courier) => {
+        orderIds.forEach((id) => get().updateFulfillment(id, f, by, courier))
       },
 
       upsertProduct: (p) =>
@@ -338,7 +338,7 @@ export const useStore = create<State>()(
       resetDemo: () => set({ ...buildSeed(), cart: [], wishlist: [], recentlyViewed: [], me: undefined }),
     }),
     {
-      name: 'nuri-store-v1',
+      name: 'nuri-store-v2',
       storage: createJSONStorage(() => localStorage),
       version: 1,
     },

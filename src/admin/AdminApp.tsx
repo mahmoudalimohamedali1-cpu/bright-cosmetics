@@ -146,7 +146,7 @@ export default function AdminApp() {
   ]
 
   const ctx = useMemo(
-    () => ({ theme, setTheme, toast, staff: 'Gamal Saad', openPalette: () => setPaletteOpen(true) }),
+    () => ({ theme, setTheme, toast, staff: 'Karim Nabil', openPalette: () => setPaletteOpen(true) }),
     [theme, toast],
   )
 

@@ -15,11 +15,12 @@
   --accent: var(--lacquer-700);
   --accent-fg: var(--ink-on-lacquer);
   --live: var(--brass);
-  --chart-1: #74291f;
-  --chart-2: #4a7663;
-  --chart-3: #c9973f;
-  --chart-4: #3c6585;
-  --chart-5: #9a7fb0;
+  /* Validated categorical order (dataviz validator, light on --pane) */
+  --chart-1: #94351f;
+  --chart-2: #3f8a5f;
+  --chart-3: #2a72a8;
+  --chart-4: #b07a1e;
+  --chart-5: #8a5cb5;
   --chart-grid: #dde3da;
   --rail-w: 248px;
   --top-h: 60px;
@@ -45,11 +46,11 @@
   --hover: #2e1813;
   --accent: #e4c487;
   --accent-fg: #2a0d0c;
-  --chart-1: #e08a78;
-  --chart-2: #8db3a0;
-  --chart-3: #e4c487;
-  --chart-4: #8fb4d4;
-  --chart-5: #c4a9da;
+  --chart-1: #d9664c;
+  --chart-2: #3f9a78;
+  --chart-3: #4a86d0;
+  --chart-4: #b8892a;
+  --chart-5: #9a7ad0;
   --chart-grid: #3a211c;
   --ok-bg: #1e3329;
   --ok: #8fd0ae;

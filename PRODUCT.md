@@ -37,6 +37,12 @@ Brand name **NURI / نوري** *(inferred, placeholder)*: in Korean 누리 means
 - Admin: overview, orders, products, inventory with batch and expiry, customers and segments, discounts, analytics, abandoned carts, shipping zones, settings, and assistive insights.
 - No backend yet; payment providers are not integrated. *(inferred)*
 
+## Voice
+
+- Storefront Arabic: Egyptian, warm, confident; addresses the shopper in the feminine, matching the regional K-beauty market. *(inferred brand decision — revisit if the audience is broader)*
+- Admin Arabic: gender-neutral noun phrases (staff can be anyone).
+- English: plain, refined, sentence case.
+
 ## Evidence on Hand
 
 None. No logo, photography, prices, testimonials, or sales data were provided. All product names, prices, reviews, and dashboard figures in the build are synthetic demo data and must be labeled and replaced before launch.

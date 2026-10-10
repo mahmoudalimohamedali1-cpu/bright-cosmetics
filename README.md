@@ -1,32 +1,34 @@
-# React + TypeScript + Vite
+# NURI / نوري — Korean & imported beauty store + admin
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Bilingual (Arabic RTL / English LTR) storefront and a full admin dashboard, built with Vite, React 19, TypeScript, zustand and recharts.
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+- Store: http://localhost:5173/
+- Admin: http://localhost:5173/admin (press Ctrl K anywhere in the admin to search orders, products, customers and run commands)
+
+## How it fits together
+
+| Path | What it is |
+| --- | --- |
+| `src/styles/tokens.css` | Design tokens of the "light through a lattice" world: lacquer, lit paper, celadon, brass |
+| `src/i18n/` | `useI18n()` — inline bilingual strings, RTL switching, money/number/date formatting |
+| `src/data/` | Types, demo catalog (real brands, synthetic prices/stock/lots), seed generator for customers, orders, reviews, discounts, shipments |
+| `src/store/` | One zustand store shared by shop and admin, persisted in localStorage — an order placed in the shop appears in the admin |
+| `src/lib/metrics.ts` | Analytics: KPIs, margin on landed cost, days of cover, FEFO expiry, RFM segments, cohorts |
+| `src/storefront/` | Shop pages |
+| `src/admin/` | Admin shell, command palette, pages |
+
+## Demo data
+
+Every price, cost, stock level, lot number, customer, order, review and figure is synthetic. Replace `src/data/` with real data, or swap the store actions in `src/store/index.ts` for API calls; components only talk to that interface. Use **Settings → Reset demo data** in the admin to start over.
+
+## Before launch
+
+- Real product photography (the shop currently draws packaging as flat-ink SVG)
+- Payment gateway (cards, wallets, InstaPay are UI only), courier APIs, WhatsApp Business API
+- Backend + auth for the admin
+- Confirm the brand name and voice choices recorded in `PRODUCT.md`

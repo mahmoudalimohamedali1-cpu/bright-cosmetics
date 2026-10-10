@@ -166,6 +166,8 @@ export function buildSeed(): Db {
       const hour = 9 + Math.floor(r() * 14)
       const at = new Date(date)
       at.setHours(hour, Math.floor(r() * 60), 0, 0)
+      // Today's orders can't be in the future
+      if (at.getTime() > Date.now()) at.setTime(Date.now() - Math.floor(r() * 5 * 3600000) - 60000)
       const ageH = (Date.now() - at.getTime()) / 3600000
 
       // Lifecycle by age
@@ -242,7 +244,7 @@ export function buildSeed(): Db {
   }
 
   // Reviews
-  const titlesAr = ['فرق معايا من أول أسبوع', 'أصلي ١٠٠٪', 'ريحته هادية وملمسه حلو', 'بشرتي ارتاحت', 'هشتريه تاني أكيد', 'كويس بس محتاج وقت']
+  const titlesAr = ['فرق معايا من أول أسبوع', 'أصلي 100%', 'ريحته هادية وملمسه حلو', 'بشرتي ارتاحت', 'هشتريه تاني أكيد', 'كويس بس محتاج وقت']
   const titlesEn = ['Worked from week one', 'Genuine, checked the lot', 'Light and calm', 'My skin finally settled', 'Repurchasing', 'Good, give it time']
   const bodiesAr = [
     'استخدمته شهر على بشرتي المختلطة والحبوب قلّت بشكل واضح. التغليف وصل سليم ورقم التشغيلة مطابق.',
@@ -278,12 +280,12 @@ export function buildSeed(): Db {
   }
 
   const discounts: Discount[] = [
-    { id: 'd1', code: 'WELCOME10', title: { ar: 'خصم أول طلب ١٠٪', en: '10% off first order' }, kind: 'percent', value: 10, minSubtotal: 0, used: 412, startsAt: daysAgoISO(200), active: true, automatic: false, appliesTo: 'all' },
-    { id: 'd2', code: 'GLOW10', title: { ar: 'جلو ١٠٪', en: 'Glow 10%' }, kind: 'percent', value: 10, minSubtotal: 800, usageLimit: 1000, used: 268, startsAt: daysAgoISO(90), endsAt: daysAgoISO(-30), active: true, automatic: false, appliesTo: 'all' },
-    { id: 'd3', code: 'FREESHIP', title: { ar: 'شحن مجاني فوق ١٢٠٠', en: 'Free shipping over 1,200' }, kind: 'free_shipping', value: 0, minSubtotal: 1200, used: 190, startsAt: daysAgoISO(60), active: true, automatic: true, appliesTo: 'all' },
+    { id: 'd1', code: 'WELCOME10', title: { ar: 'خصم أول طلب 10%', en: '10% off first order' }, kind: 'percent', value: 10, minSubtotal: 0, used: 412, startsAt: daysAgoISO(200), active: true, automatic: false, appliesTo: 'all' },
+    { id: 'd2', code: 'GLOW10', title: { ar: 'جلو 10%', en: 'Glow 10%' }, kind: 'percent', value: 10, minSubtotal: 800, usageLimit: 1000, used: 268, startsAt: daysAgoISO(90), endsAt: daysAgoISO(-30), active: true, automatic: false, appliesTo: 'all' },
+    { id: 'd3', code: 'FREESHIP', title: { ar: 'شحن مجاني فوق 1200', en: 'Free shipping over 1,200' }, kind: 'free_shipping', value: 0, minSubtotal: 1200, used: 190, startsAt: daysAgoISO(60), active: true, automatic: true, appliesTo: 'all' },
     { id: 'd4', code: 'SPF2', title: { ar: 'واقي الشمس: التاني بنص التمن', en: 'Sunscreen: second at half price' }, kind: 'bogo', value: 50, minSubtotal: 0, used: 77, startsAt: daysAgoISO(20), endsAt: daysAgoISO(-40), active: true, automatic: true, appliesTo: 'category', target: ['sunscreen'] },
-    { id: 'd5', code: 'ROUTINE15', title: { ar: 'روتين كامل ١٥٪', en: 'Full routine 15%' }, kind: 'bundle', value: 15, minSubtotal: 0, used: 54, startsAt: daysAgoISO(45), active: true, automatic: true, appliesTo: 'all' },
-    { id: 'd6', code: 'NURI10', title: { ar: 'نوري ١٠ (إنفلونسر)', en: 'NURI 10 (influencer)' }, kind: 'percent', value: 10, minSubtotal: 0, used: 133, startsAt: daysAgoISO(120), endsAt: daysAgoISO(10), active: false, automatic: false, appliesTo: 'all' },
+    { id: 'd5', code: 'ROUTINE15', title: { ar: 'روتين كامل 15%', en: 'Full routine 15%' }, kind: 'bundle', value: 15, minSubtotal: 0, used: 54, startsAt: daysAgoISO(45), active: true, automatic: true, appliesTo: 'all' },
+    { id: 'd6', code: 'NURI10', title: { ar: 'نوري 10 (إنفلونسر)', en: 'NURI 10 (influencer)' }, kind: 'percent', value: 10, minSubtotal: 0, used: 133, startsAt: daysAgoISO(120), endsAt: daysAgoISO(10), active: false, automatic: false, appliesTo: 'all' },
   ]
 
   const abandoned: AbandonedCart[] = Array.from({ length: 26 }, (_, i) => {
@@ -313,7 +315,7 @@ export function buildSeed(): Db {
   ]
 
   const staff: Staff[] = [
-    { id: 's1', name: 'Gamal Saad', email: 'owner@nuri.example', role: 'owner', lastActive: new Date().toISOString() },
+    { id: 's1', name: 'Karim Nabil', email: 'owner@nuri.example', role: 'owner', lastActive: new Date().toISOString() },
     { id: 's2', name: 'Reem Adel', email: 'reem@nuri.example', role: 'manager', lastActive: daysAgoISO(0, 10) },
     { id: 's3', name: 'Mostafa Hany', email: 'mostafa@nuri.example', role: 'fulfillment', lastActive: daysAgoISO(0, 11) },
     { id: 's4', name: 'Nada Samir', email: 'nada@nuri.example', role: 'support', lastActive: daysAgoISO(1, 18) },
@@ -321,10 +323,10 @@ export function buildSeed(): Db {
   ]
 
   const activity: Activity[] = [
-    { id: 'a1', at: daysAgoISO(0, 11), who: 'Mostafa Hany', what: { ar: 'جهّز ١٤ طلب للشحن مع بوسطة', en: 'Packed 14 orders for Bosta pickup' } },
+    { id: 'a1', at: daysAgoISO(0, 11), who: 'Mostafa Hany', what: { ar: 'جهّز 14 طلب للشحن مع بوسطة', en: 'Packed 14 orders for Bosta pickup' } },
     { id: 'a2', at: daysAgoISO(0, 10), who: 'Reem Adel', what: { ar: 'عدّلت سعر واقي بيوتي أوف جوسون', en: 'Updated price of Beauty of Joseon Relief Sun' } },
     { id: 'a3', at: daysAgoISO(1, 16), who: 'Hassan Ali', what: { ar: 'فعّل عرض واقي الشمس: التاني بنص التمن', en: 'Activated “Sunscreen: second at half price”' } },
-    { id: 'a4', at: daysAgoISO(2, 13), who: 'Gamal Saad', what: { ar: 'استلم شحنة أوروبا (٣٦ وحدة لكل صنف)', en: 'Received Europe shipment (36 units per SKU)' } },
+    { id: 'a4', at: daysAgoISO(2, 13), who: 'Karim Nabil', what: { ar: 'استلم شحنة أوروبا (36 وحدة لكل صنف)', en: 'Received Europe shipment (36 units per SKU)' } },
   ]
 
   const settings: Settings = {
@@ -342,7 +344,7 @@ export function buildSeed(): Db {
     autoConfirmWhatsapp: true,
     defaultLang: 'ar',
     announcement: {
-      ar: 'شحن مجاني فوق ١٥٠٠ ج.م في القاهرة والجيزة، والدفع عند الاستلام',
+      ar: 'شحن مجاني فوق 1500 ج.م في القاهرة والجيزة، والدفع عند الاستلام',
       en: 'Free shipping over EGP 1,500 in Cairo and Giza, cash on delivery available',
     },
   }

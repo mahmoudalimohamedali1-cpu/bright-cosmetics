@@ -73,13 +73,19 @@ export function delta(cur: number, prev: number) {
   return (cur - prev) / prev
 }
 
+/** YYYY-MM-DD in the viewer's timezone (Egypt), not UTC */
+export function localDay(t: number) {
+  const d = new Date(t)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 export type DayPoint = { date: string; revenue: number; orders: number; profit: number; prevRevenue?: number }
 
 export function dailySeries(orders: Order[], days: number): DayPoint[] {
   const { from } = rangeFor(days)
   const prevFrom = from - days * DAY
   const buckets: DayPoint[] = Array.from({ length: days }, (_, i) => ({
-    date: new Date(from + i * DAY).toISOString().slice(0, 10),
+    date: localDay(from + i * DAY),
     revenue: 0,
     orders: 0,
     profit: 0,
