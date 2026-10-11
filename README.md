@@ -32,3 +32,8 @@ Every price, cost, stock level, lot number, customer, order, review and figure i
 - Payment gateway (cards, wallets, InstaPay are UI only), courier APIs, WhatsApp Business API
 - Backend + auth for the admin
 - Confirm the brand name and voice choices recorded in `PRODUCT.md`
+
+## Docs
+
+- [`DESIGN.md`](DESIGN.md): the design system (tokens, type, components, motion, RTL rules)
+- [`docs/shopify-comparison.md`](docs/shopify-comparison.md): what the admin does beyond Shopify's, and where Shopify is still ahead
