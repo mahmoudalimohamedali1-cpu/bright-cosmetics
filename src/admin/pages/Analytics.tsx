@@ -78,8 +78,21 @@ export default function Analytics() {
   const counted = useMemo(() => inCur.filter(isCounted), [inCur])
   const kept = useMemo(() => counted.filter((o) => o.fulfillment !== 'returned'), [counted])
 
-  /* Revenue & profit series (weekly buckets past 30 days) */
+  /* Revenue & profit series: raw daily for 7d, 7-day rolling average for 30d,
+     weekly buckets beyond. Rolling smooths the daily noise without hiding trend. */
   const series = useMemo(() => {
+    if (days === 30) {
+      const d = dailySeries(orders, days + 6)
+      const avg = (from: number, k: 'revenue' | 'profit' | 'orders' | 'prevRevenue') =>
+        d.slice(from - 6, from + 1).reduce((s, x) => s + (x[k] ?? 0), 0) / 7
+      return d.slice(6).map((x, i) => ({
+        date: x.date,
+        revenue: avg(i + 6, 'revenue'),
+        profit: avg(i + 6, 'profit'),
+        orders: avg(i + 6, 'orders'),
+        prevRevenue: avg(i + 6, 'prevRevenue'),
+      }))
+    }
     const d = dailySeries(orders, days)
     if (days <= 30) return d
     const out: typeof d = []
@@ -315,7 +328,7 @@ export default function Analytics() {
 
       <Pane
         title={tx('المبيعات والربح', 'Sales and profit')}
-        description={weekly ? tx('مجمّعة أسبوعيًا؛ أول أسبوع ممكن يكون ناقص', 'Weekly totals; the first week may be partial') : tx('يوميًا', 'Daily')}
+        description={weekly ? tx('مجمّعة أسبوعيًا؛ أول أسبوع ممكن يكون ناقص', 'Weekly totals; the first week may be partial') : days === 30 ? tx('متوسط متحرك 7 أيام لكل يوم', '7-day rolling average per day') : tx('يوميًا', 'Daily')}
         actions={
           <>
             <button className="btn btn--ghost btn--sm" aria-pressed={showTable} onClick={() => setShowTable((v) => !v)}>
@@ -344,7 +357,7 @@ export default function Analytics() {
           {tx(' منها. ', ' of it. ')}
           {bestPoint && bestPoint.revenue > 0 && (
             <>
-              {weekly ? tx('أعلى أسبوع بدأ ', 'Best week started ') : tx('أعلى يوم ', 'Best day was ')}
+              {weekly ? tx('أعلى أسبوع بدأ ', 'Best week started ') : days === 30 ? tx('أعلى متوسط 7 أيام كان يوم ', 'Best 7-day average was on ') : tx('أعلى يوم ', 'Best day was ')}
               {date(bestPoint.date)} ({money(bestPoint.revenue)}).
             </>
           )}

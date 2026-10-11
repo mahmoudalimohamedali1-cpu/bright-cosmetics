@@ -430,12 +430,13 @@
   object-position: 50% 30%;
 }
 /* Wide screens: keep the open laugh and the cream in frame */
-@media (min-width: 1024px) { .v-hero__img { object-position: 50% 68%; } }
+@media (min-width: 1024px) { .v-hero__img { object-position: 50% 74%; } }
 .v-hero__shade {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(to bottom, rgb(31 2 41 / 0.5) 0%, rgb(31 2 41 / 0) 24%),
+    /* Top fade keeps the lilac wordmark on a dark ground whatever the crop */
+    linear-gradient(to bottom, rgb(31 2 41 / 0.72) 0%, rgb(31 2 41 / 0.38) 12%, rgb(31 2 41 / 0) 26%),
     linear-gradient(to top, rgb(31 2 41 / 0.72) 0%, rgb(31 2 41 / 0.35) 38%, rgb(31 2 41 / 0) 62%);
 }
 .v-hero__copy {
