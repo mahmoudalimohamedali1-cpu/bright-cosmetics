@@ -10,7 +10,8 @@
     "build": "tsc -b && vite build",
     "start": "tsx server/index.ts --prod",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "verify": "node scripts/verify.mjs"
   },
   "dependencies": {
     "@hono/node-server": "^2.1.4",
