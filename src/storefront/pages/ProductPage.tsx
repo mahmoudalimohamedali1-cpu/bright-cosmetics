@@ -77,7 +77,10 @@ function ProductView({ id }: { id: string }) {
   const name = pick(p.name)
   const low = stock > 0 && stock <= p.lowStockAt
   const shots = useMemo(() => lifestyleFor(p.id), [p.id])
-  const shot = view > 0 ? shots[view - 1] : undefined
+  // Product photos first (main packshot + extra angles), then lifestyle photos
+  const packs = useMemo(() => [p.image, ...(p.gallery ?? [])], [p.image, p.gallery])
+  const shot = view >= packs.length ? shots[view - packs.length] : undefined
+  const pack = packs[Math.min(view, packs.length - 1)]
 
   const reviews = useMemo(
     () => allReviews.filter((r) => r.productId === p.id && r.status === 'published').sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
@@ -139,22 +142,24 @@ function ProductView({ id }: { id: string }) {
                   <span className="sf-pdp__tag">{tx('صورة لايف ستايل', 'Lifestyle')}</span>
                 </>
               ) : (
-                <ProductVisual image={p.image} visual={p.visual} brand={p.brand} size={p.size} title={`${p.brand} ${name}`} />
+                <ProductVisual image={pack} visual={p.visual} brand={p.brand} size={p.size} title={`${p.brand} ${name}`} />
               )}
             </div>
             <ul className="sf-thumbs" aria-label={tx('صور المنتج', 'Product images')}>
-              <li>
-                <button type="button" className="sf-thumb sf-lit" aria-pressed={view === 0} onClick={() => setView(0)} aria-label={tx('صورة المنتج', 'Product image')}>
-                  <ProductVisual image={p.image} visual={p.visual} brand={p.brand} bare />
-                </button>
-              </li>
+              {packs.map((img, i) => (
+                <li key={img ?? `pack-${i}`}>
+                  <button type="button" className="sf-thumb sf-lit" aria-pressed={view === i} onClick={() => setView(i)} aria-label={tx(`صورة المنتج ${num(i + 1)}`, `Product image ${num(i + 1)}`)}>
+                    <ProductVisual image={img} visual={p.visual} brand={p.brand} bare />
+                  </button>
+                </li>
+              ))}
               {shots.map((ph, i) => (
                 <li key={ph.id}>
                   <button
                     type="button"
                     className="sf-thumb"
-                    aria-pressed={view === i + 1}
-                    onClick={() => setView(i + 1)}
+                    aria-pressed={view === packs.length + i}
+                    onClick={() => setView(packs.length + i)}
                     aria-label={tx(`صورة لايف ستايل ${num(i + 1)}: ${ph.alt.ar}`, `Lifestyle image ${num(i + 1)}: ${ph.alt.en}`)}
                   >
                     <img src={ph.src(200, 200)} alt="" width={200} height={200} loading="lazy" />

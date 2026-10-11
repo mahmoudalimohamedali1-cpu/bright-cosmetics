@@ -213,6 +213,9 @@ export default function ProductEditor() {
       compareAt: d.compareAt && d.compareAt > 0 ? d.compareAt : undefined,
       ingredients: d.ingredients.filter((i) => i.ar.trim() || i.en.trim()),
       batches: isNew ? d.batches : (useStore.getState().products.find((p) => p.id === d.id)?.batches ?? d.batches),
+      // Saving from the editor is the owner confirming the price
+      priceConfirmed: true,
+      tags: d.tags.filter((t) => t !== 'price-to-confirm'),
     }
     upsertProduct(clean)
     log(staff, { ar: `${isNew ? 'أضاف' : 'عدّل'} ${clean.name.ar}`, en: `${isNew ? 'Added' : 'Updated'} ${clean.name.en}` }, `/admin/products/${clean.id}`)

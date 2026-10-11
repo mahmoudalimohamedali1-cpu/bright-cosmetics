@@ -346,6 +346,12 @@ export default function Products() {
                       <td className="t-num">{isFinite(cover) ? <span className={cover < 21 ? 'core-low' : undefined}>{num(Math.round(cover))}</span> : <span className="faint">—</span>}</td>
                       <td className="t-num">
                         {money(p.price)}
+                        {p.priceConfirmed === false && (
+                          <>
+                            <br />
+                            <span className="badge badge--warn" title={tx('سعر تقديري، محتاج تأكيد', 'Estimated price, needs confirming')}>{tx('سعر تقديري', 'Estimated')}</span>
+                          </>
+                        )}
                         {p.compareAt && <div className="tiny faint" style={{ textDecoration: 'line-through' }}>{money(p.compareAt)}</div>}
                       </td>
                       <td className="t-num">{pct(margin, 0)}</td>

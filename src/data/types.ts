@@ -1,6 +1,6 @@
 import type { Bi } from '../i18n'
 
-export type Origin = 'KR' | 'FR' | 'US' | 'JP' | 'CA' | 'DE'
+export type Origin = 'KR' | 'FR' | 'US' | 'JP' | 'CA' | 'DE' | 'EG' | 'CN'
 
 export type Category =
   | 'cleanser'
@@ -61,6 +61,8 @@ export type Product = {
   size: string
   price: number
   compareAt?: number
+  /** false = estimated price the owner still has to confirm */
+  priceConfirmed?: boolean
   /** Landed unit cost in EGP (purchase + freight + customs) */
   cost: number
   batches: Batch[]
