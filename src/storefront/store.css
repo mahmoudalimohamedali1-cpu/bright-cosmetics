@@ -1275,3 +1275,31 @@
   box-shadow: 0 6px 18px rgb(201 138 120 / 0.3);
 }
 .sf-btn--lemon:hover:not(:disabled) { background: var(--rose-sheen); filter: brightness(1.05); }
+
+/* ---------- Mobile product cards: the product leads, controls stay out of its way ---------- */
+@media (hover: none), (max-width: 759px) {
+  .sf-card__visual { inset: 6% 10% 6%; }
+  .sf-card__quick { inset-inline: auto; inset-inline-start: 8px; bottom: 8px; gap: 6px; justify-content: flex-start; }
+  .sf-card__quick .sf-btn {
+    min-height: 40px;
+    min-width: 40px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 0;
+    background: var(--rose-sheen);
+    border-color: var(--rose-gold-deep);
+    box-shadow: 0 4px 10px rgb(201 138 120 / 0.35);
+  }
+  .sf-card__quick .sf-btn svg { width: 18px; height: 18px; }
+  .sf-card__peek { display: none !important; }
+}
+@media (max-width: 759px) {
+  .sf-card__name { font-size: 0.98rem; }
+  [dir='rtl'] .sf-card__name { font-size: 1rem; line-height: 1.45; }
+  .sf-card__name a { -webkit-line-clamp: 3; line-clamp: 3; }
+}
+@media (max-width: 759px) {
+  .sf-crumbs a, .sf-pdp__brand { display: inline-flex; align-items: center; min-height: 40px; }
+}

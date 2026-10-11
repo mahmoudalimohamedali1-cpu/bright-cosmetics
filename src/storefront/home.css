@@ -1353,3 +1353,61 @@
   .v-header__mark .v-mark__logo { width: 54px; height: 54px; }
   .v-header__mark .v-mark__en { font-size: 20px; }
 }
+
+/* ---------- Mobile hero: stacked flow (products, then copy, then button) ---------- */
+@media (max-width: 860px) {
+  .v-hero { height: auto; min-height: calc(100svh - var(--v-ticker-h)); }
+  .v-hero__card {
+    position: relative;
+    inset: auto;
+    min-height: inherit;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 20px;
+    padding: calc(var(--v-header-h) + 12px) var(--gutter) 36px;
+  }
+  .v-hero__stage {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 5 / 3;
+    max-height: 34svh;
+    align-content: end;
+  }
+  .v-hero__stage .v-pg__item { width: calc(30% - var(--d) * 5%); margin-inline: -3.5%; }
+  .v-hero__copy { position: relative; inset: auto; bottom: auto; max-width: none; }
+  .v-hero__h { font-size: clamp(2.6rem, 11vw, 3.6rem); max-width: none; }
+  .v-hero__sticker { width: 64px; bottom: auto; top: -22px; inset-inline-start: auto; inset-inline-end: 0; }
+  .v-hero__sub { margin-top: 10px; font-size: 1.05rem; }
+  .v-hero__cta { position: relative; bottom: auto; inset: auto; }
+  .v-hero.is-live .v-hero__card { transform: none; border-radius: 0; }
+}
+@media (max-width: 860px) {
+  .v-hero__stage .v-pg__item { width: calc(38% - var(--d) * 7%); margin-inline: -5.5%; }
+  .v-hero__stage { max-height: 38svh; }
+}
+@media (max-width: 860px) {
+  .v-hero { min-height: 0; }
+  .v-hero__card { min-height: 0; justify-content: flex-start; padding-top: calc(var(--v-header-h) + 28px); padding-bottom: 44px; }
+}
+@media (max-width: 600px) {
+  .v-rail__head { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .v-rail__head > div { width: 100%; }
+  .v-rail__cell { flex-basis: 64vw; }
+}
+/* Product groups inside old photo frames: no frame on each bottle */
+.v-why__photo--products img,
+.v-rcard__ph--products img {
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  aspect-ratio: auto !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  transform: none !important;
+}
+.v-why__photo--products, .v-rcard__ph--products { border-radius: 24px; overflow: hidden; }
+.v-rail__all { display: inline-flex; align-items: center; min-height: 44px; padding-inline: 4px; }

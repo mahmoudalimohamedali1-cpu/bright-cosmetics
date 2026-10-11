@@ -18,12 +18,14 @@ type Props = {
   title?: string
   /** Real packshot; when set it replaces the drawing */
   image?: string
+  /** Load immediately (the main image on a page) */
+  eager?: boolean
 }
 
 const W = 200
 const H = 260
 
-export function ProductVisual({ visual, brand, size, className, bare, title, image }: Props) {
+export function ProductVisual({ visual, brand, size, className, bare, title, image, eager }: Props) {
   if (image)
     return (
       <img
@@ -31,7 +33,7 @@ export function ProductVisual({ visual, brand, size, className, bare, title, ima
         alt={title ?? ''}
         className={`pv-img${className ? ` ${className}` : ''}`}
         // Small thumbnails (bare) load right away; big tiles wait until near the viewport
-        loading={bare ? 'eager' : 'lazy'}
+        loading={bare || eager ? 'eager' : 'lazy'}
         decoding="async"
         draggable={false}
       />

@@ -135,7 +135,7 @@ function ProductView({ id }: { id: string }) {
                   <span className="sf-pdp__tag">{tx('صورة لايف ستايل', 'Lifestyle')}</span>
                 </>
               ) : (
-                <ProductVisual image={pack} visual={p.visual} brand={p.brand} size={p.size} title={`${p.brand} ${name}`} />
+                <ProductVisual eager image={pack} visual={p.visual} brand={p.brand} size={p.size} title={`${p.brand} ${name}`} />
               )}
             </div>
             <ul className="sf-thumbs" aria-label={tx('صور المنتج', 'Product images')}>
