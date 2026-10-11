@@ -1,3 +1,4 @@
+import { useI18n } from '../i18n'
 import { useEffect, useMemo } from 'react'
 import { create } from 'zustand'
 import { useStore, stockOf } from '../store'
@@ -52,9 +53,11 @@ export function inStock(p: Product) {
 export { PHONE_RE, normalizePhone, westernDigits } from '../lib/commerce'
 
 export function useTitle(title: string | undefined) {
+  const { lang } = useI18n()
   useEffect(() => {
-    document.title = title ? `${title} | برايت Bright` : 'برايت | Bright'
-  }, [title])
+    const brand = lang === 'ar' ? 'برايت كوزمتكس' : 'Bright Cosmetics'
+    document.title = title ? `${title} | ${brand}` : brand
+  }, [title, lang])
 }
 
 /** Products in a routine step that suit the given category rule. Step 5 and 6 exclude lips/makeup. */

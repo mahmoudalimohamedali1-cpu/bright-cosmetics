@@ -309,7 +309,7 @@ export function buildSeed(): Db {
     codEnabled: true,
     codMax: 6000,
     autoConfirmWhatsapp: true,
-    defaultLang: 'ar',
+    defaultLang: 'en',
     announcement: {
       ar: 'شحن مجاني فوق 1500 ج.م في القاهرة والجيزة، والدفع عند الاستلام',
       en: 'Free shipping over EGP 1,500 in Cairo and Giza, cash on delivery available',

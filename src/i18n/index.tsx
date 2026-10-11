@@ -20,7 +20,8 @@ type I18n = {
   relTime: (d: string | number | Date) => string
 }
 
-const LS_KEY = 'nuri-lang'
+// English is the default; Arabic is one tap away and remembered.
+const LS_KEY = 'bright-lang'
 const Ctx = createContext<I18n | null>(null)
 
 // Western digits in both languages — what Egyptian shoppers read on every
@@ -31,9 +32,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(() => {
     try {
       const v = localStorage.getItem(LS_KEY)
-      return v === 'en' ? 'en' : 'ar'
+      return v === 'ar' ? 'ar' : 'en'
     } catch {
-      return 'ar'
+      return 'en'
     }
   })
 
