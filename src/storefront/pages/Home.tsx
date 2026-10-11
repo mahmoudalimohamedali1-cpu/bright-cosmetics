@@ -1,7 +1,8 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useI18n } from '../../i18n'
 import { Hero } from '../components/Hero'
+import { INTRO_HOLD_MS, Preloader, useIntro } from '../components/home/Preloader'
 import { ProductCard } from '../components/ProductCard'
 import { Accordion } from '../components/home/Accordion'
 import { AuthSeal, BurstBadge, Pill } from '../components/home/Glyphs'
@@ -36,6 +37,9 @@ function Img({ ph, w, h, sizes, className }: { ph: Photo; w: number; h: number; 
 export default function Home() {
   const { tx } = useI18n()
   useTitle(undefined)
+  const intro = useIntro()
+  // Decided once at mount: the hero waits only if the sheet is up when it first renders
+  const [introHold] = useState(() => (intro === 'draw' ? INTRO_HOLD_MS : 0))
   const products = useActiveProducts()
   const best = useMemo(() => [...products].sort((a, b) => b.reviewCount - a.reviewCount).slice(0, 8), [products])
   const star = best[0]
@@ -81,7 +85,8 @@ export default function Home() {
 
   return (
     <div className="v-home">
-      <Hero />
+      <Preloader phase={intro} />
+      <Hero hold={introHold} />
 
       {/* Heading fill + bestsellers */}
       <section className="v-best" aria-labelledby="v-best-h">

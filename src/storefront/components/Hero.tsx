@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import type { CSSProperties } from 'react'
 import { useI18n } from '../../i18n'
 import { PHOTOS } from '../media'
 import { LetterDrop } from './home/LetterDrop'
@@ -13,7 +14,8 @@ import { clamp01, reducedMotion, useScrollFrame } from './home/scroll'
   Reduced motion: no drop, no shrink.
 */
 
-export function Hero() {
+/** `hold` delays the entrance (ms) while the preloader is still on screen. */
+export function Hero({ hold = 0 }: { hold?: number }) {
   const { tx, lang } = useI18n()
   const card = useRef<HTMLDivElement>(null)
   const motion = !reducedMotion()
@@ -31,7 +33,12 @@ export function Hero() {
   const headline = tx('بشرتك، بس أحلى.', 'Glow, cultured in Seoul.')
 
   return (
-    <section className={`v-hero ${motion ? 'is-live' : ''}`} data-v-hero aria-labelledby="v-hero-h">
+    <section
+      className={`v-hero ${motion ? 'is-live' : ''}`}
+      data-v-hero
+      aria-labelledby="v-hero-h"
+      style={{ ['--hold' as string]: `${hold}ms` } as CSSProperties}
+    >
       <div className="v-hero__card" ref={card}>
         <img
           className="v-hero__img"
@@ -46,7 +53,7 @@ export function Hero() {
         <div className="v-hero__copy">
           <SparkSticker className="v-hero__sticker" />
           <h1 id="v-hero-h" className="v-hero__h" key={lang}>
-            <LetterDrop text={headline} lang={lang} />
+            <LetterDrop text={headline} lang={lang} delay={180 + hold} step={45} />
           </h1>
           <p className="v-hero__sub">
             {tx('سكين كير كوري ومستورد أصلي، متختار على قد بشرتك.', 'Authentic Korean & imported skincare, matched to your skin.')}
