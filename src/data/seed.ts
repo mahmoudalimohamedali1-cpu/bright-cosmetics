@@ -254,7 +254,7 @@ export function buildSeed(): Db {
   ]
   const bodiesEn = [
     'Used it for a month on combination skin and breakouts calmed down a lot. Arrived sealed and the lot matched.',
-    'Fast delivery, paid cash on delivery. Same product I used to bring back from Seoul.',
+    'Fast delivery, paid cash on delivery. Same product I used to bring back from abroad.',
     'Light texture, no stickiness, layers under sunscreen without pilling.',
   ]
   const reviews: Review[] = []
@@ -306,10 +306,10 @@ export function buildSeed(): Db {
   })
 
   const shipments: Shipment[] = [
-    { id: 'sh1', supplier: 'Seoul Beauty Trading Co.', origin: 'KR', createdAt: daysAgoISO(210), arrivedAt: daysAgoISO(180), status: 'received', freight: 18500, customs: 42000, lines: active.filter((p) => p.origin === 'KR').slice(0, 8).map((p) => ({ productId: p.id, qty: 60, unitCost: Math.round(p.cost * 0.7) })) },
-    { id: 'sh2', supplier: 'Seoul Beauty Trading Co.', origin: 'KR', createdAt: daysAgoISO(120), arrivedAt: daysAgoISO(96), status: 'received', freight: 21000, customs: 51000, lines: active.filter((p) => p.origin === 'KR').slice(8, 18).map((p) => ({ productId: p.id, qty: 48, unitCost: Math.round(p.cost * 0.7) })) },
+    { id: 'sh1', supplier: 'K-Beauty Trading Co.', origin: 'KR', createdAt: daysAgoISO(210), arrivedAt: daysAgoISO(180), status: 'received', freight: 18500, customs: 42000, lines: active.filter((p) => p.origin === 'KR').slice(0, 8).map((p) => ({ productId: p.id, qty: 60, unitCost: Math.round(p.cost * 0.7) })) },
+    { id: 'sh2', supplier: 'K-Beauty Trading Co.', origin: 'KR', createdAt: daysAgoISO(120), arrivedAt: daysAgoISO(96), status: 'received', freight: 21000, customs: 51000, lines: active.filter((p) => p.origin === 'KR').slice(8, 18).map((p) => ({ productId: p.id, qty: 48, unitCost: Math.round(p.cost * 0.7) })) },
     { id: 'sh3', supplier: 'Pharma Europe Distribution', origin: 'FR', createdAt: daysAgoISO(75), arrivedAt: daysAgoISO(58), status: 'received', freight: 9800, customs: 23000, lines: active.filter((p) => p.origin === 'FR').map((p) => ({ productId: p.id, qty: 36, unitCost: Math.round(p.cost * 0.72) })) },
-    { id: 'sh4', supplier: 'Seoul Beauty Trading Co.', origin: 'KR', createdAt: daysAgoISO(18), status: 'customs', freight: 19800, customs: 0, lines: active.filter((p) => p.origin === 'KR').slice(0, 10).map((p) => ({ productId: p.id, qty: 72, unitCost: Math.round(p.cost * 0.7) })) },
+    { id: 'sh4', supplier: 'K-Beauty Trading Co.', origin: 'KR', createdAt: daysAgoISO(18), status: 'customs', freight: 19800, customs: 0, lines: active.filter((p) => p.origin === 'KR').slice(0, 10).map((p) => ({ productId: p.id, qty: 72, unitCost: Math.round(p.cost * 0.7) })) },
     { id: 'sh5', supplier: 'NA Skincare Wholesale', origin: 'US', createdAt: daysAgoISO(9), status: 'in_transit', freight: 12400, customs: 0, lines: active.filter((p) => p.origin === 'US' || p.origin === 'CA').map((p) => ({ productId: p.id, qty: 40, unitCost: Math.round(p.cost * 0.7) })) },
     { id: 'sh6', supplier: 'Tokyo Cosme Export', origin: 'JP', createdAt: daysAgoISO(2), status: 'ordered', freight: 6200, customs: 0, lines: active.filter((p) => p.origin === 'JP').map((p) => ({ productId: p.id, qty: 60, unitCost: Math.round(p.cost * 0.7) })) },
   ]

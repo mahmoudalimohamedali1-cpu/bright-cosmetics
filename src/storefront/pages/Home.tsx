@@ -148,7 +148,7 @@ export default function Home() {
               <AuthSeal className="v-seal" />
             </div>
             <div className="v-lot__copy">
-              <h2 id="v-lot-h" className="v-h2">{tx('كل عبوة ليها سجل: من سيول لحد باب بيتك.', 'Every unit has a record: from Seoul to your door.')}</h2>
+              <h2 id="v-lot-h" className="v-h2">{tx('كل عبوة ليها سجل: من برايت لحد باب بيتك.', 'Every unit has a record: from Bright to your door.')}</h2>
               <p className="v-mono">
                 {tx(
                   'جاية منين، وصلت إمتى، وصالحة لحد إمتى. السجل ده موجود في صفحة كل منتج، قبل ما تدفعي جنيه.',

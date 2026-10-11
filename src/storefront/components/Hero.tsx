@@ -30,7 +30,7 @@ export function Hero({ hold = 0 }: { hold?: number }) {
   }, motion)
 
   const ph = PHOTOS.hero
-  const headline = tx('بشرتك، بس أحلى.', 'Glow, cultured in Seoul.')
+  const headline = tx('بشرتك، بس أحلى.', 'Your skin, only brighter.')
 
   return (
     <section

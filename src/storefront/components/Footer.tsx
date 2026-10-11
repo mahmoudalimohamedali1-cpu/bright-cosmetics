@@ -42,7 +42,7 @@ export function Footer() {
   const cairo = zones[0]
   const [email, setEmail] = useState('')
   const [joined, setJoined] = useState(false)
-  const slogan = tx('بشرتك، بس أحلى.', 'Glow, cultured in Seoul.')
+  const slogan = tx('بشرتك، بس أحلى.', 'Your skin, only brighter.')
   const { box, line } = useFitLine(slogan)
   const wa = settings.whatsapp.replace(/\D/g, '')
 

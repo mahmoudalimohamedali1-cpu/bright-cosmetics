@@ -19,7 +19,7 @@ OWN-WORLD: Cream ground #FFF1E7, plum ink #1F0229 for all type and 1px hairlines
 
 STORY: First viewport makes them smile and want the glow; the grid sells the bestsellers; the accordion answers "why Bright" (authentic lots, skin fit, COD); reviews prove it; routines and "seen in the wild" make it social; the footer says the line again.
 
-FIRST VIEWPORT: Lilac ticker bar (authentic, COD, free shipping, lot & expiry). Transparent header over the photo: links at the inline-start, Bright wordmark centred in lilac, round outlined icon buttons at the inline-end. Full-bleed hero photo (laughing woman, cream on her cheek). Headline "بشرتك، بس أحلى." / "Glow, cultured in Seoul." drops in letter by letter (staggered bounce) at the start side, bottom-third; support line under it; lemon pill "تسوقي دلوقتي" / "Shop now" centred near the bottom. On scroll the hero shrinks into an inset rounded card.
+FIRST VIEWPORT: Lilac ticker bar (authentic, COD, free shipping, lot & expiry). Transparent header over the photo: links at the inline-start, Bright wordmark centred in lilac, round outlined icon buttons at the inline-end. Full-bleed hero photo (laughing woman, cream on her cheek). Headline "بشرتك، بس أحلى." / "Your skin, only brighter." drops in letter by letter (staggered bounce) at the start side, bottom-third; support line under it; lemon pill "تسوقي دلوقتي" / "Shop now" centred near the bottom. On scroll the hero shrinks into an inset rounded card.
 
 FORM: Owner-pinned reference (overrides roll f37fb1f4). Signature interactions: letter-drop intro + hero shrink-to-card on scroll; giant "Bright برايت" word band with a product spinning on scroll; scroll-scrubbed heading fill; endless marquees.
 
