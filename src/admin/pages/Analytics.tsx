@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { CartesianGrid, Bar, BarChart, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Download, Table2 } from 'lucide-react'
@@ -8,9 +8,10 @@ import { GOVERNORATES, ZONES } from '../../data/seed'
 import { CATEGORY_LABEL } from '../../data/catalog'
 import { dailySeries, delta, grossProfit, inRange, isCounted, kpis, netRevenue, rangeFor } from '../../lib/metrics'
 import type { Category, Channel, Order, PaymentMethod } from '../../data/types'
-import { ChartTip, DemoNote, Delta, PageHeader, Pane, Seg, Switch, Thumb } from '../ui'
+import { ChartTip, DemoNote, Delta, PageHeader, Pane, Seg, Switch, Thumb, useAdmin } from '../ui'
 import { BarList, LedgerCell, Note, Takeaway } from '../parts/growth'
 import { downloadCSV, heat, today } from '../parts/growth/util'
+import { api } from '../../lib/api'
 
 const CHANNEL: Record<Channel, { ar: string; en: string }> = {
   web: { ar: 'المتجر الإلكتروني', en: 'Online store' },
@@ -763,10 +764,64 @@ export default function Analytics() {
             }))}
           />
           <div style={{ marginTop: 12 }}>
-            <Note>{tx('زيارات المتجر وإضافات السلة مش متتبَّعة لسه، فمعدّل التحويل من زيارة لطلب مش معروض. ربط أداة تحليلات (زي GA4) هيكمّل أول المسار.', 'Store visits and add-to-cart events are not tracked yet, so visit-to-order conversion is not shown. Connecting an analytics tool (such as GA4) would complete the top of the funnel.')}</Note>
+            <VisitFunnel days={days} />
           </div>
         </Pane>
       </div>
     </>
+  )
+}
+
+type FunnelData = { days: number; trackingSince: string | null; sessions: number; productViews: number; addToCart: number; checkout: number; purchase: number }
+
+/** Top of the funnel from first-party storefront events (API only). */
+function VisitFunnel({ days }: { days: number }) {
+  const { tx, num, pct, date } = useI18n()
+  const { online } = useAdmin()
+  const [d, setD] = useState<FunnelData>()
+  useEffect(() => {
+    if (!online) return
+    let alive = true
+    api<FunnelData>(`/api/admin/funnel?days=${days}`, { admin: true })
+      .then((x) => alive && setD(x))
+      .catch(() => {})
+    return () => {
+      alive = false
+    }
+  }, [online, days])
+
+  if (!online || !d)
+    return <Note>{tx('زيارات المتجر وإضافات السلة مش متتبَّعة لسه، فمعدّل التحويل من زيارة لطلب مش معروض. ربط أداة تحليلات (زي GA4) هيكمّل أول المسار.', 'Store visits and add-to-cart events are not tracked yet, so visit-to-order conversion is not shown. Connecting an analytics tool (such as GA4) would complete the top of the funnel.')}</Note>
+
+  const steps = [
+    { key: 'sessions', label: tx('زيارات', 'Sessions'), n: d.sessions },
+    { key: 'product', label: tx('شافوا منتج', 'Viewed a product'), n: d.productViews },
+    { key: 'cart', label: tx('أضافوا للسلة', 'Added to cart'), n: d.addToCart },
+    { key: 'checkout', label: tx('بدأوا الدفع', 'Reached checkout'), n: d.checkout },
+    { key: 'purchase', label: tx('اشتروا', 'Purchased'), n: d.purchase },
+  ]
+  return (
+    <div className="stack" style={{ gap: 8 }}>
+      <div className="small strong">{tx('مسار الزيارة', 'Visit funnel')}</div>
+      <Takeaway>
+        {d.sessions ? (
+          <>
+            <strong>{pct(d.purchase / d.sessions, 1)}</strong>
+            {tx(' من الزيارات انتهت بطلب.', ' of sessions ended in an order.')}
+          </>
+        ) : (
+          tx('مفيش زيارات متسجّلة في الفترة دي.', 'No sessions recorded in this period.')
+        )}
+      </Takeaway>
+      <BarList
+        max={d.sessions || 1}
+        items={steps.map((s) => ({ key: s.key, label: s.label, value: s.n, display: <><strong>{num(s.n)}</strong> {pct(s.n / (d.sessions || 1), 0)}</> }))}
+      />
+      <Note>
+        {d.trackingSince
+          ? tx(`زيارات المتجر متتبَّعة من ${date(d.trackingSince)} بس، والزيارات اللي طالبة عدم التتبع مش محسوبة.`, `Store visits are tracked since ${date(d.trackingSince)} only, and visits that ask not to be tracked are not counted.`)
+          : tx('لسه مفيش زيارات متسجّلة.', 'No visits recorded yet.')}
+      </Note>
+    </div>
   )
 }

@@ -6,6 +6,7 @@ import {
   Boxes,
   Home,
   Languages,
+  LogOut,
   Menu,
   Moon,
   Package,
@@ -27,6 +28,8 @@ import { useI18n } from '../i18n'
 import { useStore } from '../store'
 import { AdminContext, ToastHost, useToasts } from './ui'
 import { expiringBatches, stock } from '../lib/metrics'
+import { loadAdmin, startAdminSync, useRemote } from '../lib/sync'
+import { AdminGate } from './AdminGate'
 import './admin.css'
 
 import Overview from './pages/Overview'
@@ -51,6 +54,10 @@ type NavItem = { to: string; ar: string; en: string; icon: ComponentType<LucideP
 const THEME_KEY = 'nuri-admin-theme'
 
 export default function AdminApp() {
+  return <AdminGate>{(p) => <AdminShell {...p} />}</AdminGate>
+}
+
+function AdminShell({ online, signOut }: { online: boolean; signOut: () => void }) {
   const { tx, toggle, lang, dir } = useI18n()
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     try {
@@ -63,6 +70,28 @@ export default function AdminApp() {
   const [paletteOpen, setPaletteOpen] = useState(false)
   const { toasts, toast } = useToasts()
   const location = useLocation()
+  const saving = useRemote((r) => r.saving)
+
+  // Online: every store change is written to the server; refetch when the tab comes back.
+  useEffect(() => {
+    if (!online) return
+    const sync = startAdminSync({
+      onError: (m) => toast(tx(`${m.ar} مااتحفظش على السيرفر.`, `${m.en} Not saved to the server.`)),
+      onConflict: () => toast(tx('في سجل اتغيّر من مكان تاني، فاتحمّلت آخر نسخة منه.', 'A record changed elsewhere, so its latest version was loaded.')),
+    })
+    let last = Date.now()
+    const onVis = () => {
+      if (document.visibilityState !== 'visible' || Date.now() - last < 30_000 || !sync.idle()) return
+      last = Date.now()
+      loadAdmin().catch(() => {})
+    }
+    document.addEventListener('visibilitychange', onVis)
+    return () => {
+      document.removeEventListener('visibilitychange', onVis)
+      sync.stop()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [online])
 
   const orders = useStore((s) => s.orders)
   const products = useStore((s) => s.products)
@@ -145,8 +174,8 @@ export default function AdminApp() {
   ]
 
   const ctx = useMemo(
-    () => ({ theme, setTheme, toast, staff: 'Karim Nabil', openPalette: () => setPaletteOpen(true) }),
-    [theme, toast],
+    () => ({ theme, setTheme, toast, staff: 'Karim Nabil', openPalette: () => setPaletteOpen(true), online }),
+    [theme, toast, online],
   )
 
   return (
@@ -197,6 +226,11 @@ export default function AdminApp() {
                 <kbd>Ctrl K</kbd>
               </button>
               <div className="row" style={{ marginInlineStart: 'auto' }}>
+                {online && saving !== 'idle' && (
+                  <span className="adm-savestate" data-state={saving} role="status">
+                    {saving === 'saving' ? tx('بيتحفظ…', 'Saving…') : saving === 'saved' ? tx('اتحفظ', 'Saved') : tx('ما اتحفظش', 'Not saved')}
+                  </span>
+                )}
                 <button className="btn btn--ghost btn--sm" onClick={toggle} aria-label={tx('Switch to English', 'التحويل للعربية')}>
                   <Languages size={16} aria-hidden />
                   {lang === 'ar' ? 'EN' : 'ع'}
@@ -208,8 +242,18 @@ export default function AdminApp() {
                 >
                   {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
                 </button>
+                {online && (
+                  <button className="btn btn--ghost btn--icon" onClick={signOut} aria-label={tx('تسجيل الخروج', 'Sign out')} title={tx('تسجيل الخروج', 'Sign out')}>
+                    <LogOut size={18} />
+                  </button>
+                )}
               </div>
             </header>
+            {!online && (
+              <div className="adm-demo-banner" role="note">
+                {tx('وضع العرض: البيانات محفوظة في المتصفح ده بس', 'Demo mode: data is stored in this browser only')}
+              </div>
+            )}
             <main className="adm-content" dir={dir}>
               <Routes>
                 <Route index element={<Overview />} />

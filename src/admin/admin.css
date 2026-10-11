@@ -744,3 +744,46 @@ a.ledger__cell:hover { background: var(--pane-2); }
   .adm { background: #fff; }
   .pane { border-color: #ccc; }
 }
+
+/* ───── API: sign-in, save state, demo banner ───── */
+.adm-login {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  background: var(--lacquer-900);
+}
+.adm-login__card {
+  width: min(400px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  background: var(--pane);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: var(--fg);
+}
+.adm-login__card .adm-brand__name { font-size: 30px; }
+.adm-login__sub { display: block; font-size: 12px; color: var(--fg-2); margin-top: 4px; }
+.adm-login__title { margin: 8px 0 0; font-size: 22px; font-weight: 600; }
+.adm-login__card p { margin: 0; }
+.adm-login__go { justify-content: center; height: 40px; }
+
+.adm-savestate {
+  font-size: 12px;
+  color: var(--fg-3);
+  padding-inline: 8px;
+  white-space: nowrap;
+}
+.adm-savestate[data-state='saved'] { color: var(--ok); }
+.adm-savestate[data-state='error'] { color: var(--bad); }
+
+.adm-demo-banner {
+  padding: 8px 24px;
+  font-size: 13px;
+  color: var(--fg-2);
+  background: var(--pane-2);
+  border-bottom: 1px solid var(--line);
+}
+@media (max-width: 900px) { .adm-demo-banner { padding: 8px 12px; } }

@@ -49,16 +49,7 @@ export function inStock(p: Product) {
   return stockOf(p) > 0
 }
 
-/** Convert Arabic-Indic and Persian digits to Western digits. */
-export function westernDigits(s: string) {
-  return s.replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660)).replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 0x06f0))
-}
-
-export const PHONE_RE = /^01[0125]\d{8}$/
-
-export function normalizePhone(s: string) {
-  return westernDigits(s).replace(/[\s-]/g, '').replace(/^\+?20(?=1)/, '0')
-}
+export { PHONE_RE, normalizePhone, westernDigits } from '../lib/commerce'
 
 export function useTitle(title: string | undefined) {
   useEffect(() => {

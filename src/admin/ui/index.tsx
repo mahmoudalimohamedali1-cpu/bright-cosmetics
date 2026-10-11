@@ -15,6 +15,8 @@ type AdminCtx = {
   toast: (text: string) => void
   staff: string
   openPalette: () => void
+  /** True when the dashboard is backed by the API (signed in), false in browser-only demo mode */
+  online: boolean
 }
 export const AdminContext = createContext<AdminCtx | null>(null)
 

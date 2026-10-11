@@ -25,3 +25,9 @@ dist-ssr
 .impeccable/review/
 .impeccable/live/
 .impeccable/reference/
+
+# API server: local database and secrets
+server/data/
+.env
+.env.*
+!.env.example

@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react'
 import type { ComponentType } from 'react'
 import { Link } from 'react-router-dom'
-import { Bell, Boxes, Check, CreditCard, Languages, Minus, Receipt, ShieldAlert, Store, Users } from 'lucide-react'
+import { Bell, Boxes, Check, CreditCard, Languages, Minus, Plug, Receipt, ShieldAlert, Store, Users } from 'lucide-react'
 import type { LucideProps } from 'lucide-react'
 import { useI18n } from '../../i18n'
 import { useStore } from '../../store'
 import type { Settings as SettingsT, Staff } from '../../data/types'
 import { Avatar, Badge, DemoNote, Field, PageHeader, Pane, Switch, useAdmin } from '../ui'
 import { Note } from '../parts/growth'
+import { IntegrationsPane } from '../parts/integrations'
+import { api } from '../../lib/api'
+import { loadAdmin } from '../../lib/sync'
 
-type Section = 'store' | 'lang' | 'tax' | 'pay' | 'inv' | 'staff' | 'notify' | 'danger'
+type Section = 'store' | 'lang' | 'tax' | 'pay' | 'integrations' | 'inv' | 'staff' | 'notify' | 'danger'
 
 const ROLE: Record<Staff['role'], { ar: string; en: string }> = {
   owner: { ar: 'المالك', en: 'Owner' },
@@ -40,7 +43,7 @@ const sameSettings = (a: SettingsT, b: SettingsT) => JSON.stringify(a) === JSON.
 
 export default function Settings() {
   const { tx, pick, num, money, relTime } = useI18n()
-  const { toast, staff: me } = useAdmin()
+  const { toast, staff: me, online } = useAdmin()
   const settings = useStore((s) => s.settings)
   const staff = useStore((s) => s.staff)
   const updateSettings = useStore((s) => s.updateSettings)
@@ -114,6 +117,7 @@ export default function Settings() {
     { id: 'lang', ar: 'اللغة والعملة', en: 'Languages and currency', icon: Languages },
     { id: 'tax', ar: 'الضرايب', en: 'Taxes', icon: Receipt },
     { id: 'pay', ar: 'طرق الدفع', en: 'Payments', icon: CreditCard },
+    { id: 'integrations', ar: 'الربط مع الخدمات', en: 'Integrations', icon: Plug },
     { id: 'inv', ar: 'قواعد المخزون', en: 'Inventory rules', icon: Boxes },
     { id: 'staff', ar: 'الفريق والصلاحيات', en: 'Staff and permissions', icon: Users },
     { id: 'notify', ar: 'التنبيهات', en: 'Notifications', icon: Bell },
@@ -281,6 +285,8 @@ export default function Settings() {
             </Pane>
           )}
 
+          {section === 'integrations' && <IntegrationsPane />}
+
           {section === 'inv' && (
             <Pane title={tx('قواعد المخزون', 'Inventory rules')}>
               <div className="gr-form">
@@ -414,8 +420,17 @@ export default function Settings() {
                   <button
                     className="btn btn--danger"
                     disabled={confirmReset.trim().toUpperCase() !== 'RESET'}
-                    onClick={() => {
-                      resetDemo()
+                    onClick={async () => {
+                      if (online) {
+                        // Reset on the server, then reload: never replay thousands of local writes.
+                        try {
+                          await api('/api/admin/reset', { method: 'POST', admin: true })
+                          await loadAdmin()
+                        } catch {
+                          toast(tx('إعادة الضبط على السيرفر ما نجحتش', 'Server reset failed'))
+                          return
+                        }
+                      } else resetDemo()
                       setConfirmReset('')
                       setTouched(false)
                       toast(tx('تمت إعادة ضبط البيانات التجريبية', 'Demo data reset'))

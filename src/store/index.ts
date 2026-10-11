@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import { buildSeed, GOVERNORATES } from '../data/seed'
+import { buildSeed } from '../data/seed'
 import type { Db } from '../data/seed'
 import type {
   Activity,
@@ -10,7 +10,6 @@ import type {
   FulfillmentStatus,
   Order,
   OrderEvent,
-  PaymentMethod,
   Product,
   Review,
   Settings,
@@ -18,6 +17,10 @@ import type {
   ShippingZone,
 } from '../data/types'
 import { uid } from '../lib/rand'
+import { buildOrder } from '../lib/commerce'
+import type { CheckoutInput } from '../lib/commerce'
+import { api, apiAvailable } from '../lib/api'
+import { track } from '../lib/track'
 
 /*
   One store for the storefront and the admin. Persisted to localStorage so an
@@ -25,16 +28,6 @@ import { uid } from '../lib/rand'
   API calls when a backend exists; the components only see this interface.
 */
 
-export type CheckoutInput = {
-  name: string
-  phone: string
-  email?: string
-  governorateId: string
-  address: string
-  payment: PaymentMethod
-  code?: string
-  note?: string
-}
 
 type State = Db & {
   cart: CartLine[]
@@ -53,6 +46,8 @@ type State = Db & {
   toggleWish: (productId: string) => void
   viewed: (productId: string) => void
   placeOrder: (input: CheckoutInput) => Order
+  /** Places the order on the API when one is reachable, else falls back to `placeOrder`. Rejects with ApiError. */
+  submitOrder: (input: CheckoutInput) => Promise<Order>
 
   // admin: orders
   updateFulfillment: (orderId: string, f: FulfillmentStatus, by?: string, courier?: Order['courier']) => void
@@ -90,41 +85,9 @@ type State = Db & {
 
 const now = () => new Date().toISOString()
 
-export function stockOf(p: Product) {
-  return p.batches.reduce((s, b) => s + b.qty, 0)
-}
-
-export function zoneFor(governorateId: string, zones: ShippingZone[]) {
-  const g = GOVERNORATES.find((x) => x.id === governorateId)
-  return zones.find((z) => z.id === (g?.zone ?? 'cairo'))!
-}
-
-/** Discount amount for a subtotal, given an entered code. */
-export function evaluateCode(code: string | undefined, subtotal: number, discounts: Discount[]) {
-  if (!code) return { discount: 0, freeShipping: false, valid: false as const }
-  const d = discounts.find((x) => x.code.toUpperCase() === code.trim().toUpperCase() && x.active && !x.automatic)
-  if (!d || subtotal < d.minSubtotal) return { discount: 0, freeShipping: false, valid: false as const }
-  if (d.kind === 'percent') return { discount: Math.round((subtotal * d.value) / 100), freeShipping: false, valid: true as const, d }
-  if (d.kind === 'fixed') return { discount: Math.min(subtotal, d.value), freeShipping: false, valid: true as const, d }
-  if (d.kind === 'free_shipping') return { discount: 0, freeShipping: true, valid: true as const, d }
-  return { discount: 0, freeShipping: false, valid: false as const }
-}
-
-/** Remove qty from batches, earliest expiry first (FEFO). Returns batch used for the first unit. */
-function consumeFEFO(p: Product, qty: number): { product: Product; batchId?: string } {
-  const batches = [...p.batches].sort((a, b) => a.expiry.localeCompare(b.expiry)).map((b) => ({ ...b }))
-  let left = qty
-  let first: string | undefined
-  for (const b of batches) {
-    if (left <= 0) break
-    if (b.qty <= 0) continue
-    const take = Math.min(b.qty, left)
-    b.qty -= take
-    left -= take
-    first ??= b.id
-  }
-  return { product: { ...p, batches }, batchId: first }
-}
+// Pure order maths lives in lib/commerce so the API server prices orders the same way.
+export { stockOf, zoneFor, evaluateCode } from '../lib/commerce'
+export type { CheckoutInput } from '../lib/commerce'
 
 function event(type: OrderEvent['type'], by?: string, note?: string): OrderEvent {
   return { at: now(), type, by, note }
@@ -139,14 +102,17 @@ export const useStore = create<State>()(
       cartOpen: false,
       recentlyViewed: [],
 
-      addToCart: (productId, qty = 1) =>
+      addToCart: (productId, qty = 1) => {
+        const p = get().products.find((x) => x.id === productId)
+        track('add_to_cart', { productId, value: p ? p.price * qty : undefined })
         set((s) => {
           const ex = s.cart.find((l) => l.productId === productId)
           const cart = ex
             ? s.cart.map((l) => (l.productId === productId ? { ...l, qty: l.qty + qty } : l))
             : [...s.cart, { productId, qty }]
           return { cart, cartOpen: true }
-        }),
+        })
+      },
       setQty: (productId, qty) =>
         set((s) => ({
           cart: qty <= 0 ? s.cart.filter((l) => l.productId !== productId) : s.cart.map((l) => (l.productId === productId ? { ...l, qty } : l)),
@@ -158,82 +124,60 @@ export const useStore = create<State>()(
         set((s) => ({
           wishlist: s.wishlist.includes(productId) ? s.wishlist.filter((x) => x !== productId) : [...s.wishlist, productId],
         })),
-      viewed: (productId) =>
-        set((s) => ({ recentlyViewed: [productId, ...s.recentlyViewed.filter((x) => x !== productId)].slice(0, 12) })),
+      viewed: (productId) => {
+        track('product_view', { productId })
+        set((s) => ({ recentlyViewed: [productId, ...s.recentlyViewed.filter((x) => x !== productId)].slice(0, 12) }))
+      },
 
       placeOrder: (input) => {
         const s = get()
-        // Find or create the customer by phone
-        let customer = s.customers.find((c) => c.phone === input.phone)
-        const customers = [...s.customers]
-        if (!customer) {
-          customer = {
-            id: uid('c'),
-            name: { ar: input.name, en: input.name },
-            email: input.email ?? '',
-            phone: input.phone,
-            governorateId: input.governorateId,
-            skinType: 'normal',
-            concerns: [],
-            createdAt: now(),
-            tags: ['new'],
-            acceptsMarketing: true,
-          }
-          customers.unshift(customer)
-        }
-        let products = s.products
-        const lines = s.cart.map((l) => {
-          const p = products.find((x) => x.id === l.productId)!
-          const { product, batchId } = consumeFEFO(p, l.qty)
-          products = products.map((x) => (x.id === p.id ? product : x))
-          return { productId: p.id, qty: l.qty, price: p.price, cost: p.cost, batchId }
-        })
-        const subtotal = lines.reduce((sum, l) => sum + l.price * l.qty, 0)
-        const zone = zoneFor(input.governorateId, s.zones)
-        const code = evaluateCode(input.code, subtotal, s.discounts)
-        const shipping = code.freeShipping || subtotal >= zone.freeOver ? 0 : zone.rate
-        const codFee = input.payment === 'cod' ? zone.codFee : 0
-        const number = Math.max(...s.orders.map((o) => o.number)) + 1
-        const order: Order = {
-          id: `o${number}`,
-          number,
-          customerId: customer.id,
-          createdAt: now(),
-          lines,
-          subtotal,
-          discount: code.discount,
-          discountCode: code.valid ? input.code?.toUpperCase() : undefined,
-          shipping,
-          codFee,
-          total: subtotal - code.discount + shipping + codFee,
-          payment: input.payment,
-          paymentStatus: input.payment === 'cod' ? 'pending' : 'paid',
-          fulfillment: 'unfulfilled',
-          status: 'open',
-          governorateId: input.governorateId,
-          address: input.address,
-          channel: 'web',
-          events: [event('placed')],
-          note: input.note,
-          tags: ['new'],
-          risk: input.payment === 'cod' && subtotal > 3500 ? 'medium' : 'low',
-        }
-        const discounts = code.valid
-          ? s.discounts.map((d) => (d.id === code.d!.id ? { ...d, used: d.used + 1 } : d))
-          : s.discounts
+        const built = buildOrder(
+          { products: s.products, customers: s.customers, discounts: s.discounts, zones: s.zones, nextNumber: Math.max(1000, ...s.orders.map((o) => o.number)) + 1 },
+          input,
+          s.cart,
+        )
+        // Demo mode: no gateway, so prepaid methods are recorded as paid.
+        const order: Order = input.payment === 'cod' ? built.order : { ...built.order, paymentStatus: 'paid' }
+        const changed = new Map(built.products.map((p) => [p.id, p]))
         set({
           orders: [...s.orders, order],
-          customers,
-          products,
-          discounts,
+          customers: built.newCustomer ? [built.customer, ...s.customers] : s.customers,
+          products: s.products.map((p) => changed.get(p.id) ?? p),
+          discounts: built.discount ? s.discounts.map((d) => (d.id === built.discount!.id ? built.discount! : d)) : s.discounts,
+          cart: [],
+          cartOpen: false,
+          me: built.customer.id,
+          activity: [built.activity, ...s.activity],
+        })
+        return order
+      },
+
+      submitOrder: async (input) => {
+        if (!(await apiAvailable())) return get().placeOrder(input)
+        const s = get()
+        const order = await api<Order>('/api/orders', { body: { ...input, lines: s.cart } })
+        const known = s.customers.find((c) => c.id === order.customerId)
+        const customer: Customer = known
+          ? { ...known, phone: input.phone }
+          : {
+              id: order.customerId,
+              name: { ar: input.name, en: input.name },
+              email: input.email ?? '',
+              phone: input.phone,
+              governorateId: input.governorateId,
+              skinType: 'normal',
+              concerns: [],
+              createdAt: order.createdAt,
+              tags: ['new'],
+              acceptsMarketing: true,
+            }
+        set((st) => ({
+          orders: [...st.orders.filter((o) => o.id !== order.id), order],
+          customers: [customer, ...st.customers.filter((c) => c.id !== customer.id)],
           cart: [],
           cartOpen: false,
           me: customer.id,
-          activity: [
-            { id: uid('a'), at: now(), who: customer.name.en, what: { ar: `طلب جديد #${number} من المتجر`, en: `New order #${number} from the store` }, link: `/admin/orders/${order.id}` },
-            ...s.activity,
-          ],
-        })
+        }))
         return order
       },
 

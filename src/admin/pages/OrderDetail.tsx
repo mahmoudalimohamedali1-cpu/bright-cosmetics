@@ -11,6 +11,10 @@ import { CHANNEL_LABEL, COURIERS, EVENT_LABEL, PAYMENT_LABEL, gov, waLink } from
 import type { Courier } from '../parts/core/lib'
 import { Invoice } from '../parts/core/print'
 import '../parts/core/core.css'
+import { api, ApiError } from '../../lib/api'
+import { applyServerDoc } from '../../lib/sync'
+import { useIntegrations } from '../parts/integrations'
+import type { Order } from '../../data/types'
 
 const CANCEL_REASONS: { id: string; ar: string; en: string }[] = [
   { id: 'unreachable', ar: 'العميل مش بيرد', en: 'Customer unreachable' },
@@ -24,7 +28,9 @@ const CANCEL_REASONS: { id: string; ar: string; en: string }[] = [
 export default function OrderDetail() {
   const { id } = useParams()
   const { tx, pick, money, num, pct, date, relTime, dir } = useI18n()
-  const { toast, staff } = useAdmin()
+  const { toast, staff, online } = useAdmin()
+  const integrations = useIntegrations()
+  const [busy, setBusy] = useState<'bosta' | 'wa' | null>(null)
   const navigate = useNavigate()
   const orders = useStore((s) => s.orders)
   const products = useStore((s) => s.products)
@@ -105,9 +111,36 @@ export default function OrderDetail() {
     toast(tx(ar, en))
   }
 
-  const confirmWA = () => {
-    if (customer) window.open(waLink(customer.phone, waText), '_blank', 'noopener')
-    act(() => confirmOrder(o.id, 'whatsapp', staff), 'اتأكد الطلب على واتساب', 'Confirmed on WhatsApp')
+  const waApi = online && !!integrations?.whatsapp.configured
+  const confirmWA = async () => {
+    if (!customer) return
+    if (!waApi) {
+      window.open(waLink(customer.phone, waText), '_blank', 'noopener')
+      act(() => confirmOrder(o.id, 'whatsapp', staff), 'اتأكد الطلب على واتساب', 'Confirmed on WhatsApp')
+      return
+    }
+    setBusy('wa')
+    try {
+      await api('/api/admin/whatsapp/send', { body: { to: customer.phone, text: waText }, admin: true })
+      act(() => confirmOrder(o.id, 'whatsapp', staff), 'اتبعتت رسالة التأكيد على واتساب', 'WhatsApp confirmation sent')
+    } catch (e) {
+      toast(e instanceof ApiError ? tx(e.bi.ar, e.bi.en) : tx('الرسالة ما اتبعتتش', 'The message was not sent'))
+    } finally {
+      setBusy(null)
+    }
+  }
+  const bostaReady = online && !!integrations?.bosta.configured
+  const createBosta = async () => {
+    setBusy('bosta')
+    try {
+      const r = await api<{ order: Order; rev: number }>(`/api/admin/couriers/bosta/${o.id}`, { body: { by: staff }, admin: true })
+      applyServerDoc('orders', r.order, r.rev)
+      toast(tx(`اتعملت شحنة بوسطة، رقم التتبع ${r.order.tracking}`, `Bosta delivery created, tracking ${r.order.tracking}`))
+    } catch (e) {
+      toast(e instanceof ApiError ? tx(e.bi.ar, e.bi.en) : tx('الشحنة ما اتعملتش', 'The delivery was not created'))
+    } finally {
+      setBusy(null)
+    }
   }
   const ship = () => {
     useStore.setState((s) => ({ orders: s.orders.map((x) => (x.id === o.id ? { ...x, courier } : x)) }))
@@ -145,10 +178,12 @@ export default function OrderDetail() {
     if (o.status === 'open')
       next = {
         title: tx('تأكيد الطلب مع العميل', 'Confirm the order with the customer'),
-        hint: tx('هيفتح واتساب برسالة تأكيد جاهزة بالعربي والإنجليزي، ويتسجّل التأكيد في سجل الطلب.', 'Opens WhatsApp with a ready bilingual confirmation and records it in the timeline.'),
+        hint: waApi
+          ? tx('هيبعت رسالة تأكيد بالعربي والإنجليزي من رقم المتجر على واتساب، ويتسجّل التأكيد في سجل الطلب.', 'Sends a bilingual confirmation from the store’s WhatsApp number and records it in the timeline.')
+          : tx('هيفتح واتساب برسالة تأكيد جاهزة بالعربي والإنجليزي، ويتسجّل التأكيد في سجل الطلب.', 'Opens WhatsApp with a ready bilingual confirmation and records it in the timeline.'),
         button: (
           <div className="row" style={{ flexWrap: 'wrap' }}>
-            <button className="btn btn--live" onClick={confirmWA} disabled={!customer}>
+            <button className="btn btn--live" onClick={confirmWA} disabled={!customer || busy === 'wa'} aria-busy={busy === 'wa' || undefined}>
               <MessageCircle size={16} aria-hidden />
               {tx('تأكيد على واتساب', 'Confirm on WhatsApp')}
             </button>
@@ -175,7 +210,7 @@ export default function OrderDetail() {
         title: tx('تسليم لشركة الشحن', 'Hand to a courier'),
         hint: tx(`التوصيل لـ${pick(g?.name)} بياخد ${zone?.etaDays[0]}–${zone?.etaDays[1]} أيام.`, `Delivery to ${pick(g?.name)} takes ${zone?.etaDays[0]}–${zone?.etaDays[1]} days.`),
         button: (
-          <div className="row">
+          <div className="row" style={{ flexWrap: 'wrap' }}>
             <select className="select" style={{ width: 130 }} value={courier} onChange={(e) => setCourier(e.target.value as Courier)} aria-label={tx('شركة الشحن', 'Courier')}>
               {COURIERS.map((c) => (
                 <option key={c}>{c}</option>
@@ -185,6 +220,23 @@ export default function OrderDetail() {
               <Truck size={16} aria-hidden />
               {tx('شحن', 'Ship')}
             </button>
+            <button
+              className="btn"
+              onClick={createBosta}
+              disabled={!bostaReady || busy === 'bosta'}
+              aria-busy={busy === 'bosta' || undefined}
+              aria-describedby="bosta-why"
+              title={bostaReady ? undefined : !online ? tx('محتاج السيرفر', 'Needs the server') : tx('ضبط BOSTA_API_KEY على السيرفر', 'Set BOSTA_API_KEY on the server')}
+            >
+              {busy === 'bosta' ? tx('بيتعمل…', 'Creating…') : tx('إنشاء شحنة بوسطة', 'Create Bosta delivery')}
+            </button>
+            {!bostaReady && (
+              <span id="bosta-why" className="tiny faint" style={{ flexBasis: '100%' }}>
+                {!online
+                  ? tx('إنشاء الشحنة أوتوماتيك محتاج السيرفر.', 'Creating the delivery automatically needs the server.')
+                  : tx('بوسطة مش متصلة: ضبط BOSTA_API_KEY من الإعدادات ← الربط مع الخدمات.', 'Bosta is not connected: set BOSTA_API_KEY (Settings → Integrations).')}
+              </span>
+            )}
           </div>
         ),
       }

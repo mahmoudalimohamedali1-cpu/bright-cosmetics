@@ -1,9 +1,11 @@
+import { useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { GOVERNORATES } from '../../data/seed'
 import { ProductVisual } from '../../components/ProductVisual'
 import { useI18n } from '../../i18n'
 import { useStore, zoneFor } from '../../store'
 import { useTitle } from '../lib'
+import { refreshOrder, useRemote } from '../../lib/sync'
 import { Check } from 'lucide-react'
 import { Arrow, Forward, Sticker } from '../components/bits'
 
@@ -15,6 +17,13 @@ export default function OrderConfirmation() {
   const customer = useStore((s) => s.customers.find((c) => c.id === order?.customerId))
   const zones = useStore((s) => s.zones)
   const settings = useStore((s) => s.settings)
+  const online = useRemote((r) => r.online === true)
+  const myPhone = useStore((s) => s.customers.find((c) => c.id === s.me)?.phone)
+  // Back from a payment page, or a fresh browser: ask the server for the latest status.
+  const stale = !order || order.paymentStatus === 'pending'
+  useEffect(() => {
+    if (online && stale && id && myPhone) void refreshOrder(id, myPhone)
+  }, [online, stale, id, myPhone])
   useTitle(order ? tx(`طلب رقم ${order.number}`, `Order ${order.number}`) : tx('الطلب', 'Order'))
 
   if (!order) {
@@ -54,7 +63,11 @@ export default function OrderConfirmation() {
             `${settings.autoConfirmWhatsapp ? 'هتوصلك رسالة واتساب' : 'هنكلّمك'} على ${customer?.phone ?? ''} نأكد الطلب والعنوان.`,
             `${settings.autoConfirmWhatsapp ? 'You get a WhatsApp message' : 'We call you'} at ${customer?.phone ?? ''} to confirm the order and address.`,
           )
-        : tx('الدفع اتسجّل (تجريبي)، والطلب داخل التجهيز على طول.', 'Payment is recorded (demo), so the order goes straight to packing.'),
+        : order.paymentStatus === 'paid'
+        ? online
+          ? tx('الدفع وصل، والطلب داخل التجهيز على طول.', 'Payment received, so the order goes straight to packing.')
+          : tx('الدفع اتسجّل (تجريبي)، والطلب داخل التجهيز على طول.', 'Payment is recorded (demo), so the order goes straight to packing.')
+        : tx(`الدفع لسه ما اتأكدش. هنكلّمك على ${customer?.phone ?? ''} نرتّب الدفع ونأكد الطلب.`, `Payment is not confirmed yet. We contact you at ${customer?.phone ?? ''} to arrange payment and confirm the order.`),
     },
     {
       title: tx('التجهيز', 'Packing'),
@@ -165,7 +178,7 @@ export default function OrderConfirmation() {
               </div>
             )}
             <div className="sf-totals__total">
-              <dt>{cod ? tx('هتدفعي عند الاستلام', 'Pay on delivery') : tx('الإجمالي (تجريبي)', 'Total (demo)')}</dt>
+              <dt>{cod ? tx('هتدفعي عند الاستلام', 'Pay on delivery') : online ? tx('الإجمالي', 'Total') : tx('الإجمالي (تجريبي)', 'Total (demo)')}</dt>
               <dd className="tabular">{money(order.total)}</dd>
             </div>
           </dl>

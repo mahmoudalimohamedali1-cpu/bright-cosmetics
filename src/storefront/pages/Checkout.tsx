@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Banknote, CreditCard, Smartphone, Wallet } from 'lucide-react'
@@ -9,6 +9,9 @@ import { useI18n } from '../../i18n'
 import { evaluateCode, useStore, zoneFor } from '../../store'
 import { PHONE_RE, normalizePhone, useCartLines, useTitle } from '../lib'
 import { Arrow } from '../components/bits'
+import { api, ApiError } from '../../lib/api'
+import { fetchCode, loadPublic, useRemote } from '../../lib/sync'
+import { track } from '../../lib/track'
 
 type Errors = Partial<Record<'name' | 'phone' | 'gov' | 'address' | 'email', string>>
 
@@ -20,7 +23,9 @@ export default function Checkout() {
   const zones = useStore((s) => s.zones)
   const discounts = useStore((s) => s.discounts)
   const settings = useStore((s) => s.settings)
-  const placeOrder = useStore((s) => s.placeOrder)
+  const submitOrder = useStore((s) => s.submitOrder)
+  const online = useRemote((r) => r.online === true)
+  const paymob = useRemote((r) => r.paymob)
   const me = useStore((s) => s.customers.find((c) => c.id === s.me))
 
   const [name, setName] = useState(me ? me.name.ar || me.name.en : '')
@@ -34,7 +39,12 @@ export default function Checkout() {
   const [codeMsg, setCodeMsg] = useState<string | undefined>()
   const [errors, setErrors] = useState<Errors>({})
   const [placing, setPlacing] = useState(false)
+  const [serverErr, setServerErr] = useState<string | undefined>()
   const formRef = useRef<HTMLFormElement>(null)
+
+  useEffect(() => {
+    track('checkout_start')
+  }, [])
 
   const zone = zoneFor(gov || 'cai', zones)
   const evald = evaluateCode(code, subtotal, discounts)
@@ -73,9 +83,12 @@ export default function Checkout() {
     return e
   }
 
-  const applyCode = () => {
+  const applyCode = async () => {
     const c = codeInput.trim()
     if (!c) return
+    // With an API, codes are not shipped to the browser: fetch this one's rules on demand.
+    if (online) await fetchCode(c)
+    const discounts = useStore.getState().discounts
     const r = evaluateCode(c, subtotal, discounts)
     if (r.valid) {
       setCode(c.toUpperCase())
@@ -94,7 +107,7 @@ export default function Checkout() {
     }
   }
 
-  const submit = (e: FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault()
     const errs = validate()
     setErrors(errs)
@@ -103,17 +116,36 @@ export default function Checkout() {
       formRef.current?.querySelector<HTMLElement>(`[name="${first}"]`)?.focus()
       return
     }
+    if (placing) return
     setPlacing(true)
-    const order = placeOrder({
-      name: name.trim(),
-      phone: normalizePhone(phone),
-      email: email.trim() || undefined,
-      governorateId: gov,
-      address: address.trim(),
-      payment: method,
-      code,
-    })
-    navigate(`/order/${order.id}`, { replace: true })
+    setServerErr(undefined)
+    try {
+      const order = await submitOrder({
+        name: name.trim(),
+        phone: normalizePhone(phone),
+        email: email.trim() || undefined,
+        governorateId: gov,
+        address: address.trim(),
+        payment: method,
+        code,
+      })
+      track('purchase', { value: order.total })
+      // Stock changed on the server: refresh the catalogue quietly.
+      if (online) void loadPublic(true)
+      if (online && paymob && (method === 'card' || method === 'wallet')) {
+        try {
+          const r = await api<{ url: string }>('/api/payments/paymob/intention', { body: { orderId: order.id, phone: normalizePhone(phone) } })
+          window.location.assign(r.url)
+          return
+        } catch {
+          /* The order exists; the confirmation page explains payment is still pending. */
+        }
+      }
+      navigate(`/order/${order.id}`, { replace: true })
+    } catch (err) {
+      setPlacing(false)
+      setServerErr(err instanceof ApiError ? pick(err.bi) : tx('الطلب ما اتسجّلش. جرّبي تاني.', 'The order was not placed. Please try again.'))
+    }
   }
 
   const clearErr = (k: keyof Errors) => errors[k] && setErrors((x) => ({ ...x, [k]: undefined }))
@@ -125,6 +157,13 @@ export default function Checkout() {
     ) : null
   const aria = (k: keyof Errors) => ({ 'aria-invalid': !!errors[k] || undefined, 'aria-describedby': errors[k] ? `err-${k}` : undefined })
 
+  const onlineNote = (gateway: boolean) =>
+    !online
+      ? tx('تجريبي: مفيش فلوس هتتخصم.', 'Demo: no money is charged.')
+      : gateway && paymob
+      ? tx('هتدفعي في صفحة Paymob الآمنة.', 'You pay on Paymob’s secure page.')
+      : tx('هنكلّمك على واتساب نرتّب الدفع.', 'We arrange payment with you on WhatsApp.')
+
   const methods: { id: PaymentMethod; icon: ReactNode; label: string; note: string; disabled?: boolean }[] = [
     {
       id: 'cod',
@@ -135,9 +174,9 @@ export default function Checkout() {
         : tx(`الدفع عند الاستلام متاح للطلبات لحد ${money(settings.codMax)}.`, `Cash on delivery is available for orders up to ${money(settings.codMax)}.`),
       disabled: !codAllowed,
     },
-    { id: 'card', icon: <CreditCard size={20} aria-hidden="true" />, label: tx('كارت بنكي', 'Bank card'), note: tx('تجريبي: مفيش فلوس هتتخصم.', 'Demo: no money is charged.') },
-    { id: 'wallet', icon: <Wallet size={20} aria-hidden="true" />, label: tx('محفظة موبايل', 'Mobile wallet'), note: tx('تجريبي: مفيش فلوس هتتخصم.', 'Demo: no money is charged.') },
-    { id: 'instapay', icon: <Smartphone size={20} aria-hidden="true" />, label: tx('إنستاباي', 'InstaPay'), note: tx('تجريبي: مفيش فلوس هتتخصم.', 'Demo: no money is charged.') },
+    { id: 'card', icon: <CreditCard size={20} aria-hidden="true" />, label: tx('كارت بنكي', 'Bank card'), note: onlineNote(true) },
+    { id: 'wallet', icon: <Wallet size={20} aria-hidden="true" />, label: tx('محفظة موبايل', 'Mobile wallet'), note: onlineNote(true) },
+    { id: 'instapay', icon: <Smartphone size={20} aria-hidden="true" />, label: tx('إنستاباي', 'InstaPay'), note: onlineNote(false) },
   ]
 
   const summary = (px: string) => (
@@ -322,10 +361,14 @@ export default function Checkout() {
             </div>
             {method !== 'cod' && (
               <p className="sf-note">
-                {tx(
-                  'الدفع الإلكتروني لسه في وضع تجريبي: مش هنطلب بيانات كارت ومفيش فلوس هتتخصم. الطلب هيتسجّل كمدفوع عشان تقدري تتابعيه.',
-                  'Online payment is in demo mode: we will not ask for card details and no money is charged. The order is recorded as paid so you can follow it.',
-                )}
+                {!online
+                  ? tx(
+                      'الدفع الإلكتروني لسه في وضع تجريبي: مش هنطلب بيانات كارت ومفيش فلوس هتتخصم. الطلب هيتسجّل كمدفوع عشان تقدري تتابعيه.',
+                      'Online payment is in demo mode: we will not ask for card details and no money is charged. The order is recorded as paid so you can follow it.',
+                    )
+                  : paymob && method !== 'instapay'
+                  ? tx('بعد ما تطلبي هتتحوّلي لصفحة دفع Paymob تكتبي فيها بيانات الكارت أو المحفظة. إحنا مش بنشوف بيانات الكارت.', 'After you place the order you go to Paymob’s payment page to enter your card or wallet. We never see your card details.')
+                  : tx('الدفع الإلكتروني لسه مش متوصّل: الطلب هيتسجّل من غير دفع، وهنكلّمك على واتساب نرتّب الدفع قبل الشحن.', 'Online payment is not connected yet: the order is recorded unpaid and we arrange payment with you on WhatsApp before shipping.')}
               </p>
             )}
           </fieldset>
@@ -335,8 +378,19 @@ export default function Checkout() {
               <span>{tx('الإجمالي', 'Total')}</span>
               <strong className="tabular">{money(total)}</strong>
             </div>
-            <button type="submit" className="sf-btn sf-btn--lemon sf-btn--block sf-btn--xl">
-              {method === 'cod' ? tx('اطلبي دلوقتي', 'Place order') : tx('اطلبي دلوقتي (تجريبي)', 'Place demo order')}
+            {serverErr && (
+              <p className="sf-field__err" role="alert">
+                {serverErr}
+              </p>
+            )}
+            <button type="submit" className="sf-btn sf-btn--lemon sf-btn--block sf-btn--xl" disabled={placing} aria-busy={placing || undefined}>
+              {placing
+                ? tx('بنسجّل طلبك…', 'Placing your order…')
+                : method === 'cod' || online
+                ? online && paymob && (method === 'card' || method === 'wallet')
+                  ? tx('اطلبي وادفعي', 'Order and pay')
+                  : tx('اطلبي دلوقتي', 'Place order')
+                : tx('اطلبي دلوقتي (تجريبي)', 'Place demo order')}
               <Arrow size={20} />
             </button>
             <p className="sf-form__fine">

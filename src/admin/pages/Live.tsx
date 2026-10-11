@@ -3,13 +3,17 @@ import { Link } from 'react-router-dom'
 import { Info } from 'lucide-react'
 import { useI18n } from '../../i18n'
 import { useStore } from '../../store'
-import { PageHeader, Pane, PaymentBadge, Thumb } from '../ui'
+import { PageHeader, Pane, PaymentBadge, Thumb, useAdmin } from '../ui'
+import RealLive from './LiveReal'
 import { isCounted, productSales } from '../../lib/metrics'
 import { DAY, rng } from '../../lib/rand'
 import { BarList } from '../parts/core/ui'
 import { gov } from '../parts/core/lib'
 
 /*
+  Signed in to the API, Live view shows real storefront events (LiveReal.tsx).
+  In browser-only demo mode it falls back to this labelled simulation.
+
   A simulation of live storefront traffic for the demo. Visitor counts, pages,
   carts and the funnel are generated from a seeded random walk, shaped by the
   hour of day and weighted by the store's real sales mix. Orders shown are real.
@@ -68,6 +72,11 @@ const SOURCES = [
 ]
 
 export default function Live() {
+  const { online } = useAdmin()
+  return online ? <RealLive /> : <SimulatedLive />
+}
+
+function SimulatedLive() {
   const { tx, pick, money, num, pct, relTime, date } = useI18n()
   const orders = useStore((s) => s.orders)
   const products = useStore((s) => s.products)
