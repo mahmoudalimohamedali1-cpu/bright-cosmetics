@@ -185,7 +185,7 @@ export default function Checkout() {
         {lines.map(({ product: p, qty }) => (
           <li key={p.id} className="sf-summary__line">
             <span className="sf-summary__pane sf-lit" aria-hidden="true">
-              <ProductVisual visual={p.visual} brand={p.brand} bare />
+              <ProductVisual image={p.image} visual={p.visual} brand={p.brand} bare />
               <span className="sf-summary__qty">{num(qty)}</span>
             </span>
             <span className="sf-summary__name">

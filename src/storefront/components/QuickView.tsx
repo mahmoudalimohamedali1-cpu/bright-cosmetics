@@ -42,7 +42,7 @@ function QuickBody({ id }: { id: string }) {
   return (
     <div className="sf-qv">
       <div className="sf-qv__pane sf-lit">
-        <ProductVisual visual={p.visual} brand={p.brand} size={p.size} />
+        <ProductVisual image={p.image} visual={p.visual} brand={p.brand} size={p.size} />
       </div>
       <div className="sf-qv__info">
         <p className="sf-card__meta">

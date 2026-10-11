@@ -30,7 +30,7 @@ export function ProductCard({ p }: { p: Product }) {
     <article className="sf-card" data-soldout={soldOut || undefined}>
       <div className="sf-card__tile">
         <span className="sf-card__visual" aria-hidden="true">
-          <ProductVisual visual={p.visual} brand={p.brand} size={p.size} />
+          <ProductVisual image={p.image} visual={p.visual} brand={p.brand} size={p.size} />
         </span>
         {!soldOut && (sale > 0 || best) && (
           <Sticker className="sf-card__sticker" size={68}>

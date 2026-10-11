@@ -94,7 +94,7 @@ export function CartDrawer() {
               return (
                 <li key={p.id} className="sf-line">
                   <Link to={`/p/${p.slug}`} className="sf-line__pane sf-lit" onClick={close} tabIndex={-1} aria-hidden="true">
-                    <ProductVisual visual={p.visual} brand={p.brand} bare />
+                    <ProductVisual image={p.image} visual={p.visual} brand={p.brand} bare />
                   </Link>
                   <div className="sf-line__info">
                     <div className="sf-line__top">

@@ -115,7 +115,7 @@ export default function Shop() {
       if (lists.skin.length && !lists.skin.some((s) => p.skinTypes.includes(s as SkinType))) return false
       if (lists.concern.length && !lists.concern.some((c) => p.concerns.includes(c as Concern))) return false
       if (lists.origin.length && !lists.origin.includes(p.origin)) return false
-      if (lists.step.length && !(lists.step.includes(String(p.routineStep)) && p.category !== 'lip' && p.category !== 'makeup')) return false
+      if (lists.step.length && !(lists.step.includes(String(p.routineStep)) && p.category !== 'lip' && p.category !== 'makeup' && p.category !== 'hair')) return false
       if (price && (p.price < price.min || p.price >= price.max)) return false
       if (stockOnly && stockOf(p) === 0) return false
       return true

@@ -190,7 +190,7 @@ export function OrderStatusBadge({ s }: { s: OrderStatus }) {
 export function Thumb({ product, size = 'md' }: { product: Product; size?: 'md' | 'lg' }) {
   return (
     <span className={`thumb ${size === 'lg' ? 'thumb--lg' : ''}`}>
-      <ProductVisual visual={product.visual} brand={product.brand} bare />
+      <ProductVisual image={product.image} visual={product.visual} brand={product.brand} bare />
     </span>
   )
 }

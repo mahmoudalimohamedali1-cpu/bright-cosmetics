@@ -15,12 +15,26 @@ type Props = {
   /** Hide the label text (tiny thumbnails) */
   bare?: boolean
   title?: string
+  /** Real packshot; when set it replaces the drawing */
+  image?: string
 }
 
 const W = 200
 const H = 260
 
-export function ProductVisual({ visual, brand, size, className, bare, title }: Props) {
+export function ProductVisual({ visual, brand, size, className, bare, title, image }: Props) {
+  if (image)
+    return (
+      <img
+        src={image}
+        alt={title ?? ''}
+        className={className}
+        loading="lazy"
+        decoding="async"
+        draggable={false}
+        style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: '50% 100%', display: 'block' }}
+      />
+    )
   const { shape, body, cap, label, text } = visual
   const g = geometry(shape)
   return (

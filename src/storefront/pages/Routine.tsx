@@ -142,7 +142,7 @@ export default function Routine() {
                   )}
                 </p>
                 <span className="sf-plan__pane" aria-hidden="true">
-                  <ProductVisual visual={p.visual} brand={p.brand} size={p.size} />
+                  <ProductVisual image={p.image} visual={p.visual} brand={p.brand} size={p.size} />
                 </span>
                 <div className="sf-card__line">
                   <Link to={`/p/${p.slug}`} className="sf-plan__name">

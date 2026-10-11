@@ -310,7 +310,7 @@ export default function ProductEditor() {
   const card = (l: 'ar' | 'en') => (
     <div className="core-card" dir={l === 'ar' ? 'rtl' : 'ltr'} lang={l}>
       <div className="core-card__img">
-        <ProductVisual visual={d.visual} brand={d.brand || 'Brand'} size={d.size} />
+        <ProductVisual image={d.image} visual={d.visual} brand={d.brand || 'Brand'} size={d.size} />
       </div>
       <div className="core-card__body">
         <div className="core-card__brand">{d.brand || (l === 'ar' ? 'البراند' : 'Brand')}</div>
@@ -619,7 +619,7 @@ export default function ProductEditor() {
                 ))}
               </div>
               <div className="core-visual" aria-label={tx('معاينة العبوة', 'Packaging preview')}>
-                <ProductVisual visual={d.visual} brand={d.brand || 'Brand'} size={d.size} title={d.name.en || 'Preview'} />
+                <ProductVisual image={d.image} visual={d.visual} brand={d.brand || 'Brand'} size={d.size} title={d.name.en || 'Preview'} />
               </div>
             </div>,
             tx('رسم مؤقت لحد ما صور المنتج الحقيقية تجهز', 'A drawn stand-in until real product photos exist'),

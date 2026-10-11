@@ -44,10 +44,10 @@ export function SpinBand({ product }: { product: Product }) {
         <span className="v-spin__float">
           <span className="v-spin__turn">
             <span className="v-spin__face">
-              <ProductVisual visual={product.visual} brand={product.brand} />
+              <ProductVisual image={product.image} visual={product.visual} brand={product.brand} />
             </span>
             <span className="v-spin__face v-spin__face--back">
-              <ProductVisual visual={product.visual} brand={product.brand} />
+              <ProductVisual image={product.image} visual={product.visual} brand={product.brand} />
             </span>
           </span>
         </span>

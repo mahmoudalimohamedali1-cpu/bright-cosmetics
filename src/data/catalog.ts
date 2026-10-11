@@ -305,6 +305,8 @@ const CAT_DESC: Record<Category, [string, string]> = {
   sunscreen: ['Apply two finger-lengths 15 minutes before sun. Reapply every 2 hours outdoors.', 'حطّي طول صباعين قبل الشمس بربع ساعة، وجدّدي كل ساعتين برّه.'],
   mask: ['Use 2–3 times a week on cleansed, toned skin.', 'استخدميه 2–3 مرات في الأسبوع على بشرة نظيفة بعد التونر.'],
   makeup: ['Press lightly from the centre of the face outward. Build in thin layers.', 'اضغطي بخفة من نص الوش لبرّه، وابني التغطية بطبقات رفيعة.'],
+  eye: ['Tap a rice-grain amount around the eye area with your ring finger, morning and night.', 'طبطبي كمية قد حبة الرز حوالين العين بصباعك البنصر، الصبح وبالليل.'],
+  hair: ['Use on wet hair, massage into scalp and lengths, leave a few minutes, then rinse well.', 'استخدميه على شعر مبلول، دلّكي فروة الراس والأطراف، سيبيه دقايق واشطفي كويس.'],
   lip: ['Apply a generous layer before bed or whenever lips feel dry.', 'حطّي طبقة كويسة قبل النوم أو كل ما شفايفك تنشف.'],
 }
 
@@ -393,6 +395,8 @@ export const CATEGORY_LABEL: Record<Category, { ar: string; en: string }> = {
   mask: { ar: 'ماسكات', en: 'Masks' },
   makeup: { ar: 'مكياج', en: 'Makeup' },
   lip: { ar: 'شفايف', en: 'Lips' },
+  eye: { ar: 'العناية بالعين', en: 'Eye care' },
+  hair: { ar: 'العناية بالشعر', en: 'Hair care' },
 }
 
 export const SKIN_LABEL: Record<SkinType, { ar: string; en: string }> = {

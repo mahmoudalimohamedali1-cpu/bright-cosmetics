@@ -7,7 +7,7 @@ import type { Batch, Category, Origin, Product } from '../data/types'
 
 export const IMPORTED_ORIGINS: Origin[] = ['FR', 'US', 'JP', 'CA', 'DE']
 export const ALL_ORIGINS: Origin[] = ['KR', ...IMPORTED_ORIGINS]
-export const CATEGORIES: Category[] = ['cleanser', 'toner', 'essence', 'serum', 'mask', 'moisturizer', 'sunscreen', 'makeup', 'lip']
+export const CATEGORIES: Category[] = ['cleanser', 'toner', 'essence', 'serum', 'eye', 'mask', 'moisturizer', 'sunscreen', 'hair', 'makeup', 'lip']
 
 export function useActiveProducts() {
   const products = useStore((s) => s.products)
@@ -59,7 +59,7 @@ export function useTitle(title: string | undefined) {
 
 /** Products in a routine step that suit the given category rule. Step 5 and 6 exclude lips/makeup. */
 export function stepCategoryOk(p: Product) {
-  return p.category !== 'lip' && p.category !== 'makeup'
+  return p.category !== 'lip' && p.category !== 'makeup' && p.category !== 'hair'
 }
 
 export function useCartLines() {

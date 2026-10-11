@@ -12,6 +12,8 @@ export type Category =
   | 'mask'
   | 'makeup'
   | 'lip'
+  | 'eye'
+  | 'hair'
 
 export type SkinType = 'oily' | 'dry' | 'combination' | 'sensitive' | 'normal'
 export type Concern = 'acne' | 'hydration' | 'brightening' | 'aging' | 'pores' | 'redness' | 'sun' | 'barrier'
@@ -64,6 +66,10 @@ export type Product = {
   batches: Batch[]
   lowStockAt: number
   visual: Visual
+  /** Real packshot (transparent WebP under /public/products). Falls back to the drawn visual. */
+  image?: string
+  /** Extra images for the product page gallery */
+  gallery?: string[]
   rating: number
   reviewCount: number
   tags: string[]

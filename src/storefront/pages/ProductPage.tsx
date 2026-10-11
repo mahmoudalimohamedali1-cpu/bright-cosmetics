@@ -139,13 +139,13 @@ function ProductView({ id }: { id: string }) {
                   <span className="sf-pdp__tag">{tx('صورة لايف ستايل', 'Lifestyle')}</span>
                 </>
               ) : (
-                <ProductVisual visual={p.visual} brand={p.brand} size={p.size} title={`${p.brand} ${name}`} />
+                <ProductVisual image={p.image} visual={p.visual} brand={p.brand} size={p.size} title={`${p.brand} ${name}`} />
               )}
             </div>
             <ul className="sf-thumbs" aria-label={tx('صور المنتج', 'Product images')}>
               <li>
                 <button type="button" className="sf-thumb sf-lit" aria-pressed={view === 0} onClick={() => setView(0)} aria-label={tx('صورة المنتج', 'Product image')}>
-                  <ProductVisual visual={p.visual} brand={p.brand} bare />
+                  <ProductVisual image={p.image} visual={p.visual} brand={p.brand} bare />
                 </button>
               </li>
               {shots.map((ph, i) => (
