@@ -38,6 +38,8 @@ export function Sticker({ children, size = 72, className, tone = 'lilac' }: { ch
 
 export function Stars({ rating, count, size = 14 }: { rating: number; count?: number; size?: number }) {
   const { tx, num } = useI18n()
+  // A product with no reviews shows no stars rather than an empty rating
+  if (count !== undefined && count <= 0) return null
   const label =
     count === undefined
       ? tx(`التقييم ${num(rating)} من ٥`, `Rated ${num(rating)} out of 5`)

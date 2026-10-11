@@ -86,8 +86,9 @@ export function buildCatalog(): Product[] {
       visual: FALLBACK_VISUAL[s.category] ?? FALLBACK_VISUAL.default,
       image: s.image,
       gallery: s.gallery,
-      rating: Math.round((4.3 + r() * 0.65) * 10) / 10,
-      reviewCount: 12 + Math.floor(r() * 420),
+      // Real ratings come from customer reviews; nothing is invented
+      rating: 0,
+      reviewCount: 0,
       tags: [...(best ? ['bestseller'] : []), ...(s.priceConfirmed ? [] : ['price-to-confirm'])],
       status: 'active',
       createdAt: daysAgoISO(30 + Math.floor(r() * 300)),

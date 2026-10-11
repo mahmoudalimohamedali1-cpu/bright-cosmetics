@@ -243,41 +243,8 @@ export function buildSeed(): Db {
     }
   }
 
-  // Reviews
-  const titlesAr = ['فرق معايا من أول أسبوع', 'أصلي 100%', 'ريحته هادية وملمسه حلو', 'بشرتي ارتاحت', 'هشتريه تاني أكيد', 'كويس بس محتاج وقت']
-  const titlesEn = ['Worked from week one', 'Genuine, checked the lot', 'Light and calm', 'My skin finally settled', 'Repurchasing', 'Good, give it time']
-  const bodiesAr = [
-    'استخدمته شهر على بشرتي المختلطة والحبوب قلّت بشكل واضح. التغليف وصل سليم ورقم التشغيلة مطابق.',
-    'التوصيل كان سريع والدفع عند الاستلام سهّل الموضوع. المنتج نفس اللي كنت بجيبه من كوريا.',
-    'ملمسه خفيف ومش بيسيب لزوجة، وبيمشي تحت الواقي من غير ما يكوّر.',
-    'كنت خايفة من التقليد بس الكود اتشيك على موقع البراند. هكمل عليه.',
-  ]
-  const bodiesEn = [
-    'Used it for a month on combination skin and breakouts calmed down a lot. Arrived sealed and the lot matched.',
-    'Fast delivery, paid cash on delivery. Same product I used to bring back from abroad.',
-    'Light texture, no stickiness, layers under sunscreen without pilling.',
-  ]
+  // Reviews start empty: they come from customers through the product page
   const reviews: Review[] = []
-  for (let i = 0; i < 140; i++) {
-    const o = orders[Math.floor(r() * orders.length)]
-    const line = o.lines[0]
-    const cust = customers.find((c) => c.id === o.customerId)!
-    const ar = r() < 0.7
-    const rating = r() < 0.75 ? 5 : r() < 0.7 ? 4 : r() < 0.6 ? 3 : 2
-    reviews.push({
-      id: `rv${i + 1}`,
-      productId: line.productId,
-      customerId: cust.id,
-      rating,
-      title: ar ? pickOne(r, titlesAr) : pickOne(r, titlesEn),
-      body: ar ? pickOne(r, bodiesAr) : pickOne(r, bodiesEn),
-      lang: ar ? 'ar' : 'en',
-      createdAt: new Date(new Date(o.createdAt).getTime() + 5 * DAY).toISOString(),
-      status: i < 9 ? 'pending' : 'published',
-      skinType: cust.skinType,
-      verified: true,
-    })
-  }
 
   const discounts: Discount[] = [
     { id: 'd1', code: 'WELCOME10', title: { ar: 'خصم أول طلب 10%', en: '10% off first order' }, kind: 'percent', value: 10, minSubtotal: 0, used: 412, startsAt: daysAgoISO(200), active: true, automatic: false, appliesTo: 'all' },

@@ -125,11 +125,10 @@ export function Footer() {
       <div className="v-wrap v-foot__legal">
         <p id="v-ship">
           {tx(
-            `الدفع عند الاستلام في كل المحافظات. التوصيل في ${cairo.name.ar} خلال ${cairo.etaDays[0]}–${cairo.etaDays[1]} يوم، ومجاني فوق ${money(cairo.freeOver)}. الكروت والمحافظ وإنستاباي في وضع تجريبي.`,
-            `Cash on delivery in every governorate. ${cairo.name.en} in ${cairo.etaDays[0]}–${cairo.etaDays[1]} days, free over ${money(cairo.freeOver)}. Cards, wallets and InstaPay are in demo mode.`,
+            `الدفع عند الاستلام في كل المحافظات. التوصيل في ${cairo.name.ar} خلال ${cairo.etaDays[0]}–${cairo.etaDays[1]} يوم، ومجاني فوق ${money(cairo.freeOver)}.`,
+            `Cash on delivery in every governorate. ${cairo.name.en} in ${cairo.etaDays[0]}–${cairo.etaDays[1]} days, free over ${money(cairo.freeOver)}.`,
           )}
         </p>
-        <p>{tx('الأسعار والمخزون والتقييمات بيانات تجريبية.', 'Prices, stock and reviews are sample data.')}</p>
         <p>
           <bdi>© 2026 Bright</bdi> · <a href={`mailto:${settings.email}`}>{settings.email}</a> · <span dir="ltr">{settings.whatsapp}</span>
         </p>
