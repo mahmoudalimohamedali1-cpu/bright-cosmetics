@@ -31,3 +31,7 @@ server/data/
 .env
 .env.*
 !.env.example
+
+# Owner screenshots dropped in the project root
+/*.PNG
+/*.png
