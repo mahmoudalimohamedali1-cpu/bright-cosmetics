@@ -1,4 +1,5 @@
-import { ChevronLeft, ChevronRight, Minus, Plus, Star } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { ArrowRight, ChevronLeft, ChevronRight, Minus, Plus, Star } from 'lucide-react'
 import { useI18n } from '../../i18n'
 
 /* Small shared storefront pieces. */
@@ -9,6 +10,30 @@ export function Forward({ size = 16 }: { size?: number }) {
 }
 export function Back({ size = 16 }: { size?: number }) {
   return <ChevronLeft size={size} className="sf-flip" aria-hidden="true" />
+}
+/** The long arrow that rides on pill buttons; points forward in reading direction. */
+export function Arrow({ size = 18 }: { size?: number }) {
+  return <ArrowRight size={size} strokeWidth={1.75} className="sf-flip sf-arrow" aria-hidden="true" />
+}
+
+/* A sunburst outline: 18 soft rays around a circle, drawn once. */
+const RAYS = 18
+const BURST = Array.from({ length: RAYS * 2 }, (_, i) => {
+  const r = i % 2 ? 41 : 49
+  const a = (Math.PI * i) / RAYS - Math.PI / 2
+  return `${(50 + r * Math.cos(a)).toFixed(2)},${(50 + r * Math.sin(a)).toFixed(2)}`
+}).join(' ')
+
+/** Lilac sunburst sticker with a short label inside (bestseller, sale, thank-you…). */
+export function Sticker({ children, size = 72, className, tone = 'lilac' }: { children?: ReactNode; size?: number; className?: string; tone?: 'lilac' | 'lemon' | 'cream' }) {
+  return (
+    <span className={`sf-sticker sf-sticker--${tone}${className ? ` ${className}` : ''}`} style={{ inlineSize: size, blockSize: size }}>
+      <svg className="sf-sticker__burst" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+        <polygon points={BURST} />
+      </svg>
+      {children && <span className="sf-sticker__t">{children}</span>}
+    </span>
+  )
 }
 
 export function Stars({ rating, count, size = 14 }: { rating: number; count?: number; size?: number }) {

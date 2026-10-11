@@ -25,7 +25,6 @@ import {
 } from 'lucide-react'
 import { useI18n } from '../i18n'
 import { useStore } from '../store'
-import { LatticePattern, NuriMark } from '../components/Lattice'
 import { AdminContext, ToastHost, useToasts } from './ui'
 import { expiringBatches, stock } from '../lib/metrics'
 import './admin.css'
@@ -156,7 +155,6 @@ export default function AdminApp() {
         <div className="adm-shell">
           <aside className="adm-rail" data-open={railOpen} aria-label={tx('القائمة الرئيسية', 'Main menu')}>
             <Link to="/admin" className="adm-brand">
-              <NuriMark size={32} frame="var(--paper)" pane="var(--lacquer-900)" light="var(--brass)" />
               <span>
                 <span className="adm-brand__name">{tx('نوري', 'NURI')}</span>
                 <br />
@@ -185,7 +183,6 @@ export default function AdminApp() {
                 {tx('افتح المتجر', 'View store')}
               </Link>
             </div>
-            <LatticePattern className="adm-rail__lattice" cell={48} width={1.5} />
           </aside>
           {railOpen && <div className="drawer-scrim" style={{ zIndex: 55 }} onClick={() => setRailOpen(false)} />}
 

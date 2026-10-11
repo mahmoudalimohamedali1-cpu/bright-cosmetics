@@ -1,42 +1,52 @@
-/* NURI — light through a lattice.
-   Lacquer frame, lit celadon-white panes, one brass light. Flat inks. */
+/* NURI — joyful, loud, confident. Plum ink on cream, lilac brand colour,
+   one lemon call to action. Chunky soft serif, typewriter small print. */
 
 :root {
-  /* Lacquer (ottchil) — the frame */
-  --lacquer-950: #1f0907;
-  --lacquer-900: #2a0d0c;
-  --lacquer-800: #3b1412;
-  --lacquer-700: #561d19;
-  --lacquer-600: #74291f;
-  --lacquer-300: #c99a92;
-  --lacquer-100: #f1e4e1;
+  /* Plum — the ink and the frame (deep aubergine) */
+  --lacquer-950: #12001a;
+  --lacquer-900: #1f0229;
+  --lacquer-800: #2c0a3a;
+  --lacquer-700: #43195a;
+  --lacquer-600: #5a2a75;
+  --lacquer-300: #b9a3c4;
+  --lacquer-100: #efe3f3;
+  --plum: #1f0229;
 
-  /* Paper (hanji) — the lit panes, cool celadon-white, never cream */
-  --paper-lit: #f8f9f5;
-  --paper: #eef1ea;
-  --paper-2: #e3e9e1;
-  --paper-3: #d3dcd2;
+  /* Cream — the ground */
+  --paper-lit: #fff8f2;
+  --paper: #fff1e7;
+  --paper-2: #f8e4d6;
+  --paper-3: #ebd3c3;
+  --cream: #fff1e7;
 
   /* Ink */
-  --ink: #221614;
-  --ink-2: #57483f;
-  --ink-3: #7c6e66;
-  --ink-on-lacquer: #f6efe8;
-  --ink-on-lacquer-2: #d9c4bd;
+  --ink: #1f0229;
+  --ink-2: #4a3352;
+  --ink-3: #7a6680;
+  --ink-on-lacquer: #fff1e7;
+  --ink-on-lacquer-2: #dccbe2;
 
-  /* Celadon — the quiet second ink */
-  --celadon-700: #335646;
-  --celadon-600: #4a7663;
-  --celadon-400: #8db3a0;
-  --celadon-200: #cfe0d6;
-  --celadon-100: #e4efe8;
+  /* Lilac — the brand colour */
+  --lilac: #db98f9;
+  --lilac-700: #7a3aa0;
+  --lilac-600: #9b55c4;
+  --lilac-300: #ecc6fb;
+  --lilac-100: #f8eafe;
 
-  /* Brass — the single live light */
-  --brass-700: #86601c;
-  --brass-600: #a97a28;
-  --brass: #c9973f;
-  --brass-300: #e4c487;
-  --brass-100: #f6ead0;
+  /* Celadon — kept as the calm "fits your skin / in stock" tone */
+  --celadon-700: #2f6b4f;
+  --celadon-600: #3f8a5f;
+  --celadon-400: #8cc4a2;
+  --celadon-200: #cfe8d8;
+  --celadon-100: #e6f4ea;
+
+  /* Lemon — the one call to action ("brass" kept as the token name) */
+  --lemon: #fffc54;
+  --brass-700: #6d2f91;
+  --brass-600: #7a3aa0;
+  --brass: #fffc54;
+  --brass-300: #fffb9e;
+  --brass-100: #fffde0;
 
   /* Status (admin) */
   --ok: #3f7a5f;
@@ -49,8 +59,11 @@
   --info-bg: #e0eaf2;
 
   /* Type */
-  --font-display: "Reem Kufi", "Readex Pro", system-ui, sans-serif;
+  /* Chunky soft serif display; Lalezar carries Arabic at the same weight */
+  --font-display: "Fraunces", "Lalezar", Georgia, serif;
   --font-text: "Readex Pro", system-ui, "Segoe UI", Tahoma, sans-serif;
+  /* Small print in a typewriter mono (Latin); Arabic falls back to Readex */
+  --font-mono: "Space Mono", "Readex Pro", ui-monospace, monospace;
 
   --step--2: 0.75rem;
   --step--1: 0.8125rem;
@@ -127,7 +140,8 @@ body {
 
 h1, h2, h3, h4 {
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 700;
+  font-variation-settings: "SOFT" 100, "WONK" 0, "opsz" 144;
   line-height: 1.15;
   margin: 0;
   text-wrap: balance;
@@ -160,8 +174,8 @@ button {
 }
 
 ::selection {
-  background: var(--brass-300);
-  color: var(--lacquer-900);
+  background: var(--lilac);
+  color: var(--plum);
 }
 
 input, textarea {
@@ -169,7 +183,7 @@ input, textarea {
 }
 
 :focus-visible {
-  outline: 2px solid var(--brass);
+  outline: 2px solid var(--lilac-700);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -222,9 +236,8 @@ td,
   }
 }
 
-/* Reem Kufi's Latin word space is tight at display sizes */
-[dir="ltr"] h1,
-[dir="ltr"] h2,
-[dir="ltr"] h3 {
-  word-spacing: 0.08em;
+/* Lalezar ships one weight; never fake-bold it */
+[dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3, [dir="rtl"] h4 {
+  font-weight: 400;
+  line-height: 1.25;
 }

@@ -7,7 +7,7 @@ import { useI18n } from '../../i18n'
 import { stockOf, useProduct, useStore } from '../../store'
 import { fefoBatch, useUi } from '../lib'
 import { Door } from './Door'
-import { Forward, Price, Stars, Stepper } from './bits'
+import { Arrow, Forward, Price, Stars, Stepper } from './bits'
 
 /** Quick view: a sliding door with the essentials and a direct add. */
 export function QuickView() {
@@ -45,20 +45,22 @@ function QuickBody({ id }: { id: string }) {
         <ProductVisual visual={p.visual} brand={p.brand} size={p.size} />
       </div>
       <div className="sf-qv__info">
-        <p className="sf-card__brand"><bdi>{p.brand}</bdi></p>
+        <p className="sf-card__meta">
+          <bdi dir="ltr">{p.brand} · {p.size}</bdi>
+        </p>
         <h3 className="sf-qv__name">{name}</h3>
         <Stars rating={p.rating} count={p.reviewCount} />
         <Price price={p.price} compareAt={p.compareAt} big />
-        <p className="sf-muted">{pick(p.short)}</p>
+        <p className="sf-qv__short">{pick(p.short)}</p>
         <ul className="sf-chips" aria-label={tx('مناسب لبشرة', 'Suits skin types')}>
           {p.skinTypes.map((s) => (
-            <li key={s} className="sf-chip">
+            <li key={s} className="sf-chip sf-chip--fit">
               {pick(SKIN_LABEL[s])}
             </li>
           ))}
         </ul>
         {lot && (
-          <p className="sf-small">
+          <p className="sf-lotline">
             {tx('العبوة اللي هتوصلك من تشغيلة', 'Your unit comes from lot')} <span className="sf-mono">{lot.lot}</span>
             {tx('، صالحة لحد ', ', good until ')}
             {date(lot.expiry, { month: 'long', year: 'numeric' })}
@@ -69,7 +71,7 @@ function QuickBody({ id }: { id: string }) {
             <Stepper value={Math.min(qty, room)} onChange={setQty} max={room} label={tx('الكمية', 'Quantity')} />
             <button
               type="button"
-              className="sf-btn sf-btn--brass"
+              className="sf-btn sf-btn--lemon sf-btn--grow"
               data-autofocus
               onClick={() => {
                 setQuickView(undefined)
@@ -77,6 +79,7 @@ function QuickBody({ id }: { id: string }) {
               }}
             >
               {tx('أضيفي للسلة', 'Add to bag')}
+              <Arrow />
             </button>
           </div>
         ) : (

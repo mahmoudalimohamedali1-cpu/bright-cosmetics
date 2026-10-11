@@ -1,13 +1,14 @@
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { SlidersHorizontal, X } from 'lucide-react'
+import { ChevronDown, SlidersHorizontal, X } from 'lucide-react'
 import type { Category, Concern, Origin, Product, SkinType } from '../../data/types'
 import { CATEGORY_LABEL, CONCERN_LABEL, SKIN_LABEL, STEP_LABEL, originName } from '../../data/catalog'
 import { useI18n } from '../../i18n'
 import { stockOf } from '../../store'
 import { Door } from '../components/Door'
 import { ProductPanes } from '../components/ProductCard'
+import { Arrow, Sticker } from '../components/bits'
 import { ALL_ORIGINS, CATEGORIES, IMPORTED_ORIGINS, brandSlug, useActiveProducts, useBrands, useTitle } from '../lib'
 
 const SKINS: SkinType[] = ['oily', 'dry', 'combination', 'sensitive', 'normal']
@@ -207,7 +208,7 @@ export default function Shop() {
       </FilterGroup>
       <FilterGroup legend={tx('السعر', 'Price')}>
         {PRICES.map((p) => (
-          <label key={p.id} className="sf-check">
+          <label key={p.id} className="sf-pick">
             <input type="radio" name={`${prefix}-price`} checked={price?.id === p.id} onChange={() => commit({}, { price: p.id })} />
             <span>{priceLabel(p.id)}</span>
           </label>
@@ -230,31 +231,42 @@ export default function Shop() {
   )
 
   return (
-    <div className="sf-shop sf-wrap">
-      <nav className="sf-crumbs" aria-label={tx('مسار الصفحة', 'Breadcrumb')}>
-        <Link to="/">{tx('الرئيسية', 'Home')}</Link>
-        <span aria-hidden="true">/</span>
-        {title !== tx('كل المنتجات', 'All products') ? <Link to="/shop">{tx('المتجر', 'Shop')}</Link> : <span aria-current="page">{tx('المتجر', 'Shop')}</span>}
-      </nav>
-      <header className="sf-shop__head">
-        <h1 className="sf-h1">{title}</h1>
-        <p className="sf-muted" role="status" aria-live="polite">
-          {tx(`${num(results.length)} منتج`, `${num(results.length)} ${results.length === 1 ? 'product' : 'products'}`)}
-        </p>
-      </header>
+    <div className="sf-shop">
+      <div className="sf-wrap">
+        <nav className="sf-crumbs" aria-label={tx('مسار الصفحة', 'Breadcrumb')}>
+          <Link to="/">{tx('الرئيسية', 'Home')}</Link>
+          <span aria-hidden="true">/</span>
+          {title !== tx('كل المنتجات', 'All products') ? <Link to="/shop">{tx('المتجر', 'Shop')}</Link> : <span aria-current="page">{tx('المتجر', 'Shop')}</span>}
+        </nav>
+        <header className="sf-pagehead">
+          <h1 className="sf-display">{title}</h1>
+        </header>
 
-      <div className="sf-shop__layout">
-        <aside className="sf-shop__rail sf-only-desktop" aria-label={tx('الفلاتر', 'Filters')}>
-          {rail('desk')}
-        </aside>
-        <div className="sf-shop__main">
-          <div className="sf-toolbar">
-            <button type="button" className="sf-btn sf-btn--quiet sf-only-mobile" onClick={() => setFiltersOpen(true)}>
-              <SlidersHorizontal size={16} aria-hidden="true" />
+        <div className="sf-filterbar">
+          <ul className="sf-quickcats" aria-label={tx('الأقسام', 'Categories')}>
+            <li>
+              <button type="button" className="sf-pill" aria-pressed={lists.cat.length === 0} onClick={() => commit({ cat: [] })}>
+                {tx('الكل', 'All')}
+              </button>
+            </li>
+            {CATEGORIES.map((c) => (
+              <li key={c}>
+                <button type="button" className="sf-pill" aria-pressed={lists.cat.includes(c)} onClick={() => toggle('cat', c)}>
+                  {pick(CATEGORY_LABEL[c])}
+                </button>
+              </li>
+            ))}
+          </ul>
+          <div className="sf-filterbar__end">
+            <p className="sf-count" role="status" aria-live="polite">
+              {tx(`${num(results.length)} منتج`, `${num(results.length)} ${results.length === 1 ? 'item' : 'items'}`)}
+            </p>
+            <button type="button" className="sf-pill sf-pill--tool" onClick={() => setFiltersOpen(true)} aria-haspopup="dialog">
+              <SlidersHorizontal size={15} aria-hidden="true" />
               {chips.length ? tx(`الفلاتر (${num(chips.length)})`, `Filters (${num(chips.length)})`) : tx('الفلاتر', 'Filters')}
             </button>
             <label className="sf-sort">
-              <span>{tx('رتّبي حسب', 'Sort by')}</span>
+              <span className="sr-only">{tx('رتّبي حسب', 'Sort by')}</span>
               <select value={sort} onChange={(e) => commit({}, { sort: e.target.value === 'featured' ? null : e.target.value })}>
                 {SORTS.map((s) => (
                   <option key={s} value={s}>
@@ -262,30 +274,38 @@ export default function Shop() {
                   </option>
                 ))}
               </select>
+              <ChevronDown size={15} aria-hidden="true" />
             </label>
           </div>
-          {chips.length > 0 && (
-            <ul className="sf-activechips" aria-label={tx('الفلاتر المختارة', 'Active filters')}>
-              {chips.map((c) => (
-                <li key={c.key}>
-                  <button type="button" className="sf-chip sf-chip--on" onClick={c.remove} aria-label={tx(`شيلي فلتر ${c.label}`, `Remove filter ${c.label}`)}>
-                    {c.label}
-                    <X size={14} aria-hidden="true" />
-                  </button>
-                </li>
-              ))}
-              <li>
-                <button type="button" className="sf-textbtn sf-small" onClick={clearAll}>
-                  {tx('امسحي كل الفلاتر', 'Clear all filters')}
+        </div>
+        {chips.length > 0 && (
+          <ul className="sf-activechips" aria-label={tx('الفلاتر المختارة', 'Active filters')}>
+            {chips.map((c) => (
+              <li key={c.key}>
+                <button type="button" className="sf-chip sf-chip--on" onClick={c.remove} aria-label={tx(`شيلي فلتر ${c.label}`, `Remove filter ${c.label}`)}>
+                  {c.label}
+                  <X size={14} aria-hidden="true" />
                 </button>
               </li>
-            </ul>
-          )}
+            ))}
+            <li>
+              <button type="button" className="sf-textbtn sf-small" onClick={clearAll}>
+                {tx('امسحي كل الفلاتر', 'Clear all filters')}
+              </button>
+            </li>
+          </ul>
+        )}
+      </div>
 
-          {results.length ? (
-            <ProductPanes products={results} label={title} />
-          ) : (
+      <div className="sf-shop__grid">
+        {results.length ? (
+          <ProductPanes products={results} label={title} />
+        ) : (
+          <div className="sf-wrap">
             <div className="sf-empty">
+              <Sticker size={88} tone="lemon">
+                {num(0)}
+              </Sticker>
               <p className="sf-empty__title">{q ? tx(`مفيش نتايج لـ «${q}»`, `Nothing matches “${q}”`) : tx('مفيش منتجات بالفلاتر دي', 'No products match these filters')}</p>
               <p className="sf-muted">
                 {q && !chips.length
@@ -305,16 +325,17 @@ export default function Shop() {
                 </ul>
               )}
               <div className="sf-row">
-                <button type="button" className="sf-btn sf-btn--lacquer" onClick={() => navigate('/shop')}>
-                  {tx('اعرضي كل المنتجات', 'Show all products')}
+                <button type="button" className="sf-btn sf-btn--lemon" onClick={() => navigate('/shop')}>
+                  {tx('اعرضي كل المنتجات', 'Show everything')}
+                  <Arrow />
                 </button>
                 <Link to="/routine" className="sf-textbtn">
                   {tx('أو خلّينا نختارلك روتين', 'Or let us pick a routine')}
                 </Link>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       <Door
@@ -327,7 +348,7 @@ export default function Shop() {
             <button type="button" className="sf-textbtn" onClick={clearAll}>
               {tx('امسحي الكل', 'Clear all')}
             </button>
-            <button type="button" className="sf-btn sf-btn--lacquer" onClick={() => setFiltersOpen(false)}>
+            <button type="button" className="sf-btn sf-btn--quiet" onClick={() => setFiltersOpen(false)}>
               {tx(`اعرضي ${num(results.length)} منتج`, `Show ${num(results.length)} products`)}
             </button>
           </div>
@@ -350,10 +371,10 @@ function FilterGroup({ legend, children, scroll }: { legend: string; children: R
 
 function Check({ checked, onChange, label, n, latin }: { checked: boolean; onChange: () => void; label: string; n?: string; latin?: boolean }) {
   return (
-    <label className="sf-check">
+    <label className="sf-pick">
       <input type="checkbox" checked={checked} onChange={onChange} />
       <span lang={latin ? 'en' : undefined}>{latin ? <bdi>{label}</bdi> : label}</span>
-      {n && <span className="sf-check__n">{n}</span>}
+      {n && <span className="sf-pick__n">{n}</span>}
     </label>
   )
 }

@@ -1,6 +1,6 @@
-/* NURI admin — Operate register of the lattice world.
-   Lacquer rail, lit-paper workspace, 1px muntin lines between panes,
-   brass only for the one live thing on screen. */
+/* NURI admin — Operate register of the NURI brand.
+   Plum rail, cream workspace, 1px hairlines between panes,
+   lemon only for the one live action on screen, lilac for the brand. */
 
 .adm {
   --bg: var(--paper);
@@ -35,23 +35,23 @@
 [dir='rtl'] .adm { line-height: 1.65; }
 
 .adm[data-theme='dark'] {
-  --bg: #170806;
-  --pane: #21100d;
-  --pane-2: #2a1511;
-  --line: #3a211c;
-  --line-strong: #4f2e27;
-  --fg: #f3e9e4;
-  --fg-2: #cdb8b0;
-  --fg-3: #9c8279;
-  --hover: #2e1813;
-  --accent: #e4c487;
-  --accent-fg: #2a0d0c;
+  --bg: #12001a;
+  --pane: #1c0626;
+  --pane-2: #250b31;
+  --line: #351744;
+  --line-strong: #4a2160;
+  --fg: #fff1e7;
+  --fg-2: #dccbe2;
+  --fg-3: #a891b0;
+  --hover: #2a0d38;
+  --accent: #db98f9;
+  --accent-fg: #1f0229;
   --chart-1: #d9664c;
   --chart-2: #3f9a78;
   --chart-3: #4a86d0;
   --chart-4: #b8892a;
   --chart-5: #9a7ad0;
-  --chart-grid: #3a211c;
+  --chart-grid: #351744;
   --ok-bg: #1e3329;
   --ok: #8fd0ae;
   --warn-bg: #3a2c10;
@@ -106,10 +106,13 @@
 }
 .adm-brand__name {
   font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 24px;
+  font-weight: 900;
+  font-variation-settings: "SOFT" 100, "opsz" 144;
   line-height: 1;
+  color: var(--lilac);
 }
+[dir='rtl'] .adm-brand__name { font-weight: 400; }
 .adm-brand__sub {
   font-size: 12px;
   color: var(--ink-on-lacquer-2);
@@ -261,8 +264,8 @@
   margin-bottom: 24px;
 }
 .adm-ph h1 {
-  font-size: 26px;
-  font-weight: 600;
+  font-size: 30px;
+  font-weight: 800;
   line-height: 1.2;
 }
 .adm-ph p { color: var(--fg-2); margin-top: 4px; max-width: 70ch; }

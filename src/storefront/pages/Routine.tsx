@@ -6,7 +6,7 @@ import { CONCERN_LABEL, SKIN_LABEL, STEP_LABEL } from '../../data/catalog'
 import { ProductVisual } from '../../components/ProductVisual'
 import { useI18n } from '../../i18n'
 import { stockOf, useStore } from '../../store'
-import { Back, Forward, Stars } from '../components/bits'
+import { Arrow, Back, Stars } from '../components/bits'
 import { stepCategoryOk, useActiveProducts, useTitle } from '../lib'
 
 type Time = 'am' | 'pm' | 'both'
@@ -111,26 +111,29 @@ export default function Routine() {
   if (done && q >= questions.length) {
     const time = a.time!
     return (
-      <div className="sf-wrap sf-page sf-routine">
-        <header className="sf-shop__head">
-          <h1 className="sf-h1">{tx('روتينك جاهز', 'Your routine is ready')}</h1>
-          <p className="sf-muted">
-            {tx(
-              `لبشرة ${SKIN_LABEL[a.skin!].ar}، مع تركيز على ${CONCERN_LABEL[a.concern!].ar}. منتج واحد لكل خطوة، كلهم متوفرين دلوقتي.`,
-              `For ${SKIN_LABEL[a.skin!].en.toLowerCase()} skin, focused on ${CONCERN_LABEL[a.concern!].en.toLowerCase()}. One product per step, all in stock now.`,
-            )}
-          </p>
-        </header>
-        <ol className="sf-plan">
-          {plan.map(({ step, product: p, alts }) => (
-            <li key={step} className="sf-plan__row">
-              <span className="sf-plan__n" aria-hidden="true">{num(step)}</span>
-              <span className="sf-plan__pane sf-lit" aria-hidden="true">
-                <ProductVisual visual={p.visual} brand={p.brand} bare />
-              </span>
-              <div className="sf-plan__text">
+      <div className="sf-page sf-page--flush sf-routine">
+        <div className="sf-wrap">
+          <header className="sf-pagehead">
+            <h1 className="sf-display">{tx('روتينك جاهز', 'Your routine is ready')}</h1>
+            <p className="sf-pagehead__lede">
+              {tx(
+                `لبشرة ${SKIN_LABEL[a.skin!].ar}، مع تركيز على ${CONCERN_LABEL[a.concern!].ar}. منتج واحد لكل خطوة، كلهم متوفرين دلوقتي.`,
+                `For ${SKIN_LABEL[a.skin!].en.toLowerCase()} skin, focused on ${CONCERN_LABEL[a.concern!].en.toLowerCase()}. One product per step, all in stock now.`,
+              )}
+            </p>
+          </header>
+        </div>
+        {plan.length === 0 ? (
+          <div className="sf-wrap">
+            <p className="sf-note">{tx('مفيش منتجات متوفرة تناسب الاختيارات دي دلوقتي. جرّبي ميزانية أو وقت تاني.', 'Nothing in stock fits these answers right now. Try another budget or time.')}</p>
+          </div>
+        ) : (
+          <ol className="sf-plan">
+            {plan.map(({ step, product: p, alts }) => (
+              <li key={step} className="sf-plan__cell">
                 <p className="sf-plan__step">
-                  {pick(STEP_LABEL[step])}
+                  <span className="sf-plan__n" aria-hidden="true">{num(step)}</span>
+                  <span>{pick(STEP_LABEL[step])}</span>
                   {time === 'both' && (
                     <span className="sf-plan__time">
                       {p.routineTime.includes('am') && <Sun size={14} aria-label={tx('الصبح', 'Morning')} />}
@@ -138,43 +141,54 @@ export default function Routine() {
                     </span>
                   )}
                 </p>
-                <Link to={`/p/${p.slug}`} className="sf-plan__name">
-                  <span className="sf-card__brand"><bdi>{p.brand}</bdi></span> {pick(p.name)}
-                </Link>
-                <Stars rating={p.rating} count={p.reviewCount} size={12} />
-                {p.concerns.includes(a.concern!) && <span className="sf-chip sf-chip--fit sf-chip--sm">{tx(`بيساعد في ${CONCERN_LABEL[a.concern!].ar}`, `Helps with ${CONCERN_LABEL[a.concern!].en.toLowerCase()}`)}</span>}
-              </div>
-              <div className="sf-plan__end">
-                <span className="tabular">{money(p.price)}</span>
-                {alts > 1 && (
-                  <button type="button" className="sf-textbtn sf-small" onClick={() => setSwap((s) => ({ ...s, [step]: (s[step] ?? 0) + 1 }))}>
-                    <RefreshCw size={14} aria-hidden="true" />
-                    {tx('بدّلي المنتج', 'Swap product')}
-                  </button>
-                )}
-              </div>
-            </li>
-          ))}
-        </ol>
-        {plan.length === 0 && <p className="sf-note">{tx('مفيش منتجات متوفرة تناسب الاختيارات دي دلوقتي. جرّبي ميزانية أو وقت تاني.', 'Nothing in stock fits these answers right now. Try another budget or time.')}</p>}
-        <div className="sf-plan__foot">
-          <p>
-            {tx(`${num(plan.length)} منتجات، المجموع`, `${num(plan.length)} products, total`)} <strong className="tabular sf-plan__total">{money(total)}</strong>
-          </p>
-          <div className="sf-row">
-            <button type="button" className="sf-btn sf-btn--brass sf-btn--lg" disabled={!plan.length} onClick={() => plan.forEach((x) => addToCart(x.product.id, 1))}>
-              {tx('أضيفي الروتين كله للسلة', 'Add the whole routine to bag')}
-            </button>
-            <button
-              type="button"
-              className="sf-textbtn"
-              onClick={() => {
-                setQ(0)
-                setSwap({})
-              }}
-            >
-              {tx('عدّلي إجاباتك', 'Change your answers')}
-            </button>
+                <span className="sf-plan__pane" aria-hidden="true">
+                  <ProductVisual visual={p.visual} brand={p.brand} size={p.size} />
+                </span>
+                <div className="sf-card__line">
+                  <Link to={`/p/${p.slug}`} className="sf-plan__name">
+                    {pick(p.name)}
+                  </Link>
+                  <span className="sf-price tabular">{money(p.price)}</span>
+                </div>
+                <p className="sf-card__meta">
+                  <bdi dir="ltr">{p.brand} · {p.size}</bdi>
+                </p>
+                <Stars rating={p.rating} count={p.reviewCount} size={11} />
+                <div className="sf-plan__end">
+                  {p.concerns.includes(a.concern!) && <span className="sf-chip sf-chip--fit sf-chip--sm">{tx(`بيساعد في ${CONCERN_LABEL[a.concern!].ar}`, `Helps with ${CONCERN_LABEL[a.concern!].en.toLowerCase()}`)}</span>}
+                  {alts > 1 && (
+                    <button type="button" className="sf-textbtn sf-small" onClick={() => setSwap((s) => ({ ...s, [step]: (s[step] ?? 0) + 1 }))}>
+                      <RefreshCw size={14} aria-hidden="true" />
+                      {tx('بدّلي المنتج', 'Swap product')}
+                    </button>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ol>
+        )}
+        <div className="sf-wrap">
+          <div className="sf-plan__foot">
+            <p className="sf-plan__sum">
+              <span>{tx(`${num(plan.length)} منتجات، المجموع`, `${num(plan.length)} products, total`)}</span>
+              <strong className="tabular sf-plan__total">{money(total)}</strong>
+            </p>
+            <div className="sf-row">
+              <button type="button" className="sf-btn sf-btn--lemon sf-btn--lg" disabled={!plan.length} onClick={() => plan.forEach((x) => addToCart(x.product.id, 1))}>
+                {tx('ضيفي الروتين كله', 'Add the whole routine')}
+                <Arrow />
+              </button>
+              <button
+                type="button"
+                className="sf-textbtn"
+                onClick={() => {
+                  setQ(0)
+                  setSwap({})
+                }}
+              >
+                {tx('عدّلي إجاباتك', 'Change your answers')}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -187,21 +201,16 @@ export default function Routine() {
 
   return (
     <div className="sf-wrap sf-page sf-routine">
-      <header className="sf-shop__head">
-        <h1 className="sf-h1">{tx('اعرفي روتينك', 'Find your routine')}</h1>
-        <p className="sf-muted">{tx('أربع أسئلة، وبعدها منتج واحد لكل خطوة من المتوفر عندنا.', 'Four questions, then one in-stock product for every step.')}</p>
-      </header>
       <div className="sf-quiz">
-        <div className="sf-quiz__progress" aria-hidden="true">
-          {questions.map((_, i) => (
-            <span key={i} data-lit={i <= q || undefined} />
-          ))}
+        <div className="sf-quiz__top">
+          <p className="sf-quiz__count">{tx(`سؤال ${num(q + 1)} من ${num(questions.length)}`, `Question ${num(q + 1)} of ${num(questions.length)}`)}</p>
+          <div className="sf-quiz__progress" aria-hidden="true">
+            <span style={{ inlineSize: `${((q + 1) / questions.length) * 100}%` }} />
+          </div>
         </div>
+        <h1 className="sr-only">{tx('اعرفي روتينك', 'Find your routine')}</h1>
         <fieldset className="sf-quiz__q">
-          <legend>
-            <span className="sf-quiz__count">{tx(`سؤال ${num(q + 1)} من ${num(questions.length)}`, `Question ${num(q + 1)} of ${num(questions.length)}`)}</span>
-            <span className="sf-quiz__title">{cur.title}</span>
-          </legend>
+          <legend className="sf-quiz__title">{cur.title}</legend>
           <div className={`sf-quiz__opts${cur.key === 'concern' ? ' sf-quiz__opts--chips' : ''}`}>
             {cur.options.map((o) => (
               <label key={o.v} className="sf-opt" data-on={value === o.v || undefined}>
@@ -231,11 +240,11 @@ export default function Routine() {
               {tx('السؤال اللي فات', 'Previous question')}
             </button>
           ) : (
-            <span />
+            <span className="sf-quiz__hint">{tx('أربع أسئلة، وبعدها منتج واحد لكل خطوة.', 'Four questions, then one product per step.')}</span>
           )}
-          <button type="button" className="sf-btn sf-btn--lacquer" disabled={!value} onClick={() => setQ(q + 1)}>
-            {q === questions.length - 1 ? tx('اعرضي روتيني', 'Show my routine') : tx('السؤال اللي بعده', 'Next question')}
-            <Forward />
+          <button type="button" className="sf-btn sf-btn--quiet sf-btn--lg" disabled={!value} onClick={() => setQ(q + 1)}>
+            {q === questions.length - 1 ? tx('اعرضي روتيني', 'Show my routine') : tx('اللي بعده', 'Next')}
+            <Arrow />
           </button>
         </div>
       </div>

@@ -8,6 +8,7 @@ import { ProductVisual } from '../../components/ProductVisual'
 import { useI18n } from '../../i18n'
 import { evaluateCode, useStore, zoneFor } from '../../store'
 import { PHONE_RE, normalizePhone, useCartLines, useTitle } from '../lib'
+import { Arrow } from '../components/bits'
 
 type Errors = Partial<Record<'name' | 'phone' | 'gov' | 'address' | 'email', string>>
 
@@ -51,7 +52,7 @@ export default function Checkout() {
           <h1 className="sf-h1">{tx('سلتك فاضية', 'Your bag is empty')}</h1>
           <p className="sf-muted">{tx('ضيفي منتج واحد على الأقل عشان تكمّلي الطلب.', 'Add at least one product to check out.')}</p>
           <div className="sf-row">
-            <Link to="/shop" className="sf-btn sf-btn--lacquer">{tx('تسوقي المنتجات', 'Shop products')}</Link>
+            <Link to="/shop" className="sf-btn sf-btn--quiet">{tx('تسوقي المنتجات', 'Shop products')}<Arrow /></Link>
             <Link to="/routine" className="sf-textbtn">{tx('اعرفي روتينك', 'Find your routine')}</Link>
           </div>
         </div>
@@ -247,7 +248,7 @@ export default function Checkout() {
       <div className="sf-checkout__grid">
         <form ref={formRef} className="sf-form" onSubmit={submit} noValidate>
           <fieldset className="sf-form__group">
-            <legend className="sf-h3">{tx('بيانات التوصيل', 'Delivery details')}</legend>
+            <legend className="sf-formh">{tx('بيانات التوصيل', 'Delivery details')}</legend>
             <div className="sf-field">
               <label htmlFor="f-name">{tx('الاسم', 'Full name')}</label>
               <input id="f-name" name="name" autoComplete="name" value={name} onChange={(e) => { setName(e.target.value); clearErr('name') }} {...aria('name')} />
@@ -306,16 +307,16 @@ export default function Checkout() {
           </fieldset>
 
           <fieldset className="sf-form__group">
-            <legend className="sf-h3">{tx('طريقة الدفع', 'Payment')}</legend>
+            <legend className="sf-formh">{tx('طريقة الدفع', 'Payment')}</legend>
             <div className="sf-pay">
               {methods.map((m) => (
                 <label key={m.id} className="sf-pay__opt" data-disabled={m.disabled || undefined}>
                   <input type="radio" name="payment" value={m.id} checked={method === m.id} disabled={m.disabled} onChange={() => setPayment(m.id)} />
-                  <span className="sf-pay__icon">{m.icon}</span>
                   <span className="sf-pay__text">
                     <span className="sf-pay__label">{m.label}</span>
                     <span className="sf-pay__note">{m.note}</span>
                   </span>
+                  <span className="sf-pay__icon">{m.icon}</span>
                 </label>
               ))}
             </div>
@@ -334,15 +335,20 @@ export default function Checkout() {
               <span>{tx('الإجمالي', 'Total')}</span>
               <strong className="tabular">{money(total)}</strong>
             </div>
-            <button type="submit" className="sf-btn sf-btn--brass sf-btn--block sf-btn--lg">
-              {method === 'cod' ? tx('أكّدي الطلب والدفع عند الاستلام', 'Place order, pay on delivery') : tx('أكّدي الطلب التجريبي', 'Place demo order')}
+            <button type="submit" className="sf-btn sf-btn--lemon sf-btn--block sf-btn--xl">
+              {method === 'cod' ? tx('اطلبي دلوقتي', 'Place order') : tx('اطلبي دلوقتي (تجريبي)', 'Place demo order')}
+              <Arrow size={20} />
             </button>
-            <p className="sf-small sf-muted">{tx('مفيش حساب ولا باسورد. هنبعتلك تأكيد على واتساب.', 'No account or password needed. We send a confirmation on WhatsApp.')}</p>
+            <p className="sf-form__fine">
+              {method === 'cod'
+                ? tx(`هتدفعي ${money(total)} كاش للمندوب لما الطلب يوصل. مفيش حساب ولا باسورد، وهنبعتلك تأكيد على واتساب.`, `You pay ${money(total)} in cash when it arrives. No account or password needed; we confirm on WhatsApp.`)
+                : tx('مفيش حساب ولا باسورد. هنبعتلك تأكيد على واتساب.', 'No account or password needed. We send a confirmation on WhatsApp.')}
+            </p>
           </div>
         </form>
 
         <aside className="sf-checkout__aside sf-only-desktop" aria-label={tx('ملخص الطلب', 'Order summary')}>
-          <h2 className="sf-h3">{tx('ملخص الطلب', 'Order summary')}</h2>
+          <h2 className="sf-formh">{tx('ملخص الطلب', 'Order summary')}</h2>
           {summary('d')}
         </aside>
       </div>

@@ -4,7 +4,8 @@ import { ProductVisual } from '../../components/ProductVisual'
 import { useI18n } from '../../i18n'
 import { useStore, zoneFor } from '../../store'
 import { useTitle } from '../lib'
-import { Forward } from '../components/bits'
+import { Check } from 'lucide-react'
+import { Arrow, Forward, Sticker } from '../components/bits'
 
 export default function OrderConfirmation() {
   const { id } = useParams()
@@ -23,7 +24,7 @@ export default function OrderConfirmation() {
           <h1 className="sf-h1">{tx('مش لاقيين الطلب ده', 'We cannot find this order')}</h1>
           <p className="sf-muted">{tx('ممكن تدوّري على طلباتك برقم موبايلك من صفحة حسابي.', 'You can look up your orders by mobile number on your account page.')}</p>
           <div className="sf-row">
-            <Link to="/account" className="sf-btn sf-btn--lacquer">{tx('دوّري على طلبك', 'Find your order')}</Link>
+            <Link to="/account" className="sf-btn sf-btn--quiet">{tx('دوّري على طلبك', 'Find your order')}<Arrow /></Link>
             <Link to="/shop" className="sf-textbtn">{tx('كمّلي تسوّق', 'Keep shopping')}</Link>
           </div>
         </div>
@@ -75,20 +76,34 @@ export default function OrderConfirmation() {
   return (
     <div className="sf-wrap sf-page sf-confirm">
       <header className="sf-confirm__head">
-        <p className="sf-confirm__num">{tx(`طلب رقم ${order.number}`, `Order ${order.number}`)}</p>
-        <h1 className="sf-h1">{firstName ? tx(`طلبك وصلنا يا ${firstName}`, `Thank you, ${firstName}. Your order is in.`) : tx('طلبك وصلنا', 'Your order is in')}</h1>
-        <p className="sf-muted">
+        <Sticker className="sf-confirm__sticker" size={132}>
+          <Check size={44} strokeWidth={2.25} aria-hidden="true" />
+        </Sticker>
+        <h1 className="sf-display">
+          {firstName ? (
+            <>
+              {tx('اتطلب يا ', 'It’s ordered, ')}
+              <bdi>{firstName}</bdi>!
+            </>
+          ) : (
+            tx('اتطلب!', 'It’s ordered!')
+          )}
+        </h1>
+        <p className="sf-confirm__num">
+          {tx('طلب رقم', 'Order')} <span className="sf-mono">{order.number}</span>
+        </p>
+        <p className="sf-confirm__lede">
           {tx(`اتسجّل ${date(order.createdAt, { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}، والتوصيل لـ ${gov ? gov.name.ar : ''}.`, `Placed ${date(order.createdAt, { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}, delivering to ${gov ? gov.name.en : ''}.`)}
         </p>
       </header>
 
       <div className="sf-confirm__grid">
         <section aria-labelledby="h-next">
-          <h2 id="h-next" className="sf-h3">{tx('اللي هيحصل بعد كده', 'What happens next')}</h2>
+          <h2 id="h-next" className="sf-formh">{tx('اللي هيحصل بعد كده', 'What happens next')}</h2>
           <ol className="sf-next">
             {next.map((n, i) => (
               <li key={i} className="sf-next__item">
-                <span className="sf-next__n" aria-hidden="true">{num(i + 1)}</span>
+                <span className="sf-next__n" aria-hidden="true">{num(i + 1, { minimumIntegerDigits: 2 })}</span>
                 <span>
                   <span className="sf-next__title">{n.title}</span>
                   <span className="sf-next__body">{n.body}</span>
@@ -99,7 +114,7 @@ export default function OrderConfirmation() {
         </section>
 
         <section className="sf-confirm__order" aria-labelledby="h-items">
-          <h2 id="h-items" className="sf-h3">{tx('طلبك', 'Your order')}</h2>
+          <h2 id="h-items" className="sf-formh">{tx('طلبك', 'Your order')}</h2>
           <ul className="sf-summary__lines">
             {order.lines.map((l) => {
               const p = products.find((x) => x.id === l.productId)
@@ -159,8 +174,9 @@ export default function OrderConfirmation() {
       </div>
 
       <div className="sf-row sf-confirm__actions">
-        <Link to="/shop" className="sf-btn sf-btn--lacquer">
+        <Link to="/shop" className="sf-btn sf-btn--quiet">
           {tx('كمّلي تسوّق', 'Keep shopping')}
+          <Arrow />
         </Link>
         <Link to="/account" className="sf-textbtn">
           {tx('تابعي طلباتك', 'Follow your orders')}

@@ -1,83 +1,138 @@
+import { useEffect, useRef, useState } from 'react'
+import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { NuriMark } from '../../components/Lattice'
-import { Changsal } from './Changsal'
+import { ArrowRight } from 'lucide-react'
 import { CATEGORY_LABEL } from '../../data/catalog'
 import { useI18n } from '../../i18n'
 import { useStore } from '../../store'
-import { CATEGORIES, IMPORTED_ORIGINS } from '../lib'
+import { CATEGORIES, brandSlug, useBrands } from '../lib'
+import { SocialIcons } from './home/WildStrip'
+import { Wordmark } from './home/Glyphs'
+import '../home.css'
+
+/** Size a one-line slogan so it spans its container exactly. */
+function useFitLine(dep: string) {
+  const box = useRef<HTMLDivElement>(null)
+  const line = useRef<HTMLParagraphElement>(null)
+  useEffect(() => {
+    const b = box.current
+    const l = line.current
+    if (!b || !l) return
+    const fit = () => {
+      l.style.fontSize = '100px'
+      const w = l.scrollWidth
+      const cs = getComputedStyle(b)
+      const avail = b.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)
+      if (w && avail > 0) l.style.fontSize = `${Math.min(100 * (avail / w) * 0.99, 400)}px`
+    }
+    fit()
+    const ro = new ResizeObserver(fit)
+    ro.observe(b)
+    document.fonts?.ready.then(fit).catch(() => {})
+    return () => ro.disconnect()
+  }, [dep])
+  return { box, line }
+}
 
 export function Footer() {
-  const { tx, pick, money } = useI18n()
+  const { tx, pick, money, lang } = useI18n()
   const zones = useStore((s) => s.zones)
   const settings = useStore((s) => s.settings)
+  const brands = useBrands()
   const cairo = zones[0]
+  const [email, setEmail] = useState('')
+  const [joined, setJoined] = useState(false)
+  const slogan = tx('بشرتك، بس أحلى.', 'Glow, cultured in Seoul.')
+  const { box, line } = useFitLine(slogan)
+  const wa = settings.whatsapp.replace(/\D/g, '')
+
+  const join = (e: FormEvent) => {
+    e.preventDefault()
+    // Demo: no network call. The confirmation is shown inline.
+    setJoined(true)
+  }
+
   return (
-    <footer className="sf-footer">
-      <div className="sf-footer__lattice" aria-hidden="true">
-        <Changsal cell={96} stroke="var(--lacquer-700)" width={2} />
-      </div>
-      <div className="sf-wrap sf-footer__grid">
-        <div className="sf-footer__brand">
-          <Link to="/" className="sf-brand" aria-label={tx('نوري، الصفحة الرئيسية', 'NURI home')}>
-            <NuriMark size={40} frame="var(--lacquer-950)" pane="var(--paper-lit)" />
-            <span className="sf-brand__word" aria-hidden="true">
-              <span lang="ar">نوري</span>
-              <span lang="en">NURI</span>
-            </span>
+    <footer className="v-foot">
+      <div className="v-wrap v-foot__grid">
+        <div className="v-foot__club">
+          <h2 className="v-foot__h" id="v-club-h">{tx('انضمي لنادي نوري.', 'Join the NURI club.')}</h2>
+          {joined ? (
+            <p className="v-foot__ok" role="status">
+              {tx('اتسجّلتي. هنبعتلك أول عرض.', "You're in. First offer is on its way.")}
+            </p>
+          ) : (
+            <form className="v-news" onSubmit={join} aria-labelledby="v-club-h">
+              <label htmlFor="v-news-email" className="sr-only">{tx('إيميلك', 'Your email')}</label>
+              <input
+                id="v-news-email"
+                type="email"
+                required
+                autoComplete="email"
+                inputMode="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={tx('الإيميل', 'Email')}
+              />
+              <button type="submit" className="v-news__go" aria-label={tx('اشتركي', 'Sign up')}>
+                <ArrowRight size={22} strokeWidth={1.5} className="v-flip" aria-hidden="true" />
+              </button>
+            </form>
+          )}
+          <p className="v-mono v-foot__note">
+            {tx('عروض وأول المنتجات الجديدة. من غير زحمة.', 'Offers and first look at new drops. No spam.')}
+          </p>
+          <Link to="/" className="v-foot__mark" aria-label={tx('نوري، الصفحة الرئيسية', 'NURI home')}>
+            <Wordmark />
           </Link>
-          <h2 className="sf-footer__promise">{tx('وعد الأصالة', 'Our authenticity promise')}</h2>
-          <p>
-            {tx(
-              'كل منتج بيوصل من موزّع معتمد، وكل عبوة عليها رقم التشغيلة وتاريخ الانتهاء. تقدري تشوفي سجل التشغيلة اللي هتوصلك في صفحة المنتج قبل ما تطلبي.',
-              'Every product comes through an authorised supplier, and every unit carries its lot number and expiry. You can see the lot you will receive on the product page before you order.',
-            )}
-          </p>
         </div>
-        <nav aria-label={tx('الأقسام', 'Categories')}>
-          <h2 className="sf-footer__h">{tx('تسوّقي', 'Shop')}</h2>
-          <ul className="sf-footer__list">
-            {CATEGORIES.slice(0, 7).map((c) => (
-              <li key={c}>
-                <Link to={`/shop/${c}`}>{pick(CATEGORY_LABEL[c])}</Link>
-              </li>
+
+        <nav className="v-foot__col" aria-label={tx('الأقسام', 'Categories')}>
+          <h2 className="v-foot__ch">{tx('تسوّقي', 'Shop')}</h2>
+          <ul>
+            <li><Link to="/shop">{tx('كل المنتجات', 'All products')}</Link></li>
+            {CATEGORIES.slice(0, 6).map((c) => (
+              <li key={c}><Link to={`/shop/${c}`}>{pick(CATEGORY_LABEL[c])}</Link></li>
             ))}
-            <li><Link to="/shop?origin=KR">{tx('كوري', 'K-beauty')}</Link></li>
-            <li><Link to={`/shop?origin=${IMPORTED_ORIGINS.join(',')}`}>{tx('مستورد', 'Imported')}</Link></li>
           </ul>
         </nav>
-        <nav aria-label={tx('المساعدة', 'Help')}>
-          <h2 className="sf-footer__h">{tx('مساعدة', 'Help')}</h2>
-          <ul className="sf-footer__list">
-            <li><Link to="/routine">{tx('اعرفي روتينك', 'Routine finder')}</Link></li>
+        <nav className="v-foot__col" aria-label={tx('الماركات', 'Brands')}>
+          <h2 className="v-foot__ch">{tx('الماركات', 'Brands')}</h2>
+          <ul>
+            {brands.slice(0, 7).map(([b]) => (
+              <li key={b}><Link to={`/brand/${brandSlug(b)}`} lang="en"><bdi>{b}</bdi></Link></li>
+            ))}
+          </ul>
+        </nav>
+        <nav className="v-foot__col" aria-label={tx('المساعدة', 'Help')}>
+          <h2 className="v-foot__ch">{tx('مساعدة', 'Help')}</h2>
+          <ul>
+            <li><a href="#v-ship">{tx('الشحن والدفع', 'Shipping')}</a></li>
+            <li><a href={`mailto:${settings.email}?subject=${encodeURIComponent('Return')}`}>{tx('الاسترجاع', 'Returns')}</a></li>
+            <li><a href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer">{tx('كلّمينا واتساب', 'Contact')}</a></li>
             <li><Link to="/account">{tx('تتبّعي طلبك', 'Track your order')}</Link></li>
-            <li><Link to="/wishlist">{tx('المفضلة', 'Wishlist')}</Link></li>
-            <li><a href={`mailto:${settings.email}`}>{settings.email}</a></li>
-            <li><span dir="ltr" className="tabular">{settings.whatsapp}</span></li>
+            <li><Link to="/routine">{tx('اعرفي بشرتك', 'Skin quiz')}</Link></li>
+            <li><Link to="/admin">{tx('لوحة التحكم', 'Admin')}</Link></li>
           </ul>
+          <SocialIcons className="v-foot__social" />
         </nav>
-        <div>
-          <h2 className="sf-footer__h">{tx('الدفع والتوصيل', 'Payment and delivery')}</h2>
-          <p>
-            {tx(
-              `الدفع عند الاستلام متاح في كل المحافظات. التوصيل في ${cairo.name.ar} خلال ${cairo.etaDays[0]}–${cairo.etaDays[1]} يوم، ومجاني فوق ${money(cairo.freeOver)}.`,
-              `Cash on delivery in every governorate. Delivery in ${cairo.name.en} takes ${cairo.etaDays[0]}–${cairo.etaDays[1]} days and is free over ${money(cairo.freeOver)}.`,
-            )}
-          </p>
-          <p className="sf-footer__fine">
-            {tx('الكروت والمحافظ وإنستاباي في وضع تجريبي حاليًا.', 'Cards, wallets and InstaPay are in demo mode for now.')}
-          </p>
-        </div>
       </div>
-      <div className="sf-wrap sf-footer__base">
-        <p>
+
+      <div className="v-foot__slogan" ref={box} aria-hidden="true">
+        <p ref={line} lang={lang}>{slogan}</p>
+      </div>
+
+      <div className="v-wrap v-foot__legal">
+        <p id="v-ship">
           {tx(
-            'متجر تجريبي: الأسعار والمخزون والتقييمات بيانات للعرض فقط.',
-            'Demo store: prices, stock and reviews are sample data.',
+            `الدفع عند الاستلام في كل المحافظات. التوصيل في ${cairo.name.ar} خلال ${cairo.etaDays[0]}–${cairo.etaDays[1]} يوم، ومجاني فوق ${money(cairo.freeOver)}. الكروت والمحافظ وإنستاباي في وضع تجريبي.`,
+            `Cash on delivery in every governorate. ${cairo.name.en} in ${cairo.etaDays[0]}–${cairo.etaDays[1]} days, free over ${money(cairo.freeOver)}. Cards, wallets and InstaPay are in demo mode.`,
           )}
         </p>
-        <Link to="/admin" className="sf-footer__admin">
-          {tx('لوحة التحكم', 'Admin')}
-        </Link>
+        <p>{tx('الأسعار والمخزون والتقييمات بيانات تجريبية.', 'Prices, stock and reviews are sample data.')}</p>
+        <p>
+          <bdi>© 2026 NURI</bdi> · <a href={`mailto:${settings.email}`}>{settings.email}</a> · <span dir="ltr">{settings.whatsapp}</span>
+        </p>
       </div>
     </footer>
   )

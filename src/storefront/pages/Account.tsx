@@ -5,6 +5,7 @@ import type { Order, OrderEvent } from '../../data/types'
 import { useI18n } from '../../i18n'
 import { useStore } from '../../store'
 import { PHONE_RE, normalizePhone, useTitle } from '../lib'
+import { Arrow } from '../components/bits'
 
 const FLOW: OrderEvent['type'][] = ['placed', 'confirmed', 'packed', 'shipped', 'delivered']
 
@@ -38,9 +39,9 @@ export default function Account() {
 
   return (
     <div className="sf-wrap sf-page sf-account">
-      <header className="sf-shop__head">
-        <h1 className="sf-h1">{me ? tx(`أهلًا يا ${pick(me.name).split(' ')[0]}`, `Hello, ${pick(me.name).split(' ')[0]}`) : tx('تابعي طلبك', 'Track your order')}</h1>
-        <p className="sf-muted">
+      <header className="sf-pagehead">
+        <h1 className="sf-display">{me ? tx(`أهلًا يا ${pick(me.name).split(' ')[0]}`, `Hello, ${pick(me.name).split(' ')[0]}`) : tx('تابعي طلبك', 'Track your order')}</h1>
+        <p className="sf-pagehead__lede">
           {me
             ? tx('دي طلباتك من الجهاز ده. مفيش باسورد، الحساب مربوط برقم موبايلك.', 'These are your orders on this device. No password: your account follows your mobile number.')
             : tx('اكتبي رقم الموبايل اللي طلبتي بيه ونعرضلك طلباتك وحالتها.', 'Enter the mobile number you ordered with to see your orders and their status.')}
@@ -49,13 +50,13 @@ export default function Account() {
 
       {me && (
         <section aria-labelledby="h-mine" className="sf-account__sec">
-          <h2 id="h-mine" className="sf-h3">{tx('طلباتي', 'My orders')}</h2>
+          <h2 id="h-mine" className="sf-formh">{tx('طلباتي', 'My orders')}</h2>
           {mine.length ? <OrderList orders={mine} /> : <p className="sf-muted">{tx('لسه مفيش طلبات.', 'No orders yet.')}</p>}
         </section>
       )}
 
       <section aria-labelledby="h-lookup" className="sf-account__sec">
-        <h2 id="h-lookup" className="sf-h3">{me ? tx('دوّري على طلب برقم تاني', 'Look up another number') : tx('دوّري برقم الموبايل', 'Look up by mobile number')}</h2>
+        <h2 id="h-lookup" className="sf-formh">{me ? tx('دوّري على طلب برقم تاني', 'Look up another number') : tx('دوّري برقم الموبايل', 'Look up by mobile number')}</h2>
         <form className="sf-lookup" onSubmit={lookup} noValidate>
           <label htmlFor="lk-phone" className="sr-only">{tx('رقم الموبايل', 'Mobile number')}</label>
           <input
@@ -69,7 +70,9 @@ export default function Account() {
             aria-invalid={!!err || undefined}
             aria-describedby={err ? 'lk-err' : undefined}
           />
-          <button type="submit" className="sf-btn sf-btn--lacquer">{tx('اعرضي الطلبات', 'Show orders')}</button>
+          <button type="submit" className="sf-iconbtn sf-lookup__go" aria-label={tx('اعرضي الطلبات', 'Show orders')}>
+            <Arrow size={20} />
+          </button>
         </form>
         {err && <p className="sf-field__err" id="lk-err" role="alert">{err}</p>}
         {found && (found.length ? <OrderList orders={found} /> : <p className="sf-muted" role="status">{tx('مفيش طلبات بالرقم ده.', 'No orders found for this number.')}</p>)}

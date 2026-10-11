@@ -1,13 +1,12 @@
 import { useEffect, useRef } from 'react'
 import type { KeyboardEvent, ReactNode } from 'react'
 import { X } from 'lucide-react'
-import { Changsal } from './Changsal'
 import { useI18n } from '../../i18n'
 
 /*
-  The hanok sliding door. A paper pane in a lacquer frame that slides in from
-  the inline edge. Esc closes it, focus moves in on open and returns on close,
-  Tab stays inside while it is open.
+  A cream panel that slides in from the inline edge, ruled off from the page
+  by one plum hairline. Esc closes it, focus moves in on open and returns on
+  close, Tab stays inside while it is open.
 */
 
 const FOCUSABLE =
@@ -76,14 +75,11 @@ export function Door({ open, onClose, title, side = 'end', children, footer, wid
         aria-label={title}
         onKeyDown={onKeyDown}
       >
-        <div className="sf-door__rail" aria-hidden="true">
-          <Changsal cell={48} stroke="var(--lacquer-600)" width={1.5} />
-        </div>
         <div className="sf-door__pane">
           <header className="sf-door__head">
             <h2 className="sf-door__title">{title}</h2>
-            <button type="button" className="sf-iconbtn" onClick={onClose} aria-label={tx('اقفلي', 'Close')}>
-              <X size={20} aria-hidden="true" />
+            <button type="button" className="sf-iconbtn sf-door__close" onClick={onClose} aria-label={tx('اقفلي', 'Close')}>
+              <X size={18} aria-hidden="true" />
             </button>
           </header>
           <div className="sf-door__body">{children}</div>

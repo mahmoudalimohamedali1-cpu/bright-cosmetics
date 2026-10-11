@@ -238,7 +238,7 @@ export function Field({ label, hint, error, children, htmlFor }: { label: string
   )
 }
 
-/** Side panel that slides in from the inline-end edge, like a hanok sliding door. */
+/** Side panel that slides in from the inline-end edge, as a sliding panel. */
 export function Drawer({ open, onClose, title, children, footer, width }: { open: boolean; onClose: () => void; title: ReactNode; children: ReactNode; footer?: ReactNode; width?: number }) {
   const ref = useRef<HTMLDivElement>(null)
   const { tx } = useI18n()
@@ -275,8 +275,8 @@ export function Empty({ title, children, action }: { title: string; children?: R
   return (
     <div className="empty">
       <svg className="empty__mark" viewBox="0 0 64 64" aria-hidden>
-        <rect x="6" y="6" width="52" height="52" fill="none" stroke="currentColor" strokeWidth="2" />
-        <path d="M24 6v18H6M40 6v18h18M6 40h18v18M58 40H40v18M24 24h16v16H24z" fill="none" stroke="currentColor" strokeWidth="2" />
+        <circle cx="32" cy="32" r="26" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="4 6" strokeLinecap="round" />
+        <circle cx="32" cy="32" r="6" fill="currentColor" />
       </svg>
       <h3>{title}</h3>
       {children && <p style={{ maxWidth: '44ch' }}>{children}</p>}
