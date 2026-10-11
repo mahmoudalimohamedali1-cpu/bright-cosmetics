@@ -282,7 +282,7 @@ export const useStore = create<State>()(
       resetDemo: () => set({ ...buildSeed(), cart: [], wishlist: [], recentlyViewed: [], me: undefined }),
     }),
     {
-      name: 'bright-store-v4',
+      name: 'bright-store-v5',
       storage: createJSONStorage(() => localStorage),
       version: 1,
       // UI state is per visit, not saved

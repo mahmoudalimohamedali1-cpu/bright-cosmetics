@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Banknote, CreditCard, Smartphone, Wallet } from 'lucide-react'
+import { Banknote, CreditCard, Wallet } from 'lucide-react'
 import { GOVERNORATES } from '../../data/seed'
 import type { PaymentMethod } from '../../data/types'
 import { ProductVisual } from '../../components/ProductVisual'
@@ -51,7 +51,10 @@ export default function Checkout() {
   const freeShip = evald.freeShipping || subtotal >= zone.freeOver
   const shipping = gov ? (freeShip ? 0 : zone.rate) : undefined
   const codAllowed = settings.codEnabled && subtotal - evald.discount + (shipping ?? 0) + zone.codFee <= settings.codMax
-  const method: PaymentMethod = payment === 'cod' && !codAllowed ? 'card' : payment
+  // Cash on delivery only until Paymob is connected (owner's decision); card and wallet appear once it is.
+  const onlinePay = online && paymob === true
+  const method: PaymentMethod = !onlinePay ? 'cod' : payment === 'cod' && !codAllowed ? 'card' : payment
+  const blocked = method === 'cod' && !codAllowed
   const codFee = method === 'cod' ? zone.codFee : 0
   const total = subtotal - evald.discount + (shipping ?? 0) + codFee
 
@@ -174,9 +177,12 @@ export default function Checkout() {
         : tx(`الدفع عند الاستلام متاح للطلبات لحد ${money(settings.codMax)}.`, `Cash on delivery is available for orders up to ${money(settings.codMax)}.`),
       disabled: !codAllowed,
     },
-    { id: 'card', icon: <CreditCard size={20} aria-hidden="true" />, label: tx('كارت بنكي', 'Bank card'), note: onlineNote(true) },
-    { id: 'wallet', icon: <Wallet size={20} aria-hidden="true" />, label: tx('محفظة موبايل', 'Mobile wallet'), note: onlineNote(true) },
-    { id: 'instapay', icon: <Smartphone size={20} aria-hidden="true" />, label: tx('إنستاباي', 'InstaPay'), note: onlineNote(false) },
+    ...(onlinePay
+      ? [
+          { id: 'card' as const, icon: <CreditCard size={20} aria-hidden="true" />, label: tx('كارت بنكي', 'Bank card'), note: onlineNote(true) },
+          { id: 'wallet' as const, icon: <Wallet size={20} aria-hidden="true" />, label: tx('محفظة موبايل', 'Mobile wallet'), note: onlineNote(true) },
+        ]
+      : []),
   ]
 
   const summary = (px: string) => (
@@ -378,12 +384,20 @@ export default function Checkout() {
               <span>{tx('الإجمالي', 'Total')}</span>
               <strong className="tabular">{money(total)}</strong>
             </div>
+            {blocked && (
+              <p className="sf-field__err" role="alert">
+                {tx(
+                  `الدفع عند الاستلام متاح لحد ${money(settings.codMax)}. كلّمينا على واتساب ${settings.whatsapp} ونرتّب طلبك.`,
+                  `Cash on delivery is available up to ${money(settings.codMax)}. Message us on WhatsApp ${settings.whatsapp} and we will arrange your order.`,
+                )}
+              </p>
+            )}
             {serverErr && (
               <p className="sf-field__err" role="alert">
                 {serverErr}
               </p>
             )}
-            <button type="submit" className="sf-btn sf-btn--lemon sf-btn--block sf-btn--xl" disabled={placing} aria-busy={placing || undefined}>
+            <button type="submit" className="sf-btn sf-btn--lemon sf-btn--block sf-btn--xl" disabled={placing || blocked} aria-busy={placing || undefined}>
               {placing
                 ? tx('بنسجّل طلبك…', 'Placing your order…')
                 : method === 'cod' || online
