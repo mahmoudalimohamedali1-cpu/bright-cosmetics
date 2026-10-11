@@ -62,7 +62,7 @@ export async function copyText(text: string) {
   }
 }
 
-export function genCode(prefix = 'NURI') {
+export function genCode(prefix = 'BRIGHT') {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
   let s = ''
   for (let i = 0; i < 5; i++) s += chars[Math.floor(Math.random() * chars.length)]

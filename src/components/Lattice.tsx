@@ -58,7 +58,7 @@ export function Medallion({ stroke = 'currentColor', width = 2, size = 160 }: { 
   )
 }
 
-/** The NURI mark: one lit pane inside the 亞 lattice, a brass point of light. */
+/** The Bright mark: one lit pane inside the 亞 lattice, a brass point of light. */
 export function NuriMark({ size = 32, frame = 'var(--lacquer-800)', pane = 'var(--paper)', light = 'var(--brass)' }: { size?: number; frame?: string; pane?: string; light?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">

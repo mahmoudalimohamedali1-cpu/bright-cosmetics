@@ -56,7 +56,7 @@ export function Footer() {
     <footer className="v-foot">
       <div className="v-wrap v-foot__grid">
         <div className="v-foot__club">
-          <h2 className="v-foot__h" id="v-club-h">{tx('انضمي لنادي نوري.', 'Join the NURI club.')}</h2>
+          <h2 className="v-foot__h" id="v-club-h">{tx('انضمي لنادي برايت.', 'Join the Bright club.')}</h2>
           {joined ? (
             <p className="v-foot__ok" role="status">
               {tx('اتسجّلتي. هنبعتلك أول عرض.', "You're in. First offer is on its way.")}
@@ -82,7 +82,7 @@ export function Footer() {
           <p className="v-mono v-foot__note">
             {tx('عروض وأول المنتجات الجديدة. من غير زحمة.', 'Offers and first look at new drops. No spam.')}
           </p>
-          <Link to="/" className="v-foot__mark" aria-label={tx('نوري، الصفحة الرئيسية', 'NURI home')}>
+          <Link to="/" className="v-foot__mark" aria-label={tx('برايت، الصفحة الرئيسية', 'Bright home')}>
             <Wordmark />
           </Link>
         </div>
@@ -131,7 +131,7 @@ export function Footer() {
         </p>
         <p>{tx('الأسعار والمخزون والتقييمات بيانات تجريبية.', 'Prices, stock and reviews are sample data.')}</p>
         <p>
-          <bdi>© 2026 NURI</bdi> · <a href={`mailto:${settings.email}`}>{settings.email}</a> · <span dir="ltr">{settings.whatsapp}</span>
+          <bdi>© 2026 Bright</bdi> · <a href={`mailto:${settings.email}`}>{settings.email}</a> · <span dir="ltr">{settings.whatsapp}</span>
         </p>
       </div>
     </footer>

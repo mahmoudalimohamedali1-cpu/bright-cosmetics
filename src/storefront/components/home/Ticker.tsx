@@ -20,7 +20,7 @@ export function Ticker() {
     <Marquee
       className="v-ticker"
       items={items}
-      label={tx('مميزات نوري', 'Why NURI')}
+      label={tx('مميزات برايت', 'Why Bright')}
       repeat={2}
       speed={36}
     />

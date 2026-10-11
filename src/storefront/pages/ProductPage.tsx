@@ -113,7 +113,7 @@ function ProductView({ id }: { id: string }) {
 
   const customerName = (cid: string, lang: 'ar' | 'en') => {
     const c = customers.find((x) => x.id === cid)
-    if (!c) return tx('عميلة نوري', 'NURI customer')
+    if (!c) return tx('عميلة برايت', 'Bright customer')
     const full = c.name[lang] || c.name.en
     const [first, last] = full.split(' ')
     return last ? `${first} ${last[0]}.` : first
@@ -383,7 +383,7 @@ function ProductView({ id }: { id: string }) {
                     </p>
                     {r.reply && (
                       <p className="sf-review__reply" dir="auto">
-                        <strong>{tx('رد نوري: ', 'NURI replied: ')}</strong>
+                        <strong>{tx('رد برايت: ', 'Bright replied: ')}</strong>
                         {r.reply}
                       </p>
                     )}

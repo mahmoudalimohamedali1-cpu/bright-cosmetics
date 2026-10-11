@@ -5,14 +5,14 @@ import { FacebookIcon, InstagramIcon, TikTokIcon } from './Glyphs'
 /*
   "Seen on you": a strip of slightly tilted photo cards that scrolls inside
   its own container (never the page), one lilac card carrying the handle.
-  PLACEHOLDER: the @nuri.eg handle and the social URLs below are stand-ins
+  PLACEHOLDER: the @bright.eg handle and the social URLs below are stand-ins
   until the store's real accounts exist.
 */
 
 export const SOCIAL = [
-  { key: 'ig', href: 'https://www.instagram.com/', ar: 'نوري على إنستجرام', en: 'NURI on Instagram' },
-  { key: 'tt', href: 'https://www.tiktok.com/', ar: 'نوري على تيك توك', en: 'NURI on TikTok' },
-  { key: 'fb', href: 'https://www.facebook.com/', ar: 'نوري على فيسبوك', en: 'NURI on Facebook' },
+  { key: 'ig', href: 'https://www.instagram.com/', ar: 'برايت على إنستجرام', en: 'Bright on Instagram' },
+  { key: 'tt', href: 'https://www.tiktok.com/', ar: 'برايت على تيك توك', en: 'Bright on TikTok' },
+  { key: 'fb', href: 'https://www.facebook.com/', ar: 'برايت على فيسبوك', en: 'Bright on Facebook' },
 ] as const
 
 export function SocialIcons({ className }: { className?: string }) {
@@ -41,8 +41,8 @@ export function WildStrip() {
         <h2 id="v-wild-h" className="v-h2">{tx('على بشرتكم.', 'Seen on you.')}</h2>
         <p className="v-mono">
           {tx(
-            'صوّري روتينك واعملي تاج @nuri.eg — بنعيد نشر أحلى لقطات كل أسبوع. نور طبيعي ومن غير فلتر لو سمحتي.',
-            'Snap your routine and tag @nuri.eg. We repost the best ones every week. Natural light, no filter, please.',
+            'صوّري روتينك واعملي تاج @bright.eg — بنعيد نشر أحلى لقطات كل أسبوع. نور طبيعي ومن غير فلتر لو سمحتي.',
+            'Snap your routine and tag @bright.eg. We repost the best ones every week. Natural light, no filter, please.',
           )}
         </p>
       </div>
@@ -60,8 +60,8 @@ export function WildStrip() {
           </li>
         ))}
         <li className="v-wild__card v-wild__card--brand" style={{ ['--t' as string]: '3deg' }} data-tall>
-          <span className="v-wild__brand" aria-hidden="true">NURI</span>
-          <span className="v-wild__handle">@nuri.eg</span>
+          <span className="v-wild__brand" aria-hidden="true">BRIGHT</span>
+          <span className="v-wild__handle">@bright.eg</span>
         </li>
       </ul>
       <SocialIcons className="v-wild__social" />

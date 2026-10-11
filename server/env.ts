@@ -35,7 +35,7 @@ export const env = {
   dataDir: resolve(root, v('DATA_DIR') ?? 'server/data'),
   adminPassword: v('ADMIN_PASSWORD'),
   /** Bootstrap owner login, used only while no staff accounts exist */
-  adminEmail: v('ADMIN_EMAIL') ?? 'owner@nuri.example',
+  adminEmail: v('ADMIN_EMAIL') ?? 'owner@bright.example',
   /** Public origin of the shop, used for payment redirect and webhook URLs */
   appUrl: v('APP_URL'),
   paymob: {

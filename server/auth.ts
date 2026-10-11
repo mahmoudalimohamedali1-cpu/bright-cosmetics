@@ -115,7 +115,7 @@ export async function checkLogin(email: string, password: string): Promise<{ ok:
 
 /**
  * First start with no logins: the owner signs in with ADMIN_EMAIL (default
- * owner@nuri.example) + ADMIN_PASSWORD. After that, accounts are managed in
+ * owner@bright.example) + ADMIN_PASSWORD. After that, accounts are managed in
  * the admin and the env password is no longer consulted.
  */
 export async function bootstrapOwner() {

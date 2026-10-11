@@ -3,17 +3,17 @@ import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 
 /*
-  NURI's own small drawings: the ticker dot, the hand-drawn sparkle sticker,
+  Bright's own small drawings: the ticker dot, the hand-drawn sparkle sticker,
   the jagged sunburst badge and the authenticity seal. All plum outlines on
   lilac, nothing borrowed.
 */
 
-/** The typographic wordmark: NURI in Fraunces black, نوري tucked beside it. */
+/** The typographic wordmark: Bright in Fraunces black, برايت tucked beside it. */
 export function Wordmark({ className }: { className?: string }) {
   return (
     <span className={`v-mark ${className ?? ''}`} aria-hidden="true">
-      <span className="v-mark__en">NURI</span>
-      <span className="v-mark__ar" lang="ar">نوري</span>
+      <span className="v-mark__en">BRIGHT</span>
+      <span className="v-mark__ar" lang="ar">برايت</span>
     </span>
   )
 }

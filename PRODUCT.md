@@ -23,7 +23,7 @@ A prestige bilingual (Arabic RTL / English LTR) store for Korean and imported be
 
 ## Positioning
 
-Brand name **NURI / نوري** *(inferred, placeholder)*: in Korean 누리 means "the world", in Arabic نوري means "my light". The store's claim is curated, authentic Korean and imported beauty matched to the shopper's skin, not a marketplace dump.
+Brand name **Bright / برايت** (set by the owner; replaced the earlier placeholder name). The store's claim is curated, authentic Korean and imported beauty matched to the shopper's skin, not a marketplace dump.
 
 ## Operating Context
 

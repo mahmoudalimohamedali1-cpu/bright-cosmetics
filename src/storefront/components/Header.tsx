@@ -161,7 +161,7 @@ export function Header() {
             </div>
           </div>
 
-          <Link to="/" className="v-header__mark" aria-label={tx('نوري، الصفحة الرئيسية', 'NURI home')}>
+          <Link to="/" className="v-header__mark" aria-label={tx('برايت، الصفحة الرئيسية', 'Bright home')}>
             <Wordmark />
           </Link>
 

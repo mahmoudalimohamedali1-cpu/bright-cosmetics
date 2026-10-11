@@ -28,7 +28,7 @@ export function SpinBand({ product }: { product: Product }) {
 
   const word = (k: number) => (
     <span className="v-spin__word" key={k}>
-      NURI <span lang="ar">نوري</span>
+      BRIGHT <span lang="ar">برايت</span>
     </span>
   )
 

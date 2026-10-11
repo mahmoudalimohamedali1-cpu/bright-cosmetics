@@ -1,4 +1,4 @@
-# NURI / نوري — Korean & imported beauty store + admin
+# Bright / برايت — Korean & imported beauty store + admin
 
 Bilingual (Arabic RTL / English LTR) storefront and a full admin dashboard, built with Vite, React 19, TypeScript, zustand and recharts.
 
@@ -54,7 +54,7 @@ What the server does:
 | Variable | Required | Purpose |
 | --- | --- | --- |
 | `ADMIN_PASSWORD` | first start | Password for the bootstrap owner account, used only while no staff accounts exist. Use a long random value. With no accounts and no password, admin sign-in is disabled |
-| `ADMIN_EMAIL` | no | Email for the bootstrap owner account (default `owner@nuri.example`) |
+| `ADMIN_EMAIL` | no | Email for the bootstrap owner account (default `owner@bright.example`) |
 | `PORT` | no | Server port (default 8787). In dev the API is pinned with `--port 8787` |
 | `APP_URL` | for Paymob | Public origin, e.g. `https://shop.example.com`, used for the payment redirect and webhook URLs |
 | `DATA_DIR` | no | Folder for `nuri.db` (default `server/data`, `/data` in Docker) |

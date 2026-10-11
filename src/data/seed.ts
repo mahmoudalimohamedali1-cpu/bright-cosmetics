@@ -222,7 +222,7 @@ export function buildSeed(): Db {
         lines,
         subtotal,
         discount,
-        discountCode: hasCode ? pickOne(r, ['GLOW10', 'NURI10', 'WELCOME10']) : undefined,
+        discountCode: hasCode ? pickOne(r, ['GLOW10', 'BRIGHT10', 'WELCOME10']) : undefined,
         shipping,
         codFee,
         total,
@@ -285,7 +285,7 @@ export function buildSeed(): Db {
     { id: 'd3', code: 'FREESHIP', title: { ar: 'شحن مجاني فوق 1200', en: 'Free shipping over 1,200' }, kind: 'free_shipping', value: 0, minSubtotal: 1200, used: 190, startsAt: daysAgoISO(60), active: true, automatic: false, appliesTo: 'all' },
     { id: 'd4', code: 'SPF2', title: { ar: 'واقي الشمس: التاني بنص التمن', en: 'Sunscreen: second at half price' }, kind: 'bogo', value: 50, minSubtotal: 0, used: 77, startsAt: daysAgoISO(20), endsAt: daysAgoISO(-40), active: true, automatic: true, appliesTo: 'category', target: ['sunscreen'] },
     { id: 'd5', code: 'ROUTINE15', title: { ar: 'روتين كامل 15%', en: 'Full routine 15%' }, kind: 'bundle', value: 15, minSubtotal: 0, used: 54, startsAt: daysAgoISO(45), active: true, automatic: true, appliesTo: 'all' },
-    { id: 'd6', code: 'NURI10', title: { ar: 'نوري 10 (إنفلونسر)', en: 'NURI 10 (influencer)' }, kind: 'percent', value: 10, minSubtotal: 0, used: 133, startsAt: daysAgoISO(120), endsAt: daysAgoISO(10), active: false, automatic: false, appliesTo: 'all' },
+    { id: 'd6', code: 'BRIGHT10', title: { ar: 'برايت 10 (إنفلونسر)', en: 'Bright 10 (influencer)' }, kind: 'percent', value: 10, minSubtotal: 0, used: 133, startsAt: daysAgoISO(120), endsAt: daysAgoISO(10), active: false, automatic: false, appliesTo: 'all' },
   ]
 
   const abandoned: AbandonedCart[] = Array.from({ length: 26 }, (_, i) => {
@@ -315,11 +315,11 @@ export function buildSeed(): Db {
   ]
 
   const staff: Staff[] = [
-    { id: 's1', name: 'Karim Nabil', email: 'owner@nuri.example', role: 'owner', lastActive: new Date().toISOString() },
-    { id: 's2', name: 'Reem Adel', email: 'reem@nuri.example', role: 'manager', lastActive: daysAgoISO(0, 10) },
-    { id: 's3', name: 'Mostafa Hany', email: 'mostafa@nuri.example', role: 'fulfillment', lastActive: daysAgoISO(0, 11) },
-    { id: 's4', name: 'Nada Samir', email: 'nada@nuri.example', role: 'support', lastActive: daysAgoISO(1, 18) },
-    { id: 's5', name: 'Hassan Ali', email: 'hassan@nuri.example', role: 'marketing', lastActive: daysAgoISO(3, 14) },
+    { id: 's1', name: 'Karim Nabil', email: 'owner@bright.example', role: 'owner', lastActive: new Date().toISOString() },
+    { id: 's2', name: 'Reem Adel', email: 'reem@bright.example', role: 'manager', lastActive: daysAgoISO(0, 10) },
+    { id: 's3', name: 'Mostafa Hany', email: 'mostafa@bright.example', role: 'fulfillment', lastActive: daysAgoISO(0, 11) },
+    { id: 's4', name: 'Nada Samir', email: 'nada@bright.example', role: 'support', lastActive: daysAgoISO(1, 18) },
+    { id: 's5', name: 'Hassan Ali', email: 'hassan@bright.example', role: 'marketing', lastActive: daysAgoISO(3, 14) },
   ]
 
   const activity: Activity[] = [
@@ -330,8 +330,8 @@ export function buildSeed(): Db {
   ]
 
   const settings: Settings = {
-    storeName: { ar: 'نوري', en: 'NURI' },
-    email: 'hello@nuri.example',
+    storeName: { ar: 'برايت', en: 'Bright' },
+    email: 'hello@bright.example',
     phone: '+20 100 000 0000',
     whatsapp: '+20 100 000 0000',
     currency: 'EGP',

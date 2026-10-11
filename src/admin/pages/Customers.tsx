@@ -426,8 +426,8 @@ export default function Customers() {
           title={tx(`رسالة واتساب لـ ${num(selRows.length)} عميل`, `WhatsApp message to ${num(selRows.length)} customers`)}
           context={{ ar: 'عملاء محددين', en: 'selected customers' }}
           defaults={{
-            ar: 'أهلًا {name}، معاكي نوري. وصلنا مخزون جديد من منتجاتك المفضلة من كوريا، ومستنيينك.',
-            en: 'Hi {name}, it’s NURI. New stock of your favourite Korean picks just landed.',
+            ar: 'أهلًا {name}، معاكي برايت. وصلنا مخزون جديد من منتجاتك المفضلة من كوريا، ومستنيينك.',
+            en: 'Hi {name}, it’s Bright. New stock of your favourite Korean picks just landed.',
           }}
         />
       )}

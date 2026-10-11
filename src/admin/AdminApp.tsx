@@ -125,7 +125,7 @@ function AdminShell({ online, signOut, me }: { online: boolean; signOut: () => v
   }, [])
 
   useEffect(() => {
-    document.title = tx('لوحة تحكم نوري', 'NURI Admin')
+    document.title = tx('لوحة تحكم برايت', 'Bright Admin')
   }, [tx])
 
   const counts = useMemo(() => {
@@ -197,7 +197,7 @@ function AdminShell({ online, signOut, me }: { online: boolean; signOut: () => v
           <aside className="adm-rail" data-open={railOpen} aria-label={tx('القائمة الرئيسية', 'Main menu')}>
             <Link to="/admin" className="adm-brand">
               <span>
-                <span className="adm-brand__name">{tx('نوري', 'NURI')}</span>
+                <span className="adm-brand__name">{tx('برايت', 'Bright')}</span>
                 <br />
                 <span className="adm-brand__sub">{tx('لوحة التحكم', 'Admin')}</span>
               </span>

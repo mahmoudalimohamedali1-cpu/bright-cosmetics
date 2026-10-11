@@ -328,7 +328,7 @@ export default function ProductEditor() {
     const desc = d.short[l] || d.description[l] || (l === 'ar' ? 'الوصف المختصر بيظهر هنا.' : 'The short description shows here.')
     return (
       <div className="core-serp" dir={l === 'ar' ? 'rtl' : 'ltr'} lang={l}>
-        <div className="core-serp__url">nuri.example › p › {slug || '…'}</div>
+        <div className="core-serp__url">bright.example › p › {slug || '…'}</div>
         <div className="core-serp__title">{title.length > 62 ? `${title.slice(0, 60)}…` : title}</div>
         <div className="core-serp__desc">{desc.length > 158 ? `${desc.slice(0, 155)}…` : desc}</div>
       </div>

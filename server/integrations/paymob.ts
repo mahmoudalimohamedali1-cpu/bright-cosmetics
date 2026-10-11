@@ -33,14 +33,14 @@ export function integrationIds(method: 'card' | 'wallet'): number[] {
 }
 
 export async function createIntention(order: Order, customer: Customer, opts: { method: 'card' | 'wallet'; appUrl: string; fallbackEmail: string }) {
-  const [first, ...rest] = (customer.name.en || customer.name.ar || 'NURI customer').split(' ')
+  const [first, ...rest] = (customer.name.en || customer.name.ar || 'Bright customer').split(' ')
   const gov = GOVERNORATES.find((g) => g.id === order.governorateId)
   const amount = Math.round(order.total * 100)
   const body = {
     amount,
     currency: 'EGP',
     payment_methods: integrationIds(opts.method),
-    items: [{ name: `NURI order #${order.number}`, amount, description: `${order.lines.length} item(s)`, quantity: 1 }],
+    items: [{ name: `Bright order #${order.number}`, amount, description: `${order.lines.length} item(s)`, quantity: 1 }],
     billing_data: {
       first_name: first || 'NA',
       last_name: rest.join(' ') || 'NA',

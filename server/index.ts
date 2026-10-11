@@ -1,5 +1,5 @@
 /*
-  NURI API server.
+  Bright API server.
     dev:   tsx watch server/index.ts          (API only, Vite proxies /api)
     prod:  tsx server/index.ts --prod         (API + built dist/ with SPA fallback)
   node:sqlite still prints an ExperimentalWarning on Node 24; silence only that
@@ -49,5 +49,5 @@ else if (!env.adminPassword) {
 }
 
 serve({ fetch: app.fetch, port: env.port }, (info) => {
-  console.log(`[api] NURI ${env.production ? 'production' : 'dev'} server on http://localhost:${info.port}`)
+  console.log(`[api] Bright ${env.production ? 'production' : 'dev'} server on http://localhost:${info.port}`)
 })

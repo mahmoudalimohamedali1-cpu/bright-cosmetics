@@ -1,5 +1,5 @@
 ---
-name: NURI / نوري
+name: Bright / برايت
 description: Joyful, loud, bilingual K-beauty store. Plum ink on cream, a lilac brand colour, one lemon pill that buys.
 colors:
   plum: "#1f0229"
@@ -255,13 +255,13 @@ components:
     height: "22px"
 ---
 
-# Design System: NURI / نوري
+# Design System: Bright / برايت
 
 ## Overview
 
 **Creative North Star: "The Laughing Vanity"**
 
-NURI sells Korean and imported skincare the way a friend shows you her vanity: loudly, happily, and up close. The storefront is a cream counter-top ruled in plum ink. On it sit a laughing face with cream on her cheek, a chunky soft serif that shouts one short line, hand-drawn lilac stickers, and a single lemon pill that buys. The design reference the owner pinned is vibebevvy.com, and the build follows its entrance, its scroll moments and its sticker culture. The system refuses the hushed pastel K-beauty catalogue, and the earlier "lattice light" world was discarded by the owner and must not come back.
+Bright sells Korean and imported skincare the way a friend shows you her vanity: loudly, happily, and up close. The storefront is a cream counter-top ruled in plum ink. On it sit a laughing face with cream on her cheek, a chunky soft serif that shouts one short line, hand-drawn lilac stickers, and a single lemon pill that buys. The design reference the owner pinned is vibebevvy.com, and the build follows its entrance, its scroll moments and its sticker culture. The system refuses the hushed pastel K-beauty catalogue, and the earlier "lattice light" world was discarded by the owner and must not come back.
 
 One brand has two registers. The storefront (Persuade) is mobile-first, Arabic RTL by default with English LTR, with full-bleed photography, an entrance sheet, scroll-driven motion and big type. The admin (Operate) is the same brand turned quiet for desktop work: a plum rail, a cream workspace, hairlined panes, Readex Pro at 14px, tabular figures, and lemon kept for the one live action on screen.
 
@@ -329,7 +329,7 @@ The palette is a deep plum ink on a warm cream ground, with one candy brand colo
 
 ### Hierarchy
 - **Display** (Fraunces 900, `clamp(3.5rem, 1.2rem + 8.4vw, 9rem)`, line-height 0.9, -0.025em, max 11ch): the hero headline only. Cream on the photo, with a soft plum text-shadow. Arabic: Lalezar 400, `clamp(3.5rem, 1.6rem + 7.6vw, 8.5rem)`, line-height 1.2, max 9ch.
-- **Giant words** (Fraunces 900, `max(18vw, 108px)` in the spin band, 9vw in the footer slogan, -0.03 to -0.035em): the repeated "NURI نوري" band and the footer line. Both are display-only and aria-hidden or decorative.
+- **Giant words** (Fraunces 900, `max(18vw, 108px)` in the spin band, 9vw in the footer slogan, -0.03 to -0.035em): the repeated "Bright برايت" band and the footer line. Both are display-only and aria-hidden or decorative.
 - **Page headline** (Fraunces 800, `--step-6` = `clamp(2.9rem, 1.6rem + 5.4vw, 5.5rem)`, line-height 0.98): page titles (`sf-h1`). `--step-5` is used for section h2, product names and quiz questions.
 - **Headline** (Fraunces 800, `clamp(2rem, 1.2rem + 2.4vw, 3.25rem)`, line-height 1.04, -0.02em): home section headings (`v-h2`) and the scroll-fill heading (`clamp(1.75rem, 1rem + 2.6vw, 3.25rem)`, centred, max 21ch). Arabic line-height is 1.3 to 1.35.
 - **Title** (Fraunces 600, 1.05rem, line-height 1.25): product names in cards, cart lines, routine cells, fold titles (`--step-1`) and option labels (`--step-2`). Prices are Fraunces 600 with tabular figures, and big prices are 800 at `--step-4`. Arabic titles are Lalezar 400 at 1.15rem, line-height 1.4.
@@ -412,9 +412,9 @@ Every button is outlined in plum, and the one that buys is lemon.
 - **Admin field:** 38px, pane background, a 1px strong line and a 10px radius. Focus shows a Deep Lilac border plus a 3px lemon glow at 28%.
 
 ### Navigation
-- **Ticker:** a 36px lilac bar of plum claims (authentic, cash on delivery, lot on every unit, free shipping over the threshold, matched to your skin), separated by the NURI dot glyph. It loops endlessly and pauses on hover.
+- **Ticker:** a 36px lilac bar of plum claims (authentic, cash on delivery, lot on every unit, free shipping over the threshold, matched to your skin), separated by the Bright dot glyph. It loops endlessly and pauses on hover.
 - **Header:** transparent cream text over the hero, then solid cream with plum text and a plum rule. Links are underlined Fraunces 600. Disclosure chevrons rotate 180° when open. Mega menus and search drop as full-width cream panels between plum rules. Mega rows are 48px with mono counts.
-- **Wordmark:** "NURI" in Fraunces 900 (SOFT 100, WONK 1, 34px, or 28px mobile and 44px footer), always lilac and always LTR, with "نوري" in Lalezar inside a rotated 1.5px outlined pill beside it.
+- **Wordmark:** "Bright" in Fraunces 900 (SOFT 100, WONK 1, 34px, or 28px mobile and 44px footer), always lilac and always LTR, with "برايت" in Lalezar inside a rotated 1.5px outlined pill beside it.
 - **Mobile menu:** lives inside a door panel. Big links are Lalezar or Fraunces at 2rem, with stadium-outlined secondary links and mono column heads.
 - **Admin rail:** plum, with pale plum (#dccbe2) text links at 8px radius. Active is plum-700 with a 3px lemon marker at the inline edge. Group heads are dusk plum at 12px. Counts are stadiums, and lemon when live.
 
@@ -422,14 +422,14 @@ Every button is outlined in plum, and the one that buys is lemon.
 A sliding side panel used for the cart, the mobile menu, filters and quick view. It is cream, 460px wide (860px `--wide`), with a 1px plum edge rule. It slides from the inline-end (or the start) over 520ms on `--ease-door` (`cubic-bezier(0.7, 0, 0.2, 1)`) above a plum scrim. The head has a Fraunces 800 title at `--step-4` over a plum rule, and the foot sits above a plum rule. The admin drawer is the same idea at 560px.
 
 ### Entrance Sheet (signature)
-Home only, once per page load. A full-screen lilac sheet with a soft white radial glow draws the "NURI / نوري" wordmark in a cream outline over 1.1s (stroke-dash). It waits up to 700ms for Fraunces and 1.8s for the hero photo, then wipes off on a diagonal edge over 900ms (`cubic-bezier(0.76, 0, 0.24, 1)`), moving toward the inline-start (mirrored in RTL) while the mark slides out. The hero photo waits zoomed to 1.12 and settles over 1.6s as it is revealed.
+Home only, once per page load. A full-screen lilac sheet with a soft white radial glow draws the "Bright / برايت" wordmark in a cream outline over 1.1s (stroke-dash). It waits up to 700ms for Fraunces and 1.8s for the hero photo, then wipes off on a diagonal edge over 900ms (`cubic-bezier(0.76, 0, 0.24, 1)`), moving toward the inline-start (mirrored in RTL) while the mark slides out. The hero photo waits zoomed to 1.12 and settles over 1.6s as it is revealed.
 
 ### Hero Slide-in & Shrink (signature)
 The headline slides in from the inline-end edge one piece at a time: Latin by letter (each word kept unbreakable) and Arabic by word, 45ms apart, 950ms each on the spring `cubic-bezier(0.34, 1.56, 0.64, 1)`, with a small per-letter tilt that settles to zero. The real text is read once by assistive tech. The sparkle sticker pops in at +1.3s, and the support line and pill rise at +1.1s and +1.35s. Scrolling the first 60% of the viewport scales the hero into an inset card (a 24px gap, 12px under 640px) with corners rounding to 24px.
 
 ### Scroll Moments
 - **Heading fill:** each word fades from 20% to solid as the heading travels from 92% to 38% of the viewport.
-- **Spin band:** the giant "NURI نوري" words slide 14vw and darken from 16% opacity while a bestseller drawing turns 540° on Y (two faces, so the label always reads), floats ±14px and tilts ±6°.
+- **Spin band:** the giant "Bright برايت" words slide 14vw and darken from 16% opacity while a bestseller drawing turns 540° on Y (two faces, so the label always reads), floats ±14px and tilts ±6°.
 - **Marquees:** two identical groups translate by -50% (or +50% in RTL), linear and endless (36–40s). Hover pauses them.
 - **Seal:** the authenticity seal ring rotates once every 48s.
 
@@ -443,7 +443,7 @@ All scroll effects share one passive listener and one requestAnimationFrame, and
 Under `prefers-reduced-motion: reduce`, the entrance sheet is skipped and the headline renders whole. There is no hero shrink, heading fill or spin. Marquees stop and become horizontally scrollable, the seal stops, and hover transforms (pill tilt, ring scale, card tilt) are removed. Globally, every animation and transition collapses to 1ms.
 
 ### Photography
-- Lifestyle photography is joyful and up close: laughing faces, cream on a cheek, textures, droppers and glass, in natural light. Every raster lives in `src/storefront/media.ts` with its Unsplash photo id as provenance and bilingual alt text, and is served through `srcset`. It is placeholder art to be replaced by NURI's own shoot before launch.
+- Lifestyle photography is joyful and up close: laughing faces, cream on a cheek, textures, droppers and glass, in natural light. Every raster lives in `src/storefront/media.ts` with its Unsplash photo id as provenance and bilingual alt text, and is served through `srcset`. It is placeholder art to be replaced by Bright's own shoot before launch.
 - Products are never photographed stand-ins. They are drawn as flat SVG packaging (`ProductVisual`) until real product photography exists.
 - Photos sit in rounded frames with a 1px plum outline (see Shapes), never borderless with shadows. The hero photo alone is full-bleed, under a plum gradient shade.
 

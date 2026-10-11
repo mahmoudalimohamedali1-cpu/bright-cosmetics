@@ -127,7 +127,7 @@ export default function Home() {
       <Marquee
         className="v-strip"
         items={[tx('أصلي، مش تقليد', 'Authentic, never knock-off')]}
-        label={tx('وعد نوري', 'The NURI promise')}
+        label={tx('وعد برايت', 'The Bright promise')}
         repeat={8}
         speed={30}
       />

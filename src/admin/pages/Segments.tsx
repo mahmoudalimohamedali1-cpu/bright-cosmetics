@@ -11,8 +11,8 @@ import { heat, SEGMENT_ORDER } from '../parts/growth/util'
 
 const CAMPAIGN: Record<Segment, { ar: string; en: string }> = {
   champions: {
-    ar: 'أهلًا {name}، إنتِ من أقرب عملاء نوري لقلبنا، وحابين نشكرك بهدية صغيرة على طلبك الجاي.',
-    en: 'Hi {name}, you are one of NURI’s favourite customers, and we’d like to thank you with a small gift on your next order.',
+    ar: 'أهلًا {name}، إنتِ من أقرب عملاء برايت لقلبنا، وحابين نشكرك بهدية صغيرة على طلبك الجاي.',
+    en: 'Hi {name}, you are one of Bright’s favourite customers, and we’d like to thank you with a small gift on your next order.',
   },
   loyal: {
     ar: 'أهلًا {name}، جهّزنالك روتين كامل يناسب بشرتك، وعليه خصم مخصوص ليكي.',
@@ -27,16 +27,16 @@ const CAMPAIGN: Record<Segment, { ar: string; en: string }> = {
     en: 'Hi {name}, we miss you! Fresh stock from Korea just landed.',
   },
   cant_lose: {
-    ar: 'أهلًا {name}، معاكي نوري. حابين نطمن إن كل حاجة كانت تمام في آخر طلب.',
-    en: 'Hi {name}, it’s NURI checking in. We hope everything was right with your last order.',
+    ar: 'أهلًا {name}، معاكي برايت. حابين نطمن إن كل حاجة كانت تمام في آخر طلب.',
+    en: 'Hi {name}, it’s Bright checking in. We hope everything was right with your last order.',
   },
   hibernating: {
-    ar: 'أهلًا {name}، فيه جديد في نوري يناسب بشرتك.',
-    en: 'Hi {name}, there’s something new at NURI for your skin.',
+    ar: 'أهلًا {name}، فيه جديد في برايت يناسب بشرتك.',
+    en: 'Hi {name}, there’s something new at Bright for your skin.',
   },
   new: {
-    ar: 'أهلًا {name}، مرحب بيكي في نوري. أول طلب عليه خصم ترحيبي.',
-    en: 'Hi {name}, welcome to NURI. Your first order comes with a welcome discount.',
+    ar: 'أهلًا {name}، مرحب بيكي في برايت. أول طلب عليه خصم ترحيبي.',
+    en: 'Hi {name}, welcome to Bright. Your first order comes with a welcome discount.',
   },
 }
 

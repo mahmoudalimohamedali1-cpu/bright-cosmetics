@@ -7,7 +7,7 @@ import { useStore } from '../../store'
 import { daysUntil, fefoBatches } from '../lib'
 
 /*
-  The batch provenance trail: brand origin, import shipment, NURI shelf, and
+  The batch provenance trail: brand origin, import shipment, Bright shelf, and
   the expiry of the exact lot the shopper will receive (FEFO).
 */
 export function Provenance({ p, tone = 'paper', compact }: { p: Product; tone?: 'paper' | 'lacquer'; compact?: boolean }) {
@@ -57,7 +57,7 @@ export function Provenance({ p, tone = 'paper', compact }: { p: Product; tone?: 
     },
     {
       icon: <Store size={18} aria-hidden="true" />,
-      title: tx('على رف نوري', 'On the NURI shelf'),
+      title: tx('على رف برايت', 'On the Bright shelf'),
       line: tx(`تشغيلة ${lot.lot}`, `Lot ${lot.lot}`),
       when: tx(`وصلت ${date(lot.receivedAt)}`, `Received ${date(lot.receivedAt)}`),
     },

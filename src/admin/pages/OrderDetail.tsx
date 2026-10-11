@@ -94,12 +94,12 @@ export default function OrderDetail() {
 
   const cname = customer ? pick(customer.name) : tx('العميل', 'Customer')
   const waText = [
-    `أهلًا ${customer?.name.ar ?? ''}، معاك فريق نوري.`,
+    `أهلًا ${customer?.name.ar ?? ''}، معاك فريق برايت.`,
     `بنأكد طلب رقم #${o.number} بإجمالي ${o.total} ج.م ${o.payment === 'cod' ? 'والدفع عند الاستلام' : 'مدفوع مسبقًا'}.`,
     `العنوان: ${o.address}، ${g?.name.ar ?? ''}.`,
     'برجاء الرد بكلمة "تمام" للتأكيد.',
     '',
-    `Hi ${customer?.name.en ?? ''}, this is NURI.`,
+    `Hi ${customer?.name.en ?? ''}, this is Bright.`,
     `Confirming order #${o.number}, total EGP ${o.total}${o.payment === 'cod' ? ', cash on delivery' : ', prepaid'}.`,
     `Address: ${o.address}, ${g?.name.en ?? ''}.`,
     'Reply OK to confirm.',

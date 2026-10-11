@@ -50,7 +50,7 @@ export function Testimonials() {
   const i = Math.min(at, picks.length - 1)
   const r = picks[i]
   const c = customers.find((x) => x.id === r.customerId)
-  const name = c ? pick(c.name) : tx('عميلة نوري', 'NURI shopper')
+  const name = c ? pick(c.name) : tx('عميلة برايت', 'Bright shopper')
   const go = (d: number) => setAt((i + d + picks.length) % picks.length)
 
   return (

@@ -275,7 +275,7 @@ export function removeServerDoc(collection: Collection, id: string) {
 export type AdminMe = { id: string; name: string; email: string; role: Role; permissions: Permission[] }
 
 /** Browser-only demo mode has no accounts: it runs as the seed owner with every permission. */
-export const DEMO_ME: AdminMe = { id: 's1', name: 'Karim Nabil', email: 'owner@nuri.example', role: 'owner', permissions: [...PERMISSIONS] }
+export const DEMO_ME: AdminMe = { id: 's1', name: 'Karim Nabil', email: 'owner@bright.example', role: 'owner', permissions: [...PERMISSIONS] }
 
 export async function adminLogin(email: string, password: string) {
   return api<{ token: string; me: AdminMe }>('/api/admin/login', { body: { email, password } })

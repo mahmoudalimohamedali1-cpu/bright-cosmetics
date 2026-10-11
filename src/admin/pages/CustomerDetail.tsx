@@ -104,8 +104,8 @@ export default function CustomerDetail() {
   const recMsg =
     rec.running.length || rec.next.length
       ? lang === 'ar'
-        ? `أهلًا ${nm}، معاكي نوري.\n${rec.running.length ? `غالبًا ${rec.running.map((x) => x.p.name.ar).join(' و')} قرّب يخلص، تحبي نجهّزلك واحد جديد؟\n` : ''}${rec.next.length ? `ولبشرتك ال${SKIN_LABEL[c.skinType].ar} ممكن يعجبك: ${rec.next.slice(0, 2).map((x) => x.p.name.ar).join('، ')}.` : ''}`
-        : `Hi ${nm}, it’s NURI.\n${rec.running.length ? `Your ${rec.running.map((x) => x.p.name.en).join(' and ')} is probably running low. Shall we send a fresh one?\n` : ''}${rec.next.length ? `For your ${SKIN_LABEL[c.skinType].en.toLowerCase()} skin you might like: ${rec.next.slice(0, 2).map((x) => x.p.name.en).join(', ')}.` : ''}`
+        ? `أهلًا ${nm}، معاكي برايت.\n${rec.running.length ? `غالبًا ${rec.running.map((x) => x.p.name.ar).join(' و')} قرّب يخلص، تحبي نجهّزلك واحد جديد؟\n` : ''}${rec.next.length ? `ولبشرتك ال${SKIN_LABEL[c.skinType].ar} ممكن يعجبك: ${rec.next.slice(0, 2).map((x) => x.p.name.ar).join('، ')}.` : ''}`
+        : `Hi ${nm}, it’s Bright.\n${rec.running.length ? `Your ${rec.running.map((x) => x.p.name.en).join(' and ')} is probably running low. Shall we send a fresh one?\n` : ''}${rec.next.length ? `For your ${SKIN_LABEL[c.skinType].en.toLowerCase()} skin you might like: ${rec.next.slice(0, 2).map((x) => x.p.name.en).join(', ')}.` : ''}`
       : ''
 
   return (

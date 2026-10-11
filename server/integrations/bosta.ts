@@ -23,12 +23,12 @@ export async function createDelivery(order: Order, customer: Customer) {
   const cod = order.payment === 'cod' && order.paymentStatus !== 'paid' ? order.total : 0
   const body = {
     type: 10,
-    specs: { packageType: 'Parcel', size: 'SMALL', packageDetails: { itemsCount: items, description: `NURI order #${order.number}` } },
+    specs: { packageType: 'Parcel', size: 'SMALL', packageDetails: { itemsCount: items, description: `Bright order #${order.number}` } },
     notes: order.note ?? '',
     cod,
     dropOffAddress: { city: CITY[order.governorateId] ?? gov?.name.en ?? 'Cairo', firstLine: order.address },
-    receiver: { firstName: firstName || 'NURI', lastName: rest.join(' ') || 'Customer', phone: customer.phone, email: customer.email || undefined },
-    businessReference: `NURI-${order.number}`,
+    receiver: { firstName: firstName || 'Bright', lastName: rest.join(' ') || 'Customer', phone: customer.phone, email: customer.email || undefined },
+    businessReference: `BRIGHT-${order.number}`,
   }
   const r = await fetch(`${env.bosta.baseUrl}/deliveries`, {
     method: 'POST',

@@ -74,7 +74,7 @@ function AdminLogin({ onDone, initialError }: { onDone: () => void; initialError
   const ref = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    document.title = tx('دخول لوحة تحكم نوري', 'Sign in to NURI Admin')
+    document.title = tx('دخول لوحة تحكم برايت', 'Sign in to Bright Admin')
     document.documentElement.dir = dir
     document.documentElement.lang = lang
     emailRef.current?.focus()
@@ -106,7 +106,7 @@ function AdminLogin({ onDone, initialError }: { onDone: () => void; initialError
       <form className="adm-login__card" onSubmit={submit} noValidate>
         <div className="row-between">
           <span>
-            <span className="adm-brand__name">{tx('نوري', 'NURI')}</span>
+            <span className="adm-brand__name">{tx('برايت', 'Bright')}</span>
             <span className="adm-login__sub">{tx('لوحة التحكم', 'Admin')}</span>
           </span>
           <button type="button" className="btn btn--ghost btn--sm" onClick={toggle} aria-label={tx('Switch to English', 'التحويل للعربية')}>

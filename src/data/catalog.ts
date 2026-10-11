@@ -339,8 +339,8 @@ export function buildCatalog(): Product[] {
       name: { ar: s.ar, en: s.en },
       short: { ar: s.shortAr, en: s.shortEn },
       description: {
-        en: `${s.shortEn} Imported directly from ${originName(s.origin).en} through NURI’s authorised supply chain; every unit carries its lot number and expiry date.`,
-        ar: `${s.shortAr} مستورد مباشرة من ${originName(s.origin).ar} عن طريق سلسلة توريد نوري المعتمدة، وكل عبوة عليها رقم التشغيلة وتاريخ الصلاحية.`,
+        en: `${s.shortEn} Imported directly from ${originName(s.origin).en} through Bright’s authorised supply chain; every unit carries its lot number and expiry date.`,
+        ar: `${s.shortAr} مستورد مباشرة من ${originName(s.origin).ar} عن طريق سلسلة توريد برايت المعتمدة، وكل عبوة عليها رقم التشغيلة وتاريخ الصلاحية.`,
       },
       howToUse: { en: howEn, ar: howAr },
       category: s.category,

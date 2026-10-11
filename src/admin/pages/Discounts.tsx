@@ -29,7 +29,7 @@ function phase(d: Discount, now = Date.now()): Exclude<Tab, 'all'> {
 
 const blank = (): Discount => ({
   id: '',
-  code: genCode('NURI'),
+  code: genCode('BRIGHT'),
   title: { ar: '', en: '' },
   kind: 'percent',
   value: 10,
@@ -479,7 +479,7 @@ function DiscountEditor({ initial, onClose, onSave, onDelete }: { initial: Disco
         <Field label={d.automatic ? tx('الاسم الداخلي', 'Internal name') : tx('الكود', 'Code')} error={show('code')} htmlFor="dc-code" hint={tx('حروف إنجليزية كبيرة وأرقام، علشان يتكتب بسهولة على الموبايل', 'Capital letters and digits, easy to type on a phone')}>
           <div className="row">
             <input id="dc-code" className="input gr-code" value={d.code} onChange={(e) => set('code', e.target.value.toUpperCase())} aria-invalid={!!show('code')} autoComplete="off" />
-            <button type="button" className="btn" onClick={() => set('code', genCode(d.kind === 'free_shipping' ? 'SHIP' : 'NURI'))}>
+            <button type="button" className="btn" onClick={() => set('code', genCode(d.kind === 'free_shipping' ? 'SHIP' : 'BRIGHT'))}>
               {tx('توليد', 'Generate')}
             </button>
           </div>

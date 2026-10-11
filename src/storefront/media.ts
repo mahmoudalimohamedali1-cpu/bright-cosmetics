@@ -1,7 +1,7 @@
 /*
   Lifestyle photography. Free-to-use images hot-linked from Unsplash
   (Unsplash License). Provenance per image is the Unsplash photo id in the
-  URL. Replace with NURI's own shoot before launch.
+  URL. Replace with Bright's own shoot before launch.
 */
 
 const u = (id: string, w: number, h?: number) =>
@@ -16,7 +16,7 @@ export const PHOTOS = {
   hero: photo('1646457417455-77a66a9fcf34', 'بنت بتضحك وحاطة كريم على خدها', 'A woman laughing with cream on her cheek'),
   /** Wide banner: joyful, white space on one side */
   banner: photo('1728727267814-792db55ce678', 'بنت مبسوطة ولمسة كريم على خدها', 'A smiling woman with a touch of cream on her cheek'),
-  /** Accordion / why-NURI image */
+  /** Accordion / why-Bright image */
   serum: photo('1655026392641-bf283a5f12d4', 'نقطة سيروم من القطّارة على الجبهة', 'A drop of serum from a glass dropper'),
   /** Texture, glass and water */
   glass: photo('1580491934306-acf5f6886d90', 'وش ورا إزاز عليه نقط مية', 'A face behind a glass with water drops'),

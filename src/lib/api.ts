@@ -1,7 +1,7 @@
 import type { Bi } from '../i18n'
 
 /*
-  Thin client for the NURI API (server/). The app must keep working with no
+  Thin client for the Bright API (server/). The app must keep working with no
   server at all (static preview, demo deploys), so every caller first asks
   `apiAvailable()`, which probes /api/health once with a short timeout and
   caches the answer for the page's lifetime.

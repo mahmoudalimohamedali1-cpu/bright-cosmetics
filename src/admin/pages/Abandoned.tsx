@@ -79,8 +79,8 @@ export default function Abandoned() {
     const link = `${window.location.origin}/`
     const nm = c ? firstName(c.name[msgLang]) : ''
     if (msgLang === 'ar')
-      return `أهلًا${nm ? ` ${nm}` : ''}، معاكي نوري.\nسلتك لسه مستنياكي:\n${items}\nالإجمالي ${Math.round(a.total).toLocaleString('en')} ج.م.${code ? `\nاستخدمي الكود ${code} وخدي خصم إضافي.` : ''}\nتقدري تكمّلي من هنا: ${link}\nولو فيه أي سؤال عن نوع بشرتك احنا هنا.`
-    return `Hi${nm ? ` ${nm}` : ''}, it’s NURI.\nYour cart is still waiting:\n${items}\nTotal EGP ${Math.round(a.total).toLocaleString('en')}.${code ? `\nUse code ${code} for an extra discount.` : ''}\nPick up where you left off: ${link}\nAny questions about your skin type? We’re here.`
+      return `أهلًا${nm ? ` ${nm}` : ''}، معاكي برايت.\nسلتك لسه مستنياكي:\n${items}\nالإجمالي ${Math.round(a.total).toLocaleString('en')} ج.م.${code ? `\nاستخدمي الكود ${code} وخدي خصم إضافي.` : ''}\nتقدري تكمّلي من هنا: ${link}\nولو فيه أي سؤال عن نوع بشرتك احنا هنا.`
+    return `Hi${nm ? ` ${nm}` : ''}, it’s Bright.\nYour cart is still waiting:\n${items}\nTotal EGP ${Math.round(a.total).toLocaleString('en')}.${code ? `\nUse code ${code} for an extra discount.` : ''}\nPick up where you left off: ${link}\nAny questions about your skin type? We’re here.`
   }
 
   const remind = (a: AbandonedCart) => {

@@ -1,4 +1,4 @@
-/* NURI — home, intro, header, footer.
+/* Bright — home, intro, header, footer.
    Cream ground, plum ink and 1px plum hairlines, lilac for the brand,
    lemon only for the elliptical pill. Classes are prefixed v-. */
 
@@ -527,14 +527,14 @@
   from { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
   to { clip-path: polygon(100% 0, 100% 0, 100% 100%, 145% 100%); }
 }
-.v-pre__mark { width: min(520px, 72vw); height: auto; overflow: visible; }
+.v-pre__mark { width: min(640px, 84vw); height: auto; overflow: visible; }
 .v-pre__mark text {
   fill: transparent;
   stroke: var(--cream);
   stroke-width: 2.5;
   stroke-linejoin: round;
-  stroke-dasharray: 900;
-  stroke-dashoffset: 900;
+  stroke-dasharray: 1400;
+  stroke-dashoffset: 1400;
   animation: v-pre-draw 1.1s cubic-bezier(0.45, 0, 0.2, 1) 0.15s forwards;
 }
 .v-pre__en {

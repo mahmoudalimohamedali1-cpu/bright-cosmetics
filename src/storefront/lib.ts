@@ -53,7 +53,7 @@ export { PHONE_RE, normalizePhone, westernDigits } from '../lib/commerce'
 
 export function useTitle(title: string | undefined) {
   useEffect(() => {
-    document.title = title ? `${title} | نوري NURI` : 'نوري | NURI'
+    document.title = title ? `${title} | برايت Bright` : 'برايت | Bright'
   }, [title])
 }
 
