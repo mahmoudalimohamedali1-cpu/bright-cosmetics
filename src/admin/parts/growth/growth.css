@@ -18,7 +18,7 @@
   --gr-s2: #b8862c;
   --gr-prev: #6e5952;
   --gr-seq: #e07a5f;
-  --gr-seq-ink: #1f0907;
+  --gr-seq-ink: #12001a;
 }
 
 .gr-take {
@@ -52,7 +52,7 @@ button.gr-chip:hover { background: var(--hover); }
 .gr-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 
 .gr-code {
-  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -275,4 +275,4 @@ a.gr-heat__cell:hover, button.gr-heat__cell:hover { outline: 2px solid var(--bra
 }
 .gr-star-on { color: var(--brass); fill: var(--brass); }
 [dir='rtl'] .gr-ltr { text-align: right; }
-.adm[data-theme='dark'] .gr-savebar { background: #3d1f19; border: 1px solid var(--line-strong); }
+.adm[data-theme='dark'] .gr-savebar { background: #2a0d38; border: 1px solid var(--line-strong); }

@@ -303,7 +303,7 @@ export default function Shop() {
         ) : (
           <div className="sf-wrap">
             <div className="sf-empty">
-              <Sticker size={88} tone="lemon">
+              <Sticker size={88}>
                 {num(0)}
               </Sticker>
               <p className="sf-empty__title">{q ? tx(`مفيش نتايج لـ «${q}»`, `Nothing matches “${q}”`) : tx('مفيش منتجات بالفلاتر دي', 'No products match these filters')}</p>

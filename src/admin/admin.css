@@ -5,13 +5,13 @@
 .adm {
   --bg: var(--paper);
   --pane: var(--paper-lit);
-  --pane-2: #f1f4ee;
-  --line: #d6ddd3;
-  --line-strong: #bfc9bd;
+  --pane-2: #fbeee4;
+  --line: #ecd9cc;
+  --line-strong: #d9bfb0;
   --fg: var(--ink);
   --fg-2: var(--ink-2);
   --fg-3: var(--ink-3);
-  --hover: #e8ede5;
+  --hover: #f8e7db;
   --accent: var(--lacquer-700);
   --accent-fg: var(--ink-on-lacquer);
   --live: var(--brass);
@@ -21,7 +21,7 @@
   --chart-3: #2a72a8;
   --chart-4: #b07a1e;
   --chart-5: #8a5cb5;
-  --chart-grid: #dde3da;
+  --chart-grid: #ecd9cc;
   --rail-w: 248px;
   --top-h: 60px;
 
@@ -84,16 +84,6 @@
   isolation: isolate;
 }
 
-.adm-rail__lattice {
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 220px;
-  color: var(--lacquer-700);
-  opacity: 0.55;
-  z-index: -1;
-  mask-image: linear-gradient(to top, #000 10%, transparent);
-  -webkit-mask-image: linear-gradient(to top, #000 10%, transparent);
-}
 
 .adm-brand {
   display: flex;
@@ -460,7 +450,7 @@ a.ledger__cell:hover { background: var(--pane-2); }
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--brass) 28%, transparent);
 }
 .input[aria-invalid='true'] { border-color: var(--bad); }
-.select { appearance: none; padding-inline-end: 32px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237c6e66' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
+.select { appearance: none; padding-inline-end: 32px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a6680' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
 [dir='rtl'] .select { background-position: left 12px center; }
 .input-group { display: flex; align-items: stretch; }
 .input-group > .addon {
@@ -619,7 +609,7 @@ a.ledger__cell:hover { background: var(--pane-2); }
   flex: none;
   overflow: hidden;
 }
-.adm[data-theme='dark'] .thumb { background: #e7ebe4; }
+.adm[data-theme='dark'] .thumb { background: var(--paper-2); }
 .thumb svg { width: 100%; height: 100%; }
 .thumb--lg { width: 64px; height: 64px; }
 
@@ -640,7 +630,7 @@ a.ledger__cell:hover { background: var(--pane-2); }
 .drawer-scrim {
   position: fixed;
   inset: 0;
-  background: rgb(31 9 7 / 0.42);
+  background: rgb(18 0 26 / 0.42);
   z-index: 80;
   animation: fade var(--t-med) var(--ease-out);
 }

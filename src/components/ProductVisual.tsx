@@ -33,7 +33,7 @@ export function ProductVisual({ visual, brand, size, className, bare, title }: P
       preserveAspectRatio="xMidYMax meet"
       data-brand={brand}
     >
-      <ellipse cx={100} cy={248} rx={g.shadowRx} ry={6} fill="#2a0d0c" opacity={0.14} />
+      <ellipse cx={100} cy={248} rx={g.shadowRx} ry={6} fill="#1f0229" opacity={0.12} />
       {g.draw(body, cap)}
       {g.label && (
         <g>
