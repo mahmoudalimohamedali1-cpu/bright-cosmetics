@@ -1334,3 +1334,22 @@
 }
 .v-tab:hover { border-color: var(--rose-gold); }
 .v-tab[aria-selected='true'] { background: var(--rose-sheen); border-color: var(--rose-gold-deep); }
+
+/* Bigger, clearer logo */
+:root { --v-header-h: 92px; }
+@media (max-width: 1023px) { :root { --v-header-h: 76px; } }
+.v-mark__logo { width: 72px; height: 72px; box-shadow: 0 3px 14px rgb(169 100 79 / 0.35); image-rendering: auto; }
+.v-mark__en { font-size: 30px; font-weight: 700; }
+.v-mark__script { font-size: 22px; }
+.v-foot__mark .v-mark__logo { width: 140px; height: 140px; }
+.v-foot__mark .v-mark__en { font-size: 46px; }
+.v-foot__mark .v-mark__script { font-size: 32px; }
+@media (max-width: 1023px) {
+  .v-mark__logo { width: 58px; height: 58px; }
+  .v-mark__en { font-size: 23px; }
+  .v-mark__script { font-size: 17px; }
+}
+@media (max-width: 430px) {
+  .v-header__mark .v-mark__logo { width: 54px; height: 54px; }
+  .v-header__mark .v-mark__en { font-size: 20px; }
+}
