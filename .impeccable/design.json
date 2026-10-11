@@ -1,0 +1,973 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-11T03:52:29Z",
+  "title": "Design System: NURI / نوري",
+  "extensions": {
+    "colorMeta": {
+      "plum": {
+        "role": "primary",
+        "displayName": "Aubergine Plum Ink",
+        "canonical": "oklch(18.1% 0.081 316.2)",
+        "tonalRamp": [
+          "#12001a",
+          "#1f0229",
+          "#2c0a3a",
+          "#43195a",
+          "#5a2a75",
+          "#b9a3c4",
+          "#dccbe2",
+          "#efe3f3"
+        ],
+        "cssVar": "--plum (alias of legacy --lacquer-900, --ink)"
+      },
+      "plum-deep": {
+        "role": "primary",
+        "displayName": "Night Plum",
+        "canonical": "oklch(13.6% 0.067 315.7)",
+        "tonalRamp": [
+          "#15011d",
+          "#31193b",
+          "#50375a",
+          "#70567b",
+          "#92769e",
+          "#b599c2",
+          "#dabde7",
+          "#f8e8ff"
+        ],
+        "cssVar": "--lacquer-950"
+      },
+      "plum-800": {
+        "role": "primary",
+        "displayName": "Plum 800",
+        "canonical": "oklch(23.1% 0.091 314.1)",
+        "tonalRamp": [
+          "#160021",
+          "#351343",
+          "#533163",
+          "#745185",
+          "#9672a9",
+          "#ba94cd",
+          "#dfb8f3",
+          "#f7e8ff"
+        ],
+        "cssVar": "--lacquer-800"
+      },
+      "plum-700": {
+        "role": "primary",
+        "displayName": "Plum 700",
+        "canonical": "oklch(31.1% 0.115 311.2)",
+        "tonalRamp": [
+          "#150022",
+          "#370a4c",
+          "#552c6e",
+          "#764c91",
+          "#996db5",
+          "#bc90da",
+          "#e1b4ff",
+          "#f6e9ff"
+        ],
+        "cssVar": "--lacquer-700"
+      },
+      "plum-300": {
+        "role": "primary",
+        "displayName": "Dusk Plum",
+        "canonical": "oklch(74.5% 0.053 314.5)",
+        "tonalRamp": [
+          "#13041a",
+          "#2e1d37",
+          "#4c3956",
+          "#6c5876",
+          "#8e7999",
+          "#b19cbc",
+          "#d6bfe1",
+          "#f7e8ff"
+        ],
+        "cssVar": "--lacquer-300"
+      },
+      "cream": {
+        "role": "neutral",
+        "displayName": "Cream",
+        "canonical": "oklch(96.6% 0.020 58.1)",
+        "tonalRamp": [
+          "#120904",
+          "#2d231b",
+          "#4b4038",
+          "#6a5f56",
+          "#8c8077",
+          "#afa299",
+          "#d4c6bd",
+          "#f9ece2"
+        ],
+        "cssVar": "--cream (alias of legacy --paper)"
+      },
+      "cream-lit": {
+        "role": "neutral",
+        "displayName": "Lit Cream",
+        "canonical": "oklch(98.3% 0.011 63.4)",
+        "tonalRamp": [
+          "#0f0a07",
+          "#292420",
+          "#46413c",
+          "#66605b",
+          "#87817c",
+          "#aaa49e",
+          "#cec8c2",
+          "#f4ede7"
+        ],
+        "cssVar": "--paper-lit"
+      },
+      "cream-2": {
+        "role": "neutral",
+        "displayName": "Cream 2",
+        "canonical": "oklch(93.1% 0.029 57.4)",
+        "tonalRamp": [
+          "#140802",
+          "#302217",
+          "#4e3e33",
+          "#6e5d51",
+          "#907e72",
+          "#b4a194",
+          "#d8c5b7",
+          "#feeadc"
+        ],
+        "cssVar": "--paper-2"
+      },
+      "cream-3": {
+        "role": "neutral",
+        "displayName": "Cream 3",
+        "canonical": "oklch(88.2% 0.035 55.9)",
+        "tonalRamp": [
+          "#160700",
+          "#322114",
+          "#513d30",
+          "#715c4f",
+          "#937d6f",
+          "#b7a091",
+          "#dcc4b4",
+          "#ffeadc"
+        ],
+        "cssVar": "--paper-3"
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Plum Grey 2",
+        "canonical": "oklch(36.1% 0.060 317.1)",
+        "tonalRamp": [
+          "#15021b",
+          "#311b38",
+          "#4f3857",
+          "#6f5778",
+          "#91779a",
+          "#b59abe",
+          "#d9bee3",
+          "#f9e7ff"
+        ],
+        "cssVar": "--ink-2"
+      },
+      "ink-3": {
+        "role": "neutral",
+        "displayName": "Plum Grey 3",
+        "canonical": "oklch(53.9% 0.046 318.3)",
+        "tonalRamp": [
+          "#130517",
+          "#2f1d34",
+          "#4d3a52",
+          "#6d5972",
+          "#8e7a95",
+          "#b29cb8",
+          "#d6c0dd",
+          "#f9e7ff"
+        ],
+        "cssVar": "--ink-3"
+      },
+      "ink-on-plum-2": {
+        "role": "neutral",
+        "displayName": "Pale Plum (text on plum)",
+        "canonical": "oklch(86.3% 0.036 317.3)",
+        "tonalRamp": [
+          "#110615",
+          "#2c1f31",
+          "#4a3c4f",
+          "#6a5b6f",
+          "#8b7c91",
+          "#af9eb4",
+          "#d3c2d9",
+          "#f9e7ff"
+        ],
+        "cssVar": "--ink-on-lacquer-2"
+      },
+      "lilac": {
+        "role": "secondary",
+        "displayName": "Candy Lilac",
+        "canonical": "oklch(77.9% 0.150 314.9)",
+        "tonalRamp": [
+          "#160020",
+          "#3b004f",
+          "#5e1d77",
+          "#80419b",
+          "#a363bf",
+          "#c886e5",
+          "#e7b1ff",
+          "#f7e8ff"
+        ],
+        "cssVar": "--lilac"
+      },
+      "lilac-700": {
+        "role": "secondary",
+        "displayName": "Deep Lilac",
+        "canonical": "oklch(47.9% 0.164 310.6)",
+        "tonalRamp": [
+          "#150022",
+          "#390053",
+          "#5d1980",
+          "#7e3ea4",
+          "#a161ca",
+          "#c584f0",
+          "#e0b5ff",
+          "#f5e9ff"
+        ],
+        "cssVar": "--lilac-700 (= legacy --brass-600)"
+      },
+      "lilac-600": {
+        "role": "secondary",
+        "displayName": "Lilac 600",
+        "canonical": "oklch(57.9% 0.174 311.2)",
+        "tonalRamp": [
+          "#150022",
+          "#390053",
+          "#5f1183",
+          "#813aa8",
+          "#a45ecd",
+          "#c881f4",
+          "#e1b4ff",
+          "#f6e9ff"
+        ],
+        "cssVar": "--lilac-600"
+      },
+      "lilac-100": {
+        "role": "secondary",
+        "displayName": "Lilac Mist",
+        "canonical": "oklch(95.4% 0.030 315.9)",
+        "tonalRamp": [
+          "#100714",
+          "#2b212f",
+          "#483d4d",
+          "#685c6d",
+          "#8a7d8f",
+          "#ada0b2",
+          "#d1c4d7",
+          "#f7e9fd"
+        ],
+        "cssVar": "--lilac-100"
+      },
+      "lemon": {
+        "role": "tertiary",
+        "displayName": "Lemon",
+        "canonical": "oklch(96.5% 0.181 108.4)",
+        "tonalRamp": [
+          "#0d0c00",
+          "#282700",
+          "#464500",
+          "#676500",
+          "#8a8700",
+          "#afab00",
+          "#d5d100",
+          "#faf74e"
+        ],
+        "cssVar": "--lemon (alias of legacy --brass)"
+      },
+      "lemon-300": {
+        "role": "tertiary",
+        "displayName": "Pale Lemon",
+        "canonical": "oklch(97.1% 0.115 106.2)",
+        "tonalRamp": [
+          "#0d0c00",
+          "#292600",
+          "#484400",
+          "#696400",
+          "#8b8626",
+          "#aea94d",
+          "#d2ce72",
+          "#f8f497"
+        ],
+        "cssVar": "--brass-300"
+      },
+      "celadon-700": {
+        "role": "tertiary",
+        "displayName": "Celadon 700",
+        "canonical": "oklch(47.9% 0.078 161.1)",
+        "tonalRamp": [
+          "#000f07",
+          "#002e1b",
+          "#0c4e34",
+          "#336f53",
+          "#559173",
+          "#78b595",
+          "#9cd9b9",
+          "#c2ffde"
+        ]
+      },
+      "celadon-600": {
+        "role": "tertiary",
+        "displayName": "Celadon 600",
+        "canonical": "oklch(57.4% 0.101 156.1)",
+        "tonalRamp": [
+          "#001005",
+          "#002e17",
+          "#00502c",
+          "#247248",
+          "#4a9469",
+          "#6db88b",
+          "#91ddae",
+          "#c4ffd9"
+        ]
+      },
+      "celadon-400": {
+        "role": "tertiary",
+        "displayName": "Celadon 400",
+        "canonical": "oklch(77.2% 0.076 157.4)",
+        "tonalRamp": [
+          "#001006",
+          "#002e18",
+          "#164e32",
+          "#386e50",
+          "#5a9070",
+          "#7cb492",
+          "#a0d9b6",
+          "#c5ffdb"
+        ]
+      },
+      "celadon-100": {
+        "role": "tertiary",
+        "displayName": "Celadon 100",
+        "canonical": "oklch(95.4% 0.020 154.9)",
+        "tonalRamp": [
+          "#050e08",
+          "#1e2821",
+          "#3a453d",
+          "#59655c",
+          "#79867d",
+          "#9ca9a0",
+          "#c0cdc4",
+          "#e5f3e9"
+        ]
+      },
+      "ok": {
+        "role": "status",
+        "displayName": "OK",
+        "canonical": "oklch(53.1% 0.076 162.5)",
+        "tonalRamp": [
+          "#000f07",
+          "#002d1c",
+          "#0d4e36",
+          "#336f54",
+          "#569175",
+          "#78b497",
+          "#9cd9bb",
+          "#c1ffe0"
+        ]
+      },
+      "ok-bg": {
+        "role": "status",
+        "displayName": "OK ground",
+        "canonical": "oklch(94.0% 0.017 159.1)",
+        "tonalRamp": [
+          "#050d09",
+          "#1e2822",
+          "#3a453f",
+          "#59645e",
+          "#7a867f",
+          "#9ca9a1",
+          "#c0cdc5",
+          "#e5f2ea"
+        ]
+      },
+      "warn": {
+        "role": "status",
+        "displayName": "Warn",
+        "canonical": "oklch(56.3% 0.112 76.7)",
+        "tonalRamp": [
+          "#130900",
+          "#342100",
+          "#593b00",
+          "#825800",
+          "#a87826",
+          "#cd9b4d",
+          "#f3bf72",
+          "#ffebd0"
+        ]
+      },
+      "warn-bg": {
+        "role": "status",
+        "displayName": "Warn ground",
+        "canonical": "oklch(94.6% 0.037 86.2)",
+        "tonalRamp": [
+          "#110a00",
+          "#2d240f",
+          "#4b412b",
+          "#6a604a",
+          "#8c816a",
+          "#afa48b",
+          "#d4c8af",
+          "#f9edd3"
+        ]
+      },
+      "bad": {
+        "role": "status",
+        "displayName": "Bad",
+        "canonical": "oklch(49.8% 0.153 29.1)",
+        "tonalRamp": [
+          "#1f0000",
+          "#4d0000",
+          "#800403",
+          "#a63329",
+          "#ce584a",
+          "#f67c6c",
+          "#ffb3a7",
+          "#ffe9e5"
+        ]
+      },
+      "bad-bg": {
+        "role": "status",
+        "displayName": "Bad ground",
+        "canonical": "oklch(92.6% 0.025 29.9)",
+        "tonalRamp": [
+          "#140706",
+          "#30211e",
+          "#4e3d3a",
+          "#6f5c59",
+          "#917d7a",
+          "#b4a09c",
+          "#d9c4c0",
+          "#ffe9e5"
+        ]
+      },
+      "info": {
+        "role": "status",
+        "displayName": "Info",
+        "canonical": "oklch(49.1% 0.069 243.4)",
+        "tonalRamp": [
+          "#000c1a",
+          "#002842",
+          "#1c4664",
+          "#3d6686",
+          "#5d87a9",
+          "#7fabce",
+          "#a3cff3",
+          "#e0f1ff"
+        ]
+      },
+      "info-bg": {
+        "role": "status",
+        "displayName": "Info ground",
+        "canonical": "oklch(93.2% 0.015 241.8)",
+        "tonalRamp": [
+          "#060c11",
+          "#1f262c",
+          "#3b434a",
+          "#5a6269",
+          "#7b848b",
+          "#9da6ae",
+          "#c1cbd2",
+          "#e6f0f8"
+        ]
+      },
+      "chart-1": {
+        "role": "data",
+        "displayName": "Chart 1 (light)",
+        "canonical": "oklch(46.2% 0.133 34.4)",
+        "tonalRamp": [
+          "#1d0100",
+          "#490a00",
+          "#791a02",
+          "#9e3e28",
+          "#c5614a",
+          "#ec846b",
+          "#ffb4a1",
+          "#ffe9e3"
+        ]
+      },
+      "chart-2": {
+        "role": "data",
+        "displayName": "Chart 2 (light)",
+        "canonical": "oklch(57.4% 0.101 156.1)",
+        "tonalRamp": [
+          "#001005",
+          "#002e17",
+          "#00502c",
+          "#247248",
+          "#4a9469",
+          "#6db88b",
+          "#91ddae",
+          "#c4ffd9"
+        ]
+      },
+      "chart-3": {
+        "role": "data",
+        "displayName": "Chart 3 (light)",
+        "canonical": "oklch(53.3% 0.110 244.9)",
+        "tonalRamp": [
+          "#000c1a",
+          "#002743",
+          "#004571",
+          "#1b669b",
+          "#4288c0",
+          "#66ace6",
+          "#99d0ff",
+          "#e1f1ff"
+        ]
+      },
+      "chart-4": {
+        "role": "data",
+        "displayName": "Chart 4 (light)",
+        "canonical": "oklch(62.0% 0.121 75.0)",
+        "tonalRamp": [
+          "#130900",
+          "#352000",
+          "#5a3b00",
+          "#835700",
+          "#ac7618",
+          "#d19944",
+          "#f7be6a",
+          "#ffebd1"
+        ]
+      },
+      "chart-5": {
+        "role": "data",
+        "displayName": "Chart 5 (light)",
+        "canonical": "oklch(56.2% 0.140 306.3)",
+        "tonalRamp": [
+          "#140024",
+          "#360057",
+          "#55267b",
+          "#75489f",
+          "#9869c4",
+          "#bb8cea",
+          "#dab8ff",
+          "#f3eaff"
+        ]
+      },
+      "admin-dark-pane": {
+        "role": "neutral",
+        "displayName": "Admin dark pane",
+        "canonical": "oklch(18.1% 0.067 313.6)",
+        "tonalRamp": [
+          "#15011e",
+          "#301a3c",
+          "#4f375b",
+          "#6f567c",
+          "#91779f",
+          "#b499c3",
+          "#d9bde8",
+          "#f7e8ff"
+        ]
+      },
+      "admin-dark-pane-2": {
+        "role": "neutral",
+        "displayName": "Admin dark pane 2",
+        "canonical": "oklch(21.4% 0.075 313.3)",
+        "tonalRamp": [
+          "#160021",
+          "#32183e",
+          "#50355e",
+          "#705480",
+          "#9275a3",
+          "#b697c7",
+          "#dbbbec",
+          "#f7e8ff"
+        ]
+      },
+      "admin-dark-line": {
+        "role": "neutral",
+        "displayName": "Admin dark hairline",
+        "canonical": "oklch(27.2% 0.086 312.9)",
+        "tonalRamp": [
+          "#160021",
+          "#331542",
+          "#523362",
+          "#725284",
+          "#9473a7",
+          "#b896cc",
+          "#ddb9f1",
+          "#f6e8ff"
+        ]
+      },
+      "admin-dark-line-strong": {
+        "role": "neutral",
+        "displayName": "Admin dark strong line",
+        "canonical": "oklch(33.7% 0.112 311.9)",
+        "tonalRamp": [
+          "#150022",
+          "#370b4b",
+          "#552d6c",
+          "#764d8f",
+          "#996eb3",
+          "#bc90d8",
+          "#e2b4fe",
+          "#f6e9ff"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display (Latin)",
+        "purpose": "Hero headline only, cream on the photo, slides in letter by letter."
+      },
+      "display-ar": {
+        "displayName": "Display (Arabic)",
+        "purpose": "Hero headline in Arabic: Lalezar 400, never letter-spaced, slides in word by word."
+      },
+      "headline-page": {
+        "displayName": "Page headline",
+        "purpose": "Page titles (sf-h1); --step-5 for section h2, product names, quiz questions."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Home section headings and the scroll-fill heading."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Product names in cards, cart lines, routine cells, fold titles."
+      },
+      "nav": {
+        "displayName": "UI serif",
+        "purpose": "Underlined nav links, accordion triggers, ticker, mega links (Readex 500 in RTL)."
+      },
+      "pill": {
+        "displayName": "Pill label",
+        "purpose": "The lemon buy pill: uppercase, underlined label (Lalezar 1.125rem in RTL)."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Running text, labels and button labels in LTR."
+      },
+      "body-ar": {
+        "displayName": "Body (Arabic)",
+        "purpose": "Running text in RTL: taller line-height, zero tracking."
+      },
+      "label-mono": {
+        "displayName": "Typewriter small print",
+        "purpose": "Meta, brand lines, codes, accordion bodies, legal (Readex under Arabic)."
+      },
+      "label-caps": {
+        "displayName": "Column label",
+        "purpose": "Footer and mobile-menu column heads only."
+      },
+      "admin-body": {
+        "displayName": "Admin body",
+        "purpose": "Operate register base text."
+      },
+      "admin-title": {
+        "displayName": "Admin page title",
+        "purpose": "Admin page h1 only (Lalezar 400 in RTL)."
+      },
+      "admin-figure": {
+        "displayName": "Admin KPI figure",
+        "purpose": "Ledger KPI values, tabular figures."
+      }
+    },
+    "shadows": [
+      {
+        "name": "hero-text",
+        "value": "0 2px 40px rgb(31 2 41 / 0.3)",
+        "purpose": "Text-shadow under the cream hero headline over photography (legibility, not elevation)."
+      },
+      {
+        "name": "header-text",
+        "value": "0 1px 14px rgb(31 2 41 / 0.35)",
+        "purpose": "Text-shadow on the transparent header over the hero photo."
+      },
+      {
+        "name": "door-scrim",
+        "value": "rgb(31 2 41 / 0.32)",
+        "purpose": "Plum scrim behind storefront door panels (background, not shadow)."
+      },
+      {
+        "name": "admin-shadow-1",
+        "value": "0 1px 2px rgb(42 13 12 / 0.06), 0 2px 8px rgb(42 13 12 / 0.06)",
+        "purpose": "Admin only: pressed segmented control. Tint is a carry-over from the discarded world; re-tint to plum when touched."
+      },
+      {
+        "name": "admin-shadow-2",
+        "value": "0 6px 16px rgb(42 13 12 / 0.10), 0 18px 48px rgb(42 13 12 / 0.14)",
+        "purpose": "Admin only: toasts, chart tooltips, save bar."
+      },
+      {
+        "name": "admin-shadow-3",
+        "value": "0 24px 64px rgb(31 9 7 / 0.32)",
+        "purpose": "Admin only: drawer, command palette, off-canvas rail."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Default settle for reveals, accordion, card lift, photo settle."
+      },
+      {
+        "name": "ease-door",
+        "value": "cubic-bezier(0.7, 0, 0.2, 1)",
+        "purpose": "Sliding door panels and the admin off-canvas rail."
+      },
+      {
+        "name": "spring",
+        "value": "cubic-bezier(0.34, 1.56, 0.64, 1)",
+        "purpose": "Playful overshoot: headline slide-in, pill tilt, ring scale, sticker pop, card tilt."
+      },
+      {
+        "name": "wipe",
+        "value": "cubic-bezier(0.76, 0, 0.24, 1)",
+        "purpose": "Entrance sheet diagonal wipe (900ms)."
+      },
+      {
+        "name": "draw",
+        "value": "cubic-bezier(0.45, 0, 0.2, 1)",
+        "purpose": "Wordmark stroke draw on the entrance sheet (1.1s)."
+      },
+      {
+        "name": "t-fast",
+        "value": "140ms",
+        "purpose": "Colour and background state changes."
+      },
+      {
+        "name": "t-med",
+        "value": "260ms",
+        "purpose": "Quick-add reveal, arrow nudge, admin overlays."
+      },
+      {
+        "name": "t-slow",
+        "value": "520ms",
+        "purpose": "Door panels, card lift, meter fills."
+      },
+      {
+        "name": "entrance-draw",
+        "value": "1150ms",
+        "purpose": "Entrance sheet hold while the mark draws (waits ≤700ms for Fraunces, ≤1.8s for the hero photo)."
+      },
+      {
+        "name": "letter-slide",
+        "value": "950ms, 45ms stagger",
+        "purpose": "Hero headline pieces slide in from the inline-end; Latin per letter, Arabic per word."
+      },
+      {
+        "name": "hero-shrink",
+        "value": "scroll 0–60% of viewport",
+        "purpose": "Hero scales into an inset card (24px gap, 12px <640px), corners to 24px."
+      },
+      {
+        "name": "marquee",
+        "value": "36–40s linear infinite",
+        "purpose": "Ticker and strip loops; hover pauses; reduced motion stops and makes them scrollable."
+      },
+      {
+        "name": "seal-spin",
+        "value": "48s linear infinite",
+        "purpose": "Authenticity seal ring rotation."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "prefers-reduced-motion: reduce",
+        "purpose": "Skip entrance, no slide-in/shrink/fill/spin, stop marquees and seal, drop hover transforms; all durations collapse to 1ms."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "xs",
+        "value": "420px"
+      },
+      {
+        "name": "sm",
+        "value": "480px"
+      },
+      {
+        "name": "hero-sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "760px"
+      },
+      {
+        "name": "grid-2",
+        "value": "860px"
+      },
+      {
+        "name": "lg",
+        "value": "960px"
+      },
+      {
+        "name": "desktop-nav",
+        "value": "1024px"
+      },
+      {
+        "name": "xl",
+        "value": "1100px"
+      },
+      {
+        "name": "xxl",
+        "value": "1560px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Lemon Buy Pill",
+      "kind": "button",
+      "refersTo": "button-pill-cta",
+      "description": "The one call to action: an elliptical lemon pill with a plum outline, underlined label and arrow.",
+      "html": "<a class=\"ds-pill\" href=\"#\"><span class=\"ds-pill__t\">Shop now</span><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg></a>",
+      "css": ".ds-pill { display:inline-flex; align-items:center; justify-content:center; gap:10px; min-height:58px; padding:14px 40px; border:1px solid var(--plum, #1f0229); border-radius:50%; background:var(--lemon, #fffc54); color:var(--plum, #1f0229); font-family:'Fraunces', 'Lalezar', Georgia, serif; font-variation-settings:'SOFT' 100,'opsz' 36; font-size:1rem; font-weight:700; letter-spacing:0.02em; text-transform:uppercase; text-decoration:none; white-space:nowrap; transition:transform .35s cubic-bezier(0.34,1.56,0.64,1); } .ds-pill__t { text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:4px; } .ds-pill svg { transition:translate .3s cubic-bezier(0.34,1.56,0.64,1); } .ds-pill:hover { transform:rotate(-3deg) scale(1.04); } .ds-pill:hover svg { translate:5px 0; } .ds-pill:focus-visible { outline:2px solid var(--lilac-700,#7a3aa0); outline-offset:4px; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Every non-buying action: a plum-outlined stadium on cream that fills plum on hover.",
+      "html": "<button class=\"ds-btn\" type=\"button\">See the routine <svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg></button>",
+      "css": ".ds-btn { display:inline-flex; align-items:center; gap:10px; min-height:48px; padding:0 24px; border:1px solid var(--plum, #1f0229); border-radius:999px; background:var(--cream, #fff1e7); color:var(--plum, #1f0229); font-family:'Readex Pro', system-ui, 'Segoe UI', Tahoma, sans-serif; font-size:0.9375rem; font-weight:500; cursor:pointer; transition:background-color 140ms, color 140ms; } .ds-btn svg { transition:translate 260ms cubic-bezier(0.16,1,0.3,1); } .ds-btn:hover { background:var(--plum, #1f0229); color:var(--cream, #fff1e7); } .ds-btn:hover svg { translate:4px 0; } .ds-btn:focus-visible { outline:2px solid var(--lilac-700,#7a3aa0); outline-offset:2px; }"
+    },
+    {
+      "name": "Round Icon Button",
+      "kind": "button",
+      "refersTo": "icon-button-round",
+      "description": "44px target with a 1px currentColor ring; wishlist variant fills lilac when pressed.",
+      "html": "<button class=\"ds-round\" type=\"button\" aria-label=\"Save to wishlist\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7Z\"/></svg></button> <button class=\"ds-round\" type=\"button\" aria-pressed=\"true\" aria-label=\"Saved\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7Z\"/></svg></button>",
+      "css": ".ds-round { display:inline-grid; place-items:center; width:44px; height:44px; padding:0; border:1px solid currentColor; border-radius:50%; background:transparent; color:var(--plum, #1f0229); cursor:pointer; transition:background-color 140ms, color 140ms, transform .25s cubic-bezier(0.34,1.56,0.64,1); } .ds-round:hover { background:var(--plum, #1f0229); color:var(--cream, #fff1e7); } .ds-round[aria-pressed='true'] { background:var(--lilac, #db98f9); color:var(--plum, #1f0229); } .ds-round:focus-visible { outline:2px solid var(--lilac-700,#7a3aa0); outline-offset:0; }"
+    },
+    {
+      "name": "Filter Pill",
+      "kind": "chip",
+      "refersTo": "filter-pill",
+      "description": "Outlined stadium filter; lilac mist on hover, solid lilac when selected. Skin-fit chip in celadon.",
+      "html": "<div class=\"ds-pills\"><button class=\"ds-fp\" type=\"button\">Oily</button><button class=\"ds-fp\" type=\"button\" aria-pressed=\"true\">Dry</button><span class=\"ds-fit\">Fits your skin</span></div>",
+      "css": ".ds-pills { display:flex; flex-wrap:wrap; gap:8px; align-items:center; } .ds-fp { display:inline-flex; align-items:center; min-height:40px; padding:0 16px; border:1px solid var(--plum, #1f0229); border-radius:999px; background:transparent; color:var(--plum, #1f0229); font-family:'Readex Pro', system-ui, 'Segoe UI', Tahoma, sans-serif; font-size:0.8125rem; font-weight:500; cursor:pointer; transition:background-color 140ms; } .ds-fp:hover { background:var(--lilac-100,#f8eafe); } .ds-fp[aria-pressed='true'] { background:var(--lilac, #db98f9); } .ds-fp:focus-visible { outline:2px solid var(--lilac-700,#7a3aa0); outline-offset:2px; } .ds-fit { display:inline-flex; align-items:center; min-height:32px; padding:4px 14px; border:1px solid var(--celadon-400,#8cc4a2); border-radius:999px; background:var(--celadon-100,#e6f4ea); color:var(--celadon-700,#2f6b4f); font-family:'Readex Pro', system-ui, 'Segoe UI', Tahoma, sans-serif; font-size:0.8125rem; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "text-field",
+      "description": "52px lit-cream field, 14px corners, plum-40% outline that goes solid on hover and rings on focus.",
+      "html": "<label class=\"ds-field\"><span>Phone</span><input type=\"tel\" placeholder=\"01xxxxxxxxx\"><small>We call to confirm cash on delivery.</small></label>",
+      "css": ".ds-field { display:grid; gap:8px; max-width:360px; font-family:'Readex Pro', system-ui, 'Segoe UI', Tahoma, sans-serif; color:var(--plum, #1f0229); } .ds-field span { font-size:0.8125rem; font-weight:500; } .ds-field input { min-height:52px; padding:10px 16px; border:1px solid color-mix(in srgb, #1f0229 40%, transparent); border-radius:14px; background:var(--cream-lit,#fff8f2); color:var(--plum, #1f0229); font:inherit; font-size:0.9375rem; transition:border-color 140ms; } .ds-field input::placeholder { color:#7a6680; } .ds-field input:hover { border-color:var(--plum, #1f0229); } .ds-field input:focus-visible { border-color:var(--plum, #1f0229); outline:2px solid var(--plum, #1f0229); outline-offset:2px; } .ds-field small { font-family:'Space Mono', 'Readex Pro', ui-monospace, monospace; font-size:0.75rem; color:#4a3352; }"
+    },
+    {
+      "name": "Lilac Ticker",
+      "kind": "nav",
+      "refersTo": "ticker",
+      "description": "36px lilac claims bar that loops endlessly, separated by the NURI dot glyph; hover pauses.",
+      "html": "<div class=\"ds-ticker\"><div class=\"ds-ticker__track\"><span>100% authentic</span><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"11\" fill=\"#1f0229\"/><path d=\"M12 4.5c.6 4.2 3.3 6.9 7.5 7.5-4.2.6-6.9 3.3-7.5 7.5-.6-4.2-3.3-6.9-7.5-7.5 4.2-.6 6.9-3.3 7.5-7.5Z\" fill=\"#fff1e7\"/><circle cx=\"17.6\" cy=\"6.4\" r=\"1.3\" fill=\"#db98f9\"/></svg><span>Cash on delivery</span><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"11\" fill=\"#1f0229\"/><path d=\"M12 4.5c.6 4.2 3.3 6.9 7.5 7.5-4.2.6-6.9 3.3-7.5 7.5-.6-4.2-3.3-6.9-7.5-7.5 4.2-.6 6.9-3.3 7.5-7.5Z\" fill=\"#fff1e7\"/><circle cx=\"17.6\" cy=\"6.4\" r=\"1.3\" fill=\"#db98f9\"/></svg><span>Lot number on every unit</span><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"11\" fill=\"#1f0229\"/><path d=\"M12 4.5c.6 4.2 3.3 6.9 7.5 7.5-4.2.6-6.9 3.3-7.5 7.5-.6-4.2-3.3-6.9-7.5-7.5 4.2-.6 6.9-3.3 7.5-7.5Z\" fill=\"#fff1e7\"/><circle cx=\"17.6\" cy=\"6.4\" r=\"1.3\" fill=\"#db98f9\"/></svg><span>Matched to your skin</span><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"11\" fill=\"#1f0229\"/><path d=\"M12 4.5c.6 4.2 3.3 6.9 7.5 7.5-4.2.6-6.9 3.3-7.5 7.5-.6-4.2-3.3-6.9-7.5-7.5 4.2-.6 6.9-3.3 7.5-7.5Z\" fill=\"#fff1e7\"/><circle cx=\"17.6\" cy=\"6.4\" r=\"1.3\" fill=\"#db98f9\"/></svg><span>100% authentic</span><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"11\" fill=\"#1f0229\"/><path d=\"M12 4.5c.6 4.2 3.3 6.9 7.5 7.5-4.2.6-6.9 3.3-7.5 7.5-.6-4.2-3.3-6.9-7.5-7.5 4.2-.6 6.9-3.3 7.5-7.5Z\" fill=\"#fff1e7\"/><circle cx=\"17.6\" cy=\"6.4\" r=\"1.3\" fill=\"#db98f9\"/></svg><span>Cash on delivery</span><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"11\" fill=\"#1f0229\"/><path d=\"M12 4.5c.6 4.2 3.3 6.9 7.5 7.5-4.2.6-6.9 3.3-7.5 7.5-.6-4.2-3.3-6.9-7.5-7.5 4.2-.6 6.9-3.3 7.5-7.5Z\" fill=\"#fff1e7\"/><circle cx=\"17.6\" cy=\"6.4\" r=\"1.3\" fill=\"#db98f9\"/></svg><span>Lot number on every unit</span><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"11\" fill=\"#1f0229\"/><path d=\"M12 4.5c.6 4.2 3.3 6.9 7.5 7.5-4.2.6-6.9 3.3-7.5 7.5-.6-4.2-3.3-6.9-7.5-7.5 4.2-.6 6.9-3.3 7.5-7.5Z\" fill=\"#fff1e7\"/><circle cx=\"17.6\" cy=\"6.4\" r=\"1.3\" fill=\"#db98f9\"/></svg><span>Matched to your skin</span><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"11\" fill=\"#1f0229\"/><path d=\"M12 4.5c.6 4.2 3.3 6.9 7.5 7.5-4.2.6-6.9 3.3-7.5 7.5-.6-4.2-3.3-6.9-7.5-7.5 4.2-.6 6.9-3.3 7.5-7.5Z\" fill=\"#fff1e7\"/><circle cx=\"17.6\" cy=\"6.4\" r=\"1.3\" fill=\"#db98f9\"/></svg></div></div>",
+      "css": ".ds-ticker { overflow:hidden; height:36px; display:flex; align-items:center; background:var(--lilac, #db98f9); color:var(--plum, #1f0229); font-family:'Fraunces', 'Lalezar', Georgia, serif; font-variation-settings:'SOFT' 100,'opsz' 36; font-size:0.875rem; font-weight:600; } .ds-ticker__track { display:flex; align-items:center; gap:1.25rem; width:max-content; white-space:nowrap; animation:ds-mq 36s linear infinite; } .ds-ticker:hover .ds-ticker__track { animation-play-state:paused; } @keyframes ds-mq { to { transform:translateX(-50%); } } @media (prefers-reduced-motion: reduce) { .ds-ticker__track { animation:none; } .ds-ticker { overflow-x:auto; } }"
+    },
+    {
+      "name": "Hairline Product Cell",
+      "kind": "card",
+      "refersTo": "product-card",
+      "description": "No box: a cell in the plum hairline grid; drawn packaging lifts and tilts on hover, lilac sunburst sticker, round wishlist.",
+      "html": "<ul class=\"ds-grid\"><li class=\"ds-cell\"><div class=\"ds-tile\"><span class=\"ds-burst\"><svg viewBox=\"0 0 100 100\" aria-hidden=\"true\"><polygon points=\"50.00,1.00 57.12,9.62 66.76,3.96 70.50,14.49 81.50,12.46 81.41,23.65 92.44,25.50 88.53,35.98 98.26,41.49 91.00,50.00 98.26,58.51 88.53,64.02 92.44,74.50 81.41,76.35 81.50,87.54 70.50,85.51 66.76,96.04 57.12,90.38 50.00,99.00 42.88,90.38 33.24,96.04 29.50,85.51 18.50,87.54 18.59,76.35 7.56,74.50 11.47,64.02 1.74,58.51 9.00,50.00 1.74,41.49 11.47,35.98 7.56,25.50 18.59,23.65 18.50,12.46 29.50,14.49 33.24,3.96 42.88,9.62\" fill=\"#db98f9\" stroke=\"#1f0229\" stroke-width=\"1.25\" stroke-linejoin=\"round\"/></svg><b>Best<br>seller</b></span><button class=\"ds-wish\" type=\"button\" aria-label=\"Save\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7Z\"/></svg></button><span class=\"ds-vis\"><svg viewBox=\"0 0 200 260\" width=\"96\" height=\"125\" aria-hidden=\"true\"><ellipse cx=\"100\" cy=\"248\" rx=\"52\" ry=\"6\" fill=\"#1f0229\" opacity=\"0.14\"/><rect x=\"78\" y=\"44\" width=\"44\" height=\"50\" rx=\"22\" fill=\"#1f0229\"/><rect x=\"72\" y=\"88\" width=\"56\" height=\"26\" rx=\"4\" fill=\"#1f0229\"/><rect x=\"56\" y=\"112\" width=\"88\" height=\"134\" rx=\"16\" fill=\"#db98f9\"/><rect x=\"64\" y=\"150\" width=\"72\" height=\"70\" rx=\"2\" fill=\"#fff8f2\"/><text x=\"100\" y=\"180\" text-anchor=\"middle\" font-family=\"Readex Pro, sans-serif\" font-weight=\"600\" font-size=\"11\" fill=\"#1f0229\">NURI</text><rect x=\"64\" y=\"122\" width=\"4\" height=\"110\" rx=\"2\" fill=\"#fff\" opacity=\"0.38\"/></svg></span></div><div class=\"ds-body\"><div class=\"ds-line\"><a class=\"ds-name\" href=\"#\">Centella calming ampoule</a><span class=\"ds-price\">EGP 690</span></div><p class=\"ds-meta\">SKIN1004 · 55 ml</p></div></li><li class=\"ds-cell\"><div class=\"ds-tile\"><span class=\"ds-vis\"><svg viewBox=\"0 0 200 260\" width=\"96\" height=\"125\" aria-hidden=\"true\"><ellipse cx=\"100\" cy=\"248\" rx=\"52\" ry=\"6\" fill=\"#1f0229\" opacity=\"0.14\"/><rect x=\"78\" y=\"44\" width=\"44\" height=\"50\" rx=\"22\" fill=\"#1f0229\"/><rect x=\"72\" y=\"88\" width=\"56\" height=\"26\" rx=\"4\" fill=\"#1f0229\"/><rect x=\"56\" y=\"112\" width=\"88\" height=\"134\" rx=\"16\" fill=\"#db98f9\"/><rect x=\"64\" y=\"150\" width=\"72\" height=\"70\" rx=\"2\" fill=\"#fff8f2\"/><text x=\"100\" y=\"180\" text-anchor=\"middle\" font-family=\"Readex Pro, sans-serif\" font-weight=\"600\" font-size=\"11\" fill=\"#1f0229\">NURI</text><rect x=\"64\" y=\"122\" width=\"4\" height=\"110\" rx=\"2\" fill=\"#fff\" opacity=\"0.38\"/></svg></span></div><div class=\"ds-body\"><div class=\"ds-line\"><a class=\"ds-name\" href=\"#\">Rice toner</a><span class=\"ds-price\">EGP 540</span></div><p class=\"ds-meta\">I'M FROM · 150 ml</p></div></li></ul>",
+      "css": ".ds-grid { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); border-top:1px solid var(--plum, #1f0229); background:var(--cream, #fff1e7); color:var(--plum, #1f0229); max-width:520px; } .ds-cell { position:relative; border-bottom:1px solid var(--plum, #1f0229); border-inline-end:1px solid var(--plum, #1f0229); } .ds-cell:nth-child(2n) { border-inline-end:0; } .ds-tile { position:relative; aspect-ratio:4/5; display:grid; place-items:center; overflow:hidden; } .ds-vis { transition:transform 520ms cubic-bezier(0.16,1,0.3,1); } .ds-cell:hover .ds-vis { transform:translateY(-6px) rotate(-2deg); } .ds-burst { position:absolute; top:12px; inset-inline-start:12px; width:64px; height:64px; display:grid; place-items:center; color:var(--plum, #1f0229); transition:rotate 700ms cubic-bezier(0.16,1,0.3,1); } .ds-burst svg { position:absolute; inset:0; width:100%; height:100%; } .ds-burst b { position:relative; text-align:center; font-family:'Fraunces', 'Lalezar', Georgia, serif; font-variation-settings:'SOFT' 100,'opsz' 144; font-weight:800; font-size:11px; line-height:1.05; rotate:-10deg; } .ds-cell:hover .ds-burst svg { rotate:30deg; transition:rotate 700ms cubic-bezier(0.16,1,0.3,1); } .ds-wish { position:absolute; top:12px; inset-inline-end:12px; width:40px; height:40px; display:grid; place-items:center; border:1px solid var(--plum, #1f0229); border-radius:50%; background:var(--cream, #fff1e7); color:var(--plum, #1f0229); cursor:pointer; } .ds-wish:hover { background:var(--plum, #1f0229); color:var(--cream, #fff1e7); } .ds-body { display:grid; gap:4px; padding:14px 16px 18px; } .ds-line { display:flex; justify-content:space-between; align-items:baseline; gap:12px; } .ds-name { color:inherit; text-decoration:none; font-family:'Fraunces', 'Lalezar', Georgia, serif; font-variation-settings:'SOFT' 100,'opsz' 144; font-weight:600; font-size:1.05rem; line-height:1.25; } .ds-cell:hover .ds-name { text-decoration:underline; text-decoration-thickness:1px; } .ds-name:focus-visible { outline:2px solid var(--lilac-700,#7a3aa0); outline-offset:2px; } .ds-price { font-family:'Fraunces', 'Lalezar', Georgia, serif; font-weight:600; font-variant-numeric:tabular-nums; white-space:nowrap; } .ds-meta { margin:0; font-family:'Space Mono', 'Readex Pro', ui-monospace, monospace; font-size:0.75rem; color:#4a3352; }"
+    },
+    {
+      "name": "Hairline Accordion",
+      "kind": "custom",
+      "refersTo": "accordion-row",
+      "description": "One-open-at-a-time rows between plum hairlines; Fraunces trigger, mono body, grid-rows open animation.",
+      "html": "<div class=\"ds-acc\"><div class=\"ds-acc__item\" data-open><button class=\"ds-acc__btn\" type=\"button\" aria-expanded=\"true\"><span>Every unit carries its lot</span><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/></svg></button><div class=\"ds-acc__panel\"><div class=\"ds-acc__inner\"><p>Batch number and expiry are printed on every box, and you can look them up before you pay.</p></div></div></div><div class=\"ds-acc__item\"><button class=\"ds-acc__btn\" type=\"button\" aria-expanded=\"false\"><span>Pay when it arrives</span><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"M12 5v14\"/></svg></button><div class=\"ds-acc__panel\"><div class=\"ds-acc__inner\"><p>Cash on delivery in every governorate.</p></div></div></div></div>",
+      "css": ".ds-acc { border-top:1px solid var(--plum, #1f0229); color:var(--plum, #1f0229); max-width:520px; } .ds-acc__item { border-bottom:1px solid var(--plum, #1f0229); } .ds-acc__btn { width:100%; min-height:60px; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 0; border:0; background:none; color:var(--plum, #1f0229); text-align:start; font-family:'Fraunces', 'Lalezar', Georgia, serif; font-variation-settings:'SOFT' 100,'opsz' 36; font-size:1.125rem; font-weight:700; cursor:pointer; } .ds-acc__btn:hover span { text-decoration:underline; text-underline-offset:5px; } .ds-acc__btn:focus-visible { outline:2px solid var(--lilac-700,#7a3aa0); outline-offset:2px; } .ds-acc__panel { display:grid; grid-template-rows:0fr; transition:grid-template-rows .4s cubic-bezier(0.16,1,0.3,1); } .ds-acc__item[data-open] .ds-acc__panel { grid-template-rows:1fr; } .ds-acc__inner { overflow:hidden; } .ds-acc__inner p { margin:0; padding-bottom:22px; max-width:54ch; font-family:'Space Mono', 'Readex Pro', ui-monospace, monospace; font-size:0.8125rem; line-height:1.8; }"
+    },
+    {
+      "name": "Admin Primary & Live Buttons",
+      "kind": "button",
+      "refersTo": "admin-button-primary",
+      "description": "Operate register: 36px, 10px corners; plum-800 primary, lemon for the single live action, quiet default.",
+      "html": "<div class=\"ds-adm-row\"><button class=\"ds-abtn ds-abtn--primary\" type=\"button\">Save product</button><button class=\"ds-abtn ds-abtn--live\" type=\"button\">Confirm 12 orders</button><button class=\"ds-abtn\" type=\"button\">Export</button></div>",
+      "css": ".ds-adm-row { display:flex; gap:8px; flex-wrap:wrap; font-family:'Readex Pro', system-ui, 'Segoe UI', Tahoma, sans-serif; } .ds-abtn { display:inline-flex; align-items:center; gap:8px; height:36px; padding:0 14px; border-radius:10px; border:1px solid color-mix(in srgb, #1f0229 28%, transparent); background:var(--paper-lit,#fff8f2); color:var(--plum, #1f0229); font:inherit; font-size:14px; font-weight:500; cursor:pointer; transition:background 140ms, transform 140ms; } .ds-abtn:hover { background:var(--paper-2,#f8e4d6); } .ds-abtn:active { transform:translateY(1px); } .ds-abtn:focus-visible { outline:2px solid var(--lilac-700,#7a3aa0); outline-offset:2px; } .ds-abtn--primary { background:var(--lacquer-800,#2c0a3a); border-color:var(--lacquer-800,#2c0a3a); color:#fff; } .ds-abtn--primary:hover { background:var(--lacquer-700,#43195a); } .ds-abtn--live { background:var(--lemon, #fffc54); border-color:var(--lilac-700,#7a3aa0); color:var(--plum, #1f0229); } .ds-abtn--live:hover { background:var(--brass-300,#fffb9e); }"
+    },
+    {
+      "name": "Admin Pane & Ledger",
+      "kind": "card",
+      "refersTo": "admin-pane",
+      "description": "Lit-cream pane, 1px hairline, 14px frame; KPI ledger cells joined by 1px gaps; tabular figures, status badge.",
+      "html": "<section class=\"ds-pane\"><header class=\"ds-pane__head\"><h3>Today</h3><span class=\"ds-badge\">On track</span></header><div class=\"ds-ledger\"><a href=\"#\" class=\"ds-ledger__cell\"><span>Net sales</span><strong>EGP 549,514</strong></a><a href=\"#\" class=\"ds-ledger__cell\"><span>Orders</span><strong>241</strong></a></div></section>",
+      "css": ".ds-pane { max-width:520px; background:var(--paper-lit,#fff8f2); border:1px solid color-mix(in srgb, #1f0229 18%, transparent); border-radius:14px; color:var(--plum, #1f0229); font-family:'Readex Pro', system-ui, 'Segoe UI', Tahoma, sans-serif; font-size:14px; overflow:hidden; } .ds-pane__head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; border-bottom:1px solid color-mix(in srgb, #1f0229 18%, transparent); } .ds-pane__head h3 { margin:0; font-size:15px; font-weight:600; } .ds-badge { display:inline-flex; align-items:center; gap:6px; height:22px; padding:0 8px; border-radius:999px; background:var(--ok-bg,#e2efe7); color:var(--ok,#3f7a5f); font-size:12px; font-weight:500; } .ds-badge::before { content:''; width:6px; height:6px; border-radius:50%; background:currentColor; } .ds-ledger { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1px; background:color-mix(in srgb, #1f0229 18%, transparent); } .ds-ledger__cell { display:block; padding:16px; background:var(--paper-lit,#fff8f2); color:inherit; text-decoration:none; } .ds-ledger__cell:hover { background:var(--paper-2,#f8e4d6); } .ds-ledger__cell:focus-visible { outline:2px solid var(--lilac-700,#7a3aa0); outline-offset:-2px; } .ds-ledger__cell span { display:block; font-size:13px; color:#4a3352; } .ds-ledger__cell strong { display:block; margin-top:6px; font-size:26px; font-weight:600; line-height:1.2; font-variant-numeric:tabular-nums; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Laughing Vanity",
+    "overview": "NURI sells Korean and imported skincare the way a friend shows you her vanity: loudly, happily, and up close. The storefront is a cream counter-top ruled in plum ink. On it sit a laughing face with cream on her cheek, a chunky soft serif that shouts one short line, hand-drawn lilac stickers, and a single lemon pill that buys. The design reference the owner pinned is vibebevvy.com, and the build follows its entrance, its scroll moments and its sticker culture. The system refuses the hushed pastel K-beauty catalogue, and the earlier \"lattice light\" world was discarded by the owner and must not come back.\n\nOne brand has two registers. The storefront (Persuade) is mobile-first, Arabic RTL by default with English LTR, with full-bleed photography, an entrance sheet, scroll-driven motion and big type. The admin (Operate) is the same brand turned quiet for desktop work: a plum rail, a cream workspace, hairlined panes, Readex Pro at 14px, tabular figures, and lemon kept for the one live action on screen.\n\nDensity in the storefront is generous. Sections breathe on clamp() padding between 56px and 150px, product cells are large, and type runs huge. The admin is compact, with 36px controls, 16px pane padding and 24px page padding.",
+    "keyCharacteristics": [
+      "Plum ink (#1f0229) does all the type, every outline and every 1px hairline. There is no grey and no black.",
+      "The ground is cream (#fff1e7). Depth comes from cream steps and hairlines, never from shadows.",
+      "Lilac (#db98f9) is the brand colour: the ticker bar, the wordmark, stickers, badges and selected states.",
+      "Lemon (#fffc54) appears only as the elliptical buy pill with a plum outline and an arrow.",
+      "Fraunces is set heavy with SOFT 100 for Latin display. Lalezar at weight 400 sets Arabic display. Space Mono carries Latin small print and Readex Pro carries text.",
+      "Product grids are hairline-ruled cells with no boxes and no gaps.",
+      "Signature motion: a lilac entrance sheet with a diagonal wipe, a headline that slides in letter by letter, the hero shrinking to a card, headings that fill as you scroll, a spinning product band, endless marquees and sliding door panels."
+    ],
+    "rules": [
+      {
+        "name": "The Plum Ink Rule",
+        "body": "Every piece of storefront type, every outline and every rule is plum (#1f0229) at 1px, or plum mixed toward transparent. There is no neutral grey, no #000, and no 2px borders, except the 2px focus outline.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Lemon Rule",
+        "body": "In the storefront, lemon fills one shape: the elliptical buy pill, with a plum 1px outline, plum text and an arrow. Lemon is never a section background, never text, and never a highlight.",
+        "section": "colors"
+      },
+      {
+        "name": "The Lilac Carries Plum Rule",
+        "body": "Lilac is a fill, and plum always sits on it or around it. When lilac has to be a line or a word on cream, use Deep Lilac (#7a3aa0).",
+        "section": "colors"
+      },
+      {
+        "name": "The Soft Shout Rule",
+        "body": "Latin display is always Fraunces with `\"SOFT\" 100, \"WONK\" 0, \"opsz\" 144`, at weight 800–900 and with negative tracking (-0.02 to -0.035em). It is never light and never italic. Only the wordmark switches WONK to 1.",
+        "section": "typography"
+      },
+      {
+        "name": "The Lalezar Rule",
+        "body": "Arabic display is Lalezar at weight 400 only. It is never faux-bolded, its line-height is 1.2 or more, it is never letter-spaced (`[dir=rtl] * { letter-spacing: 0 !important }`), and it is never split into letters. The headline slide-in animates Arabic word by word so the letters stay joined.",
+        "section": "typography"
+      },
+      {
+        "name": "The Typewriter Fact Rule",
+        "body": "Facts are mono: lot numbers, tracking, codes, counts, meta and legal. Codes stay Space Mono, LTR-isolated (`direction: ltr; unicode-bidi: isolate`), in both languages. Every other piece of Arabic small print uses Readex Pro.",
+        "section": "typography"
+      },
+      {
+        "name": "The Western Digits Rule",
+        "body": "Numbers use Western digits in both languages (`ar-EG-u-nu-latn`), with tabular figures for prices, tables, steppers and KPIs.",
+        "section": "typography"
+      },
+      {
+        "name": "The Hairline-Not-Shadow Rule",
+        "body": "A storefront surface separates from its neighbour with a 1px plum line or a cream step, never a shadow. If you reach for a shadow, draw a line instead.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** set every storefront line, outline and hairline in plum (#1f0229) at 1px, on a cream (#fff1e7) ground.",
+      "**Do** make lemon (#fffc54) the elliptical buy pill (`border-radius: 50%`, 1px plum outline, plum text, arrow) and nothing else in the storefront.",
+      "**Do** use lilac (#db98f9) as a fill with plum on or around it: ticker, wordmark, stickers, badges, selected states. Switch to Deep Lilac (#7a3aa0) whenever lilac must be text or a line.",
+      "**Do** set Latin display in Fraunces 800–900 with `\"SOFT\" 100, \"WONK\" 0, \"opsz\" 144` and negative tracking, and Arabic display in Lalezar 400 with line-height of 1.2 or more.",
+      "**Do** put small print, codes, counts and meta in Space Mono (Readex Pro under Arabic), and keep lot and tracking codes LTR-isolated.",
+      "**Do** use Western digits (`ar-EG-u-nu-latn`) and tabular figures for every price, count and table.",
+      "**Do** build grids as hairline-ruled cells: a top rule, then each cell rules its bottom and inline-end, with the last column open.",
+      "**Do** write layout in logical properties and multiply directional motion by `--flip` / `--v-flip`.",
+      "**Do** frame photos with a 1px plum outline and 16–24px corners, and give every raster an entry in `media.ts` with provenance and bilingual alt text.",
+      "**Do** drive scroll motion through the shared `useScrollFrame` loop and CSS variables, and give every motion a reduced-motion fallback that shows the final state.",
+      "**Do** keep the admin in its Operate register: Readex Pro 14px, 36px controls, hairlined cream-lit panes, plum rail, and lemon only for the single live action."
+    ],
+    "donts": [
+      "**Don't** bring back the discarded \"lattice light\" world or drift toward a hushed pastel K-beauty catalogue.",
+      "**Don't** letter-space Arabic, split Arabic into letters, or fake-bold Lalezar.",
+      "**Don't** use lemon as a background, text colour or highlight in the storefront, or put it on any shape other than the ellipse pill.",
+      "**Don't** set body text or small labels in lilac (#db98f9) on cream.",
+      "**Don't** give storefront cards, panels or photos a box-shadow or a boxed card frame. Depth is hairlines and cream steps.",
+      "**Don't** use grey or black for lines or type. Plum and its mixes are the only neutrals in the storefront.",
+      "**Don't** add new legacy-named tokens (`--lacquer-*`, `--brass*`, `--paper*`). Name new tokens by role (`--plum`, `--cream`, `--lilac`, `--lemon`).",
+      "**Don't** use stock product photos in place of the drawn packaging, or ship a raster without its provenance.",
+      "**Don't** use the chart palette (`--chart-1…5`) as brand colour, or brand colours as chart series."
+    ]
+  }
+}

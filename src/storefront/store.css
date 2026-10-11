@@ -491,7 +491,7 @@
 .sf-card__tile { position: relative; aspect-ratio: 4 / 5; overflow: hidden; }
 .sf-card__visual {
   position: absolute;
-  inset: 9% 20% 9%;
+  inset: 5% 8% 3%;
   display: block;
   transition: transform var(--t-slow) var(--ease-out);
 }

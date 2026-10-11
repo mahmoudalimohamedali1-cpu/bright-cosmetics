@@ -94,7 +94,7 @@ export default function Home() {
           <ScrollFillHeading
             id="v-best-h"
             className="v-best__h"
-            text={tx('كل روتين بياخد من وقتك. ده بيرجّعلك نضارتك.', 'Every routine takes time. This one gives you glow back.')}
+            text={tx('الأكتر مبيعًا عندنا، وكل عبوة برقم تشغيلتها.', 'Our bestsellers, every bottle with its lot number.')}
           />
         </div>
         <ul className="v-grid" aria-label={tx('الأكثر مبيعًا', 'Bestsellers')}>

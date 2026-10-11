@@ -22,7 +22,6 @@ const H = 260
 
 export function ProductVisual({ visual, brand, size, className, bare, title }: Props) {
   const { shape, body, cap, label, text } = visual
-  const brandText = brand.length > 14 ? brand.replace(/\s.*$/, '') : brand
   const g = geometry(shape)
   return (
     <svg
@@ -32,6 +31,7 @@ export function ProductVisual({ visual, brand, size, className, bare, title }: P
       aria-label={title}
       aria-hidden={title ? undefined : true}
       preserveAspectRatio="xMidYMax meet"
+      data-brand={brand}
     >
       <ellipse cx={100} cy={248} rx={g.shadowRx} ry={6} fill="#2a0d0c" opacity={0.14} />
       {g.draw(body, cap)}
@@ -40,22 +40,12 @@ export function ProductVisual({ visual, brand, size, className, bare, title }: P
           <rect x={g.label.x} y={g.label.y} width={g.label.w} height={g.label.h} rx={2} fill={label} />
           {!bare && (
             <>
-              <text
-                x={100}
-                y={g.label.y + g.label.h * 0.42}
-                textAnchor="middle"
-                fontFamily="Readex Pro, system-ui, sans-serif"
-                fontWeight={600}
-                fontSize={g.label.fs}
-                fill={text}
-                style={{ letterSpacing: '0.04em' }}
-              >
-                {brandText}
-              </text>
+              {/* No brand wordmark on drawn packaging: these are stand-ins, not the brand's art */}
+              <rect x={100 - g.label.w * 0.28} y={g.label.y + g.label.h * 0.3} width={g.label.w * 0.56} height={2} rx={1} fill={text} opacity={0.55} />
               {size && (
                 <text
                   x={100}
-                  y={g.label.y + g.label.h * 0.42 + g.label.fs * 1.5}
+                  y={g.label.y + g.label.h * 0.3 + g.label.fs * 1.6}
                   textAnchor="middle"
                   fontFamily="Readex Pro, system-ui, sans-serif"
                   fontSize={g.label.fs * 0.72}

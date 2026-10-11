@@ -7,15 +7,15 @@
    chroma floor, CVD ΔE ≥ 17, normal-vision ΔE ≥ 24 all pass). Sequential
    heat uses one hue mixed into the pane colour. */
 .adm {
-  --gr-s1: #94351f;
-  --gr-s2: #2a72a8;
+  --gr-s1: #6b3a8a;
+  --gr-s2: #c27a1a;
   --gr-prev: #a39a93;
   --gr-seq: #94351f;
   --gr-seq-ink: #fff;
 }
 .adm[data-theme='dark'] {
-  --gr-s1: #d9664c;
-  --gr-s2: #3a95c4;
+  --gr-s1: #a86fd0;
+  --gr-s2: #b8862c;
   --gr-prev: #6e5952;
   --gr-seq: #e07a5f;
   --gr-seq-ink: #1f0907;

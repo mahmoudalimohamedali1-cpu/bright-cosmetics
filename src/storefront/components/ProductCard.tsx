@@ -50,7 +50,7 @@ export function ProductCard({ p }: { p: Product }) {
         <div className="sf-card__quick">
           <button
             type="button"
-            className="sf-btn sf-btn--lemon sf-btn--sm"
+            className="sf-btn sf-btn--quiet sf-btn--sm"
             disabled={soldOut || maxed}
             onClick={() => addToCart(p.id)}
             aria-label={soldOut ? tx(`${name} خلصت`, `${name} is sold out`) : maxed ? tx(`كل كمية ${name} في سلتك`, `All stock of ${name} is in your bag`) : tx(`أضيفي ${name} للسلة`, `Add ${name} to bag`)}

@@ -397,7 +397,7 @@
 [dir='rtl'] .v-pill { font-size: 1.125rem; padding-block: 10px; }
 .v-pill__t { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
 .v-pill svg { transition: translate 0.3s var(--v-spring); }
-.v-pill:hover { transform: rotate(-3deg) scale(1.04); box-shadow: 3px 4px 0 var(--plum); }
+.v-pill:hover { transform: rotate(-3deg) scale(1.04); }
 .v-pill:hover svg { translate: calc(5px * var(--v-flip)) 0; }
 .v-pill:focus-visible { outline-offset: 4px; border-radius: 50%; }
 
@@ -429,6 +429,8 @@
   object-fit: cover;
   object-position: 50% 30%;
 }
+/* Wide screens: keep the open laugh and the cream in frame */
+@media (min-width: 1024px) { .v-hero__img { object-position: 50% 68%; } }
 .v-hero__shade {
   position: absolute;
   inset: 0;

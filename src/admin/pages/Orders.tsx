@@ -392,11 +392,11 @@ export default function Orders() {
                       <th>{tx('التاريخ', 'Date')}</th>
                       <th>{tx('العميل', 'Customer')}</th>
                       <th>{tx('المحافظة', 'Governorate')}</th>
-                      <th>{tx('القناة', 'Channel')}</th>
+                      <th className="core-wide-only">{tx('القناة', 'Channel')}</th>
                       <th>{tx('الدفع', 'Payment')}</th>
                       <th>{tx('التجهيز', 'Fulfillment')}</th>
-                      <th className="t-end">{tx('القطع', 'Items')}</th>
-                      <th className="t-end">{tx('الإجمالي', 'Total')}</th>
+                      <th className="t-end core-wide-only">{tx('القطع', 'Items')}</th>
+                      <th className="t-end core-sticky-end">{tx('الإجمالي', 'Total')}</th>
                       <th className="core-tight">
                         <span className="sr-only">{tx('مخاطرة', 'Risk')}</span>
                       </th>
@@ -428,7 +428,7 @@ export default function Orders() {
                           </td>
                           <td style={{ minWidth: 140 }}>{c ? pick(c.name) : tx('عميل محذوف', 'Deleted customer')}</td>
                           <td className="muted">{pick(gov(o.governorateId)?.name)}</td>
-                          <td className="muted">{pick(CHANNEL_LABEL[o.channel])}</td>
+                          <td className="muted core-wide-only">{pick(CHANNEL_LABEL[o.channel])}</td>
                           <td>
                             {o.status === 'cancelled' ? (
                               <span className="badge badge--bad">{tx('ملغي', 'Cancelled')}</span>
@@ -437,8 +437,8 @@ export default function Orders() {
                             )}
                           </td>
                           <td>{o.status === 'open' ? <span className="badge badge--warn">{tx('محتاج تأكيد', 'To confirm')}</span> : <FulfillmentBadge s={o.fulfillment} />}</td>
-                          <td className="t-num">{num(units(o))}</td>
-                          <td className="t-num strong">{money(o.total)}</td>
+                          <td className="t-num core-wide-only">{num(units(o))}</td>
+                          <td className="t-num strong core-sticky-end">{money(o.total)}</td>
                           <td className="core-tight">
                             {o.risk !== 'low' && (
                               <span

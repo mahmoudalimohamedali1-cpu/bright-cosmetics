@@ -71,7 +71,7 @@ export function Testimonials() {
               <span className="v-quotes__name">{name}</span>
               <span className="v-quotes__sub">
                 {tx(`بشرة ${SKIN_LABEL[r.skinType].ar}`, `${SKIN_LABEL[r.skinType].en} skin`)}
-                {r.verified ? ` · ${tx('اشترت فعلًا', 'Verified purchase')}` : ''}
+                {` · ${tx('تقييم تجريبي', 'Sample review')}`}
               </span>
             </span>
           </figcaption>

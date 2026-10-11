@@ -6,12 +6,20 @@ import { reducedMotion } from './scroll'
 /*
   The entrance. A full-screen lilac sheet; the NURI wordmark draws itself in
   outline; then the sheet wipes away on a diagonal, revealing the hero photo
-  while the headline slides in. Plays once per page load on the home page,
+  while the headline slides in. Plays on the first visit to the home page,
   waits (briefly) for the display font and the hero photo so the reveal never
-  uncovers a half-loaded page. Reduced motion: skipped.
+  uncovers a half-loaded page. Once per browser session; never on a language
+  switch. Reduced motion: skipped.
 */
 
-let played = false
+const KEY = 'nuri-intro-played'
+let played = (() => {
+  try {
+    return sessionStorage.getItem(KEY) === '1'
+  } catch {
+    return false
+  }
+})()
 
 const DRAW_MS = 1150
 const WIPE_MS = 900
@@ -23,6 +31,11 @@ export function useIntro() {
   useEffect(() => {
     if (phase !== 'draw') return
     played = true
+    try {
+      sessionStorage.setItem(KEY, '1')
+    } catch {
+      /* storage blocked */
+    }
     const root = document.documentElement
     root.classList.add('v-intro')
     root.style.overflow = 'hidden'

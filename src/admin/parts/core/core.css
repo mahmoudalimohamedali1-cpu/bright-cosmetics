@@ -255,3 +255,9 @@
 /* Grid children default to min-width:auto; let wide tables scroll inside their pane instead. */
 .grid > .stack, .grid > * { min-width: 0; }
 .core-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+
+/* Orders table: drop low-value columns on mid screens; the total never scrolls away */
+@media (max-width: 1359px) { .core-wide-only { display: none; } }
+.table .core-sticky-end { position: sticky; inset-inline-end: 0; background: var(--pane); z-index: 1; }
+.table th.core-sticky-end { background: var(--pane-2); z-index: 2; }
+.table tbody tr:hover .core-sticky-end { background: var(--hover); }
