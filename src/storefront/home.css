@@ -430,7 +430,7 @@
   object-position: 50% 30%;
 }
 /* Wide screens: keep the open laugh and the cream in frame */
-@media (min-width: 1024px) { .v-hero__img { object-position: 50% 74%; } }
+@media (min-width: 1024px) { .v-hero__img { object-position: 50% 30%; } }
 .v-hero__shade {
   position: absolute;
   inset: 0;

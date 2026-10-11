@@ -12,8 +12,8 @@ export type Photo = { id: string; alt: { ar: string; en: string }; src: (w: numb
 const photo = (id: string, ar: string, en: string): Photo => ({ id, alt: { ar, en }, src: (w, h) => u(id, w, h) })
 
 export const PHOTOS = {
-  /** Hero: laughing, cream on her cheek, warm yellow ground */
-  hero: photo('1646457417455-77a66a9fcf34', 'بنت بتضحك وحاطة كريم على خدها', 'A woman laughing with cream on her cheek'),
+  /** Hero: laughing, hands on her cheeks, bright green ground */
+  hero: photo('1713370572362-35983645f6a7', 'بنت بتضحك وإيديها على خدودها', 'A woman laughing with her hands on her cheeks'),
   /** Wide banner: joyful, white space on one side */
   banner: photo('1728727267814-792db55ce678', 'بنت مبسوطة ولمسة كريم على خدها', 'A smiling woman with a touch of cream on her cheek'),
   /** Accordion / why-Bright image */
@@ -27,12 +27,12 @@ export const PHOTOS = {
   dropper: photo('1573461160327-b450ce3d8e7f', 'قطّارة سيروم فوق الإيد', 'A serum dropper over a hand'),
   /** "Seen in the wild" strip */
   wild: [
-    photo('1648203276014-20f97ba1f817', 'بنت بفوطة على راسها وماسكة كريم', 'A woman in a towel holding a cream jar'),
-    photo('1693004927824-f2623bbedc8b', 'كريم على الخد عن قرب', 'Close-up of cream on a cheek'),
+    photo('1602144564445-159e5e5bae55', 'بنت بتضحك وبتحط كريم تحت عينها', 'A smiling woman dabbing cream under her eye'),
+    photo('1548382131-e0ebb1f0cdea', 'بنت بتضحك في الشمس', 'A woman laughing in the sun'),
     photo('1670201203208-055d6d79db4a', 'سيروم على الخد بضوافر بينك', 'Serum applied with pink nails'),
-    photo('1782931684641-39b88b348e1e', 'بنت بتضحك وعينيها مقفولة', 'A smiling woman with eyes closed'),
+    photo('1728727242233-0924178c1fb1', 'بنت بفستان أبيض بتضحك ولامسة وشها', 'A woman in white smiling and touching her face'),
     photo('1581182815808-b6eb627a8798', 'بورتريه بلمعة على الوش', 'A portrait with glitter on the face'),
-    photo('1765607476292-886bc1e648a1', 'بنت بشعر قصير وبشرة لامعة', 'A woman with short hair and glowing skin'),
+    photo('1581182800629-7d90925ad072', 'بنت عينيها مقفولة وبشرتها منوّرة', 'A woman with eyes closed and glowing skin'),
     photo('1728727217834-b190862837a3', 'بنت بتضحك ولامسة وشها', 'A woman smiling and touching her face'),
   ],
 }
