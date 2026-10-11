@@ -12,8 +12,8 @@ export type Photo = { id: string; alt: { ar: string; en: string }; src: (w: numb
 const photo = (id: string, ar: string, en: string): Photo => ({ id, alt: { ar, en }, src: (w, h) => u(id, w, h) })
 
 export const PHOTOS = {
-  /** Hero: laughing, hands on her cheeks, bright green ground */
-  hero: photo('1713370572362-35983645f6a7', 'بنت بتضحك وإيديها على خدودها', 'A woman laughing with her hands on her cheeks'),
+  /** Hero: smiling in pink on a pink ground, a rose-gold bottle balanced on her head */
+  hero: photo('1779398342180-1d03ddbcf1a7', 'بنت مبسوطة بلبس بينك وفوق راسها إزازة روز جولد', 'A smiling woman in pink balancing a rose-gold bottle on her head'),
   /** Wide banner: joyful, white space on one side */
   banner: photo('1728727267814-792db55ce678', 'بنت مبسوطة ولمسة كريم على خدها', 'A smiling woman with a touch of cream on her cheek'),
   /** Accordion / why-Bright image */

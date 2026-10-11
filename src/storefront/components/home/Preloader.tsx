@@ -4,8 +4,8 @@ import { PHOTOS } from '../../media'
 import { reducedMotion } from './scroll'
 
 /*
-  The entrance. A full-screen lilac sheet; the Bright wordmark draws itself in
-  outline; then the sheet wipes away on a diagonal, revealing the hero photo
+  The entrance. A full-screen lilac sheet; the Bright Cosmetics logo blooms in with
+  a rose-gold shine; then the sheet wipes away on a diagonal, revealing the hero photo
   while the headline slides in. Plays on the first visit to the home page,
   waits (briefly) for the display font and the hero photo so the reveal never
   uncovers a half-loaded page. Once per browser session; never on a language
@@ -62,7 +62,12 @@ function startIntro() {
   root.classList.add('v-intro')
   root.style.overflow = 'hidden'
   const timeout = (ms: number) => new Promise((r) => setTimeout(r, ms))
-  const font = document.fonts?.load('900 120px Fraunces').catch(() => undefined) ?? Promise.resolve()
+  const font = new Promise<void>((res) => {
+    // The logo image is the mark now; wait for it the way we waited for the font
+    const l = new Image()
+    l.onload = l.onerror = () => res()
+    l.src = '/brand/bright-logo-512.webp'
+  })
   const img = new Promise<void>((res) => {
     const i = new Image()
     i.onload = i.onerror = () => res()
@@ -93,14 +98,10 @@ export function Preloader({ phase }: { phase: 'off' | 'draw' | 'wipe' }) {
   if (phase === 'off') return null
   return (
     <div className={`v-pre ${phase === 'wipe' ? 'is-wiping' : ''}`} role="status" aria-label={tx('بيحمّل', 'Loading')}>
-      <svg className="v-pre__mark" viewBox="0 0 800 260" aria-hidden="true" focusable="false">
-        <text x="400" y="150" textAnchor="middle" className="v-pre__en">
-          BRIGHT
-        </text>
-        <text x="400" y="232" textAnchor="middle" className="v-pre__ar">
-          برايت
-        </text>
-      </svg>
+      <div className="v-pre__mark" aria-hidden="true">
+        <img src="/brand/bright-logo-512.webp" alt="" width={512} height={512} decoding="async" />
+        <span className="v-pre__shine" />
+      </div>
     </div>
   )
 }

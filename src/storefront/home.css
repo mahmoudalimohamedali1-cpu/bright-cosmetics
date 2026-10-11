@@ -54,7 +54,7 @@
 
 .v-mono { font-family: var(--font-mono); font-size: 0.8125rem; line-height: 1.75; color: var(--ink); margin: 0; }
 
-/* Arabic: Lalezar for display (one weight, never faux-bold), Readex for small text */
+/* Arabic: El Messiri for display, Readex for small text */
 [dir='rtl'] .v-h2,
 [dir='rtl'] .v-fill,
 [dir='rtl'] .v-hero__h,
@@ -67,8 +67,8 @@
 .v-quotes__q[lang='ar'] p,
 .v-spin__word [lang='ar'],
 .v-mark__ar {
-  font-weight: 400;
-  font-family: "Lalezar", var(--font-display);
+  font-weight: 700;
+  font-family: "El Messiri", var(--font-display);
 }
 [dir='rtl'] .v-h2 { line-height: 1.3; }
 [dir='rtl'] .v-nav__a,
@@ -140,7 +140,7 @@
   border-bottom: 1px solid transparent;
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
-.v-header:not([data-solid]) { text-shadow: 0 1px 14px rgb(31 2 41 / 0.35); }
+.v-header:not([data-solid]) { text-shadow: 0 1px 14px rgb(61 28 26 / 0.35); }
 .v-header[data-solid] {
   background: var(--paper);
   color: var(--plum);
@@ -206,7 +206,7 @@
   text-shadow: none;
 }
 .v-mark__en {
-  font-family: "Fraunces", serif;
+  font-family: "Playfair Display", serif;
   font-weight: 900;
   font-size: 34px;
   font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 144;
@@ -413,7 +413,7 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
-  background: var(--plum);
+  background: var(--lilac);
   transform-origin: 50% 0;
 }
 .v-hero.is-live .v-hero__card {
@@ -430,14 +430,14 @@
   object-position: 50% 30%;
 }
 /* Wide screens: keep the open laugh and the cream in frame */
-@media (min-width: 1024px) { .v-hero__img { object-position: 50% 30%; } }
+@media (min-width: 1024px) { .v-hero__img { object-position: 50% 40%; } }
 .v-hero__shade {
   position: absolute;
   inset: 0;
   background:
     /* Top fade keeps the lilac wordmark on a dark ground whatever the crop */
-    linear-gradient(to bottom, rgb(31 2 41 / 0.72) 0%, rgb(31 2 41 / 0.38) 12%, rgb(31 2 41 / 0) 26%),
-    linear-gradient(to top, rgb(31 2 41 / 0.72) 0%, rgb(31 2 41 / 0.35) 38%, rgb(31 2 41 / 0) 62%);
+    linear-gradient(to bottom, rgb(61 28 26 / 0.72) 0%, rgb(61 28 26 / 0.38) 12%, rgb(61 28 26 / 0) 26%),
+    linear-gradient(to top, rgb(61 28 26 / 0.72) 0%, rgb(61 28 26 / 0.35) 38%, rgb(61 28 26 / 0) 62%);
 }
 .v-hero__copy {
   position: absolute;
@@ -455,7 +455,7 @@
   letter-spacing: -0.025em;
   text-wrap: balance;
   max-width: 11ch;
-  text-shadow: 0 2px 40px rgb(31 2 41 / 0.3);
+  text-shadow: 0 2px 40px rgb(61 28 26 / 0.3);
 }
 [dir='rtl'] .v-hero__h { line-height: 1.2; font-size: clamp(3.5rem, 1.6rem + 7.6vw, 8.5rem); max-width: 9ch; }
 .v-hero__sub {
@@ -465,7 +465,7 @@
   font-size: clamp(1.0625rem, 0.9rem + 0.7vw, 1.4375rem);
   font-weight: 700;
   line-height: 1.35;
-  text-shadow: 0 1px 18px rgb(31 2 41 / 0.45);
+  text-shadow: 0 1px 18px rgb(61 28 26 / 0.45);
 }
 .v-hero__sticker {
   position: absolute;
@@ -538,21 +538,21 @@
   animation: v-pre-draw 1.1s cubic-bezier(0.45, 0, 0.2, 1) 0.15s forwards;
 }
 .v-pre__en {
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: 'Playfair Display', Georgia, serif;
   font-weight: 900;
   font-variation-settings: 'SOFT' 100, 'opsz' 144;
   font-size: 150px;
   letter-spacing: -0.02em;
 }
 .v-pre__ar {
-  font-family: 'Lalezar', 'Readex Pro', sans-serif;
+  font-family: 'El Messiri', 'Readex Pro', sans-serif;
   font-size: 64px;
   stroke-width: 1.8 !important;
   animation-delay: 0.45s !important;
 }
 @keyframes v-pre-draw {
   70% { fill: transparent; }
-  to { stroke-dashoffset: 0; fill: rgb(255 241 231 / 0.18); }
+  to { stroke-dashoffset: 0; fill: rgb(255 246 245 / 0.18); }
 }
 .v-pre.is-wiping .v-pre__mark { animation: v-pre-out 600ms ease-in forwards; }
 @keyframes v-pre-out { to { transform: translateX(calc(-30% * var(--v-flip))) scale(0.96); opacity: 0; } }
@@ -820,7 +820,7 @@
 .v-seal__spin { transform-box: view-box; transform-origin: 200px 200px; animation: v-rot 48s linear infinite; }
 @keyframes v-rot { to { transform: rotate(360deg); } }
 .v-seal__ring { font: 700 16px var(--font-mono); letter-spacing: 0.14em; }
-.v-seal__ar { font: 400 92px "Lalezar", var(--font-display); }
+.v-seal__ar { font: 400 92px "El Messiri", var(--font-display); }
 .v-seal__pct { font-family: var(--font-display); font-weight: 900; font-size: 40px; }
 .v-lot__copy { display: flex; flex-direction: column; align-items: flex-start; gap: 24px; }
 .v-lot__copy .v-mono { max-width: 46ch; }
@@ -872,7 +872,7 @@
   letter-spacing: 0.06em;
   color: var(--plum);
 }
-[dir='rtl'] .v-burst__t { font-family: "Lalezar", var(--font-display); font-weight: 400; font-size: 1.25rem; }
+[dir='rtl'] .v-burst__t { font-family: "El Messiri", var(--font-display); font-weight: 700; font-size: 1.25rem; }
 @media (max-width: 700px) {
   .v-routines__grid { grid-template-columns: 1fr; gap: 32px; }
 }
@@ -926,7 +926,7 @@
   gap: 10px;
 }
 .v-wild__brand {
-  font-family: "Fraunces", serif;
+  font-family: "Playfair Display", serif;
   font-weight: 900;
   font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 144;
   font-size: 4rem;
@@ -1077,3 +1077,88 @@
 @media (max-width: 360px) {
   .v-header__mark .v-mark__ar { display: none; }
 }
+
+/* ---------- Bright Cosmetics: logo palette, softer and more feminine ---------- */
+.v-pill {
+  border-radius: 999px;
+  border-color: var(--rose-gold-deep);
+  background: var(--rose-sheen);
+  color: var(--ink);
+  box-shadow: 0 6px 18px rgb(201 138 120 / 0.35);
+  text-transform: none;
+}
+.v-pill__t { text-decoration: none; }
+.v-pill:hover { filter: brightness(1.05); box-shadow: 0 10px 26px rgb(201 138 120 / 0.45); }
+
+/* Logo lockup */
+.v-mark { align-items: center; gap: 10px; color: var(--ink); direction: ltr; }
+.v-mark__logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  flex: none;
+  box-shadow: 0 2px 10px rgb(201 138 120 / 0.35);
+}
+.v-mark__words { display: flex; flex-direction: column; align-items: flex-start; line-height: 1; }
+.v-mark__en {
+  font-family: "Playfair Display", Georgia, serif;
+  font-weight: 600;
+  font-size: 26px;
+  letter-spacing: 0.01em !important;
+  color: var(--rose-gold-deep);
+}
+.v-mark__script {
+  font-family: var(--font-script);
+  font-size: 19px;
+  line-height: 0.9;
+  margin-top: 2px;
+  color: var(--rose-gold-deep);
+}
+.v-mark__ar { display: none; }
+.v-header:not([data-solid]) .v-mark__en,
+.v-header:not([data-solid]) .v-mark__script { color: #fff; text-shadow: 0 1px 10px rgb(61 28 26 / 0.45); }
+.v-foot__mark .v-mark__logo { width: 96px; height: 96px; }
+.v-foot__mark .v-mark__en { font-size: 40px; }
+.v-foot__mark .v-mark__script { font-size: 28px; }
+@media (max-width: 1023px) {
+  .v-mark__logo { width: 42px; height: 42px; }
+  .v-mark__en { font-size: 21px; }
+  .v-mark__script { font-size: 15px; }
+}
+@media (max-width: 430px) {
+  .v-header__mark .v-mark__script { display: none; }
+  .v-header__mark .v-mark__en { font-size: 19px; }
+  .v-header__mark .v-mark__logo { width: 38px; height: 38px; }
+  .v-header__mark { gap: 6px; }
+}
+
+/* Entrance: blush sheet, the logo blooms in, a rose-gold shine sweeps it */
+.v-pre {
+  background:
+    radial-gradient(90% 70% at 20% 15%, rgb(255 255 255 / 0.75), rgb(255 255 255 / 0) 60%),
+    radial-gradient(70% 60% at 85% 85%, rgb(236 195 180 / 0.6), rgb(236 195 180 / 0) 65%),
+    var(--lilac);
+}
+.v-pre__mark {
+  position: relative;
+  width: min(300px, 62vw);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 18px 50px rgb(169 100 79 / 0.35);
+  animation: v-pre-bloom 1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s both;
+}
+.v-pre__mark img { width: 100%; height: 100%; display: block; }
+.v-pre__shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgb(255 255 255 / 0.65) 48%, transparent 66%);
+  transform: translateX(-120%);
+  animation: v-pre-shine 1.1s ease-in-out 0.55s both;
+}
+@keyframes v-pre-bloom { from { opacity: 0; transform: scale(0.82); } to { opacity: 1; transform: none; } }
+@keyframes v-pre-shine { to { transform: translateX(120%); } }
+
+/* Big brand words in the logo's rose gold */
+.v-foot__slogan p,
+.v-spin__word { color: var(--rose-gold-deep); }

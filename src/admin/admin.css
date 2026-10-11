@@ -35,23 +35,23 @@
 [dir='rtl'] .adm { line-height: 1.65; }
 
 .adm[data-theme='dark'] {
-  --bg: #12001a;
-  --pane: #1c0626;
-  --pane-2: #250b31;
-  --line: #351744;
-  --line-strong: #4a2160;
-  --fg: #fff1e7;
-  --fg-2: #dccbe2;
-  --fg-3: #a891b0;
-  --hover: #2a0d38;
-  --accent: #db98f9;
-  --accent-fg: #1f0229;
+  --bg: #1c0e0d;
+  --pane: #271614;
+  --pane-2: #311d1b;
+  --line: #48302c;
+  --line-strong: #5e3d38;
+  --fg: #fff6f5;
+  --fg-2: #ead2cf;
+  --fg-3: #b8928e;
+  --hover: #3a2421;
+  --accent: #f2c4c4;
+  --accent-fg: #5b2e2b;
   --chart-1: #a86fd0;
   --chart-2: #3f9a78;
   --chart-3: #4a86d0;
   --chart-4: #b8892a;
   --chart-5: #9a7ad0;
-  --chart-grid: #351744;
+  --chart-grid: #48302c;
   --ok-bg: #1e3329;
   --ok: #8fd0ae;
   --warn-bg: #3a2c10;
@@ -630,7 +630,7 @@ a.ledger__cell:hover { background: var(--pane-2); }
 .drawer-scrim {
   position: fixed;
   inset: 0;
-  background: rgb(18 0 26 / 0.42);
+  background: rgb(46 19 18 / 0.42);
   z-index: 80;
   animation: fade var(--t-med) var(--ease-out);
 }
@@ -808,3 +808,9 @@ a.ledger__cell:hover { background: var(--pane-2); }
   word-break: break-all;
 }
 .adm-secret code { flex: 1; }
+
+/* Bright Cosmetics logo in the admin */
+.adm-brand__logo { width: 40px; height: 40px; border-radius: 50%; flex: none; box-shadow: 0 2px 8px rgb(0 0 0 / 0.25); }
+.adm-login__card .adm-brand__logo { width: 44px; height: 44px; box-shadow: 0 2px 8px rgb(201 138 120 / 0.35); }
+.adm-rail .adm-brand__name { color: var(--rose-gold-light); }
+.adm-login__card .adm-brand__name { color: var(--rose-gold-deep); }

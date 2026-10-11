@@ -255,6 +255,8 @@ components:
     height: "22px"
 ---
 
+> **Palette update (2026-10-11):** the brand moved to the Bright Cosmetics logo colours. Token names are unchanged but now hold: `--paper` blush #FFF6F5, `--ink`/`--plum` rose-brown #5B2E2B, `--lilac` pink #F2C4C4 (`--lilac-700` #9A4F45 for text), new `--rose-gold` #C98A78 / `--rose-gold-deep` #A9644F / `--rose-sheen` gradient for primary buttons (`--lemon` #EBB9A7 is the flat fallback). Display type is Playfair Display + El Messiri, with Great Vibes as a script accent. Values below that mention plum, lilac #DB98F9 or lemon #FFFC54 describe the previous palette; `src/styles/tokens.css` is the source of truth.
+
 # Design System: Bright / برايت
 
 ## Overview

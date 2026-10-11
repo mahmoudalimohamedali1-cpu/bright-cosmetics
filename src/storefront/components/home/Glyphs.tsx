@@ -8,12 +8,15 @@ import { ArrowRight } from 'lucide-react'
   lilac, nothing borrowed.
 */
 
-/** The typographic wordmark: Bright in Fraunces black, برايت tucked beside it. */
+/** The Bright Cosmetics lockup: the round logo, then "Bright" in the logo's serif and "Cosmetics" in script. */
 export function Wordmark({ className }: { className?: string }) {
   return (
     <span className={`v-mark ${className ?? ''}`} aria-hidden="true">
-      <span className="v-mark__en">BRIGHT</span>
-      <span className="v-mark__ar" lang="ar">برايت</span>
+      <img className="v-mark__logo" src="/brand/bright-logo-160.webp" alt="" width={160} height={160} decoding="async" />
+      <span className="v-mark__words">
+        <span className="v-mark__en">Bright</span>
+        <span className="v-mark__script">Cosmetics</span>
+      </span>
     </span>
   )
 }

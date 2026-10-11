@@ -20,8 +20,8 @@
   color: var(--ink);
   overflow-x: clip;
 }
-/* Lalezar ships one weight; Arabic has no mono, so small print uses Readex. */
-[dir='rtl'] .sf { --flip: -1; --mono: var(--font-text); --dw: 400; --dw-mid: 400; }
+/* Arabic display is El Messiri; Arabic has no mono, so small print uses Readex. */
+[dir='rtl'] .sf { --flip: -1; --mono: var(--font-text); --dw: 700; --dw-mid: 600; }
 .sf main { flex: 1; }
 .sf main:focus { outline: none; }
 
@@ -120,7 +120,7 @@
   text-decoration-thickness: 1px;
   text-underline-offset: 0.22em;
 }
-[dir='rtl'] .sf-btn--lemon { font-weight: 400; text-transform: none; text-decoration: none; font-size: 1.08em; }
+[dir='rtl'] .sf-btn--lemon { font-weight: 700; text-transform: none; text-decoration: none; font-size: 1.08em; }
 .sf-btn--lemon:hover:not(:disabled) { background: var(--brass-300); }
 .sf-arrow { flex: none; transition: translate var(--t-med) var(--ease-out); }
 .sf-btn:hover:not(:disabled) .sf-arrow { translate: calc(4px * var(--flip)) 0; }
@@ -343,7 +343,7 @@
 .sf-scrim {
   position: absolute;
   inset: 0;
-  background: rgb(31 2 41 / 0.32);
+  background: rgb(61 28 26 / 0.32);
   opacity: 0;
   transition: opacity var(--t-slow) var(--ease-door);
 }
@@ -1252,7 +1252,7 @@
   background: var(--paper-lit);
 }
 .sf-rform__h { font-family: var(--font-display); font-weight: 700; font-size: var(--step-2); }
-[dir='rtl'] .sf-rform__h { font-weight: 400; }
+[dir='rtl'] .sf-rform__h { font-weight: 700; }
 .sf-rform--done { border-color: var(--celadon-600); }
 .sf-rform__stars { border: 0; padding: 0; margin: 0; }
 .sf-rform__stars legend { padding: 0; margin-bottom: var(--s-2); }
@@ -1263,3 +1263,15 @@
 .sf-rform__star:focus-within { outline: 2px solid var(--lilac-700); outline-offset: 2px; }
 .sf-rform__two { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4); }
 @media (max-width: 600px) { .sf-rform__two { grid-template-columns: 1fr; } }
+
+/* Bright Cosmetics: the main buttons wear the logo's rose-gold sheen */
+.sf-btn--lemon {
+  border-radius: 999px;
+  border-color: var(--rose-gold-deep);
+  background: var(--rose-sheen);
+  color: var(--ink);
+  text-transform: none;
+  text-decoration: none;
+  box-shadow: 0 6px 18px rgb(201 138 120 / 0.3);
+}
+.sf-btn--lemon:hover:not(:disabled) { background: var(--rose-sheen); filter: brightness(1.05); }

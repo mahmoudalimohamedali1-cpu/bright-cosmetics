@@ -105,9 +105,12 @@ function AdminLogin({ onDone, initialError }: { onDone: () => void; initialError
     <div className="adm adm-login" dir={dir}>
       <form className="adm-login__card" onSubmit={submit} noValidate>
         <div className="row-between">
-          <span>
+          <span className="row" style={{ gap: 10 }}>
+            <img className="adm-brand__logo" src="/brand/bright-logo-160.webp" alt="" width={44} height={44} />
+            <span>
             <span className="adm-brand__name">{tx('برايت', 'Bright')}</span>
             <span className="adm-login__sub">{tx('لوحة التحكم', 'Admin')}</span>
+            </span>
           </span>
           <button type="button" className="btn btn--ghost btn--sm" onClick={toggle} aria-label={tx('Switch to English', 'التحويل للعربية')}>
             <Languages size={16} aria-hidden />

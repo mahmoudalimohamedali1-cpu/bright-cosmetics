@@ -1,37 +1,43 @@
-/* Bright — joyful, loud, confident. Plum ink on cream, lilac brand colour,
-   one lemon call to action. Chunky soft serif, typewriter small print. */
+/* Bright Cosmetics — soft, feminine, polished. Rose-brown ink on blush,
+   pink brand colour, rose-gold accents from the logo, elegant serif + script. */
 
 :root {
-  /* Plum — the ink and the frame (deep aubergine) */
-  --lacquer-950: #12001a;
-  --lacquer-900: #1f0229;
-  --lacquer-800: #2c0a3a;
-  --lacquer-700: #43195a;
-  --lacquer-600: #5a2a75;
-  --lacquer-300: #b9a3c4;
-  --lacquer-100: #efe3f3;
-  --plum: #1f0229;
+  /* Rose — the ink and the frame (deep rose-brown from the logo's shadows) */
+  --lacquer-950: #2e1312;
+  --lacquer-900: #3d1c1a;
+  --lacquer-800: #5b2e2b;
+  --lacquer-700: #7a4038;
+  --lacquer-600: #8e4b40;
+  --lacquer-300: #d9afa7;
+  --lacquer-100: #f7e6e3;
+  --plum: #5b2e2b;
 
-  /* Cream — the ground */
-  --paper-lit: #fff8f2;
-  --paper: #fff1e7;
-  --paper-2: #f8e4d6;
-  --paper-3: #ebd3c3;
-  --cream: #fff1e7;
+  /* Blush — the ground (the logo's watercolor pink) */
+  --paper-lit: #fffbfa;
+  --paper: #fff6f5;
+  --paper-2: #fbe8e6;
+  --paper-3: #f2d3d0;
+  --cream: #fff6f5;
 
   /* Ink */
-  --ink: #1f0229;
-  --ink-2: #4a3352;
-  --ink-3: #7a6680;
-  --ink-on-lacquer: #fff1e7;
-  --ink-on-lacquer-2: #dccbe2;
+  --ink: #5b2e2b;
+  --ink-2: #7a5250;
+  --ink-3: #9b7471;
+  --ink-on-lacquer: #fff6f5;
+  --ink-on-lacquer-2: #f2d3d0;
 
-  /* Lilac — the brand colour */
-  --lilac: #db98f9;
-  --lilac-700: #7a3aa0;
-  --lilac-600: #9b55c4;
-  --lilac-300: #ecc6fb;
-  --lilac-100: #f8eafe;
+  /* Pink — the brand colour (ticker, stickers, highlights); 700 is the text-safe rose */
+  --lilac: #f2c4c4;
+  --lilac-700: #9a4f45;
+  --lilac-600: #b5675c;
+  --lilac-300: #f6d6d6;
+  --lilac-100: #fdeeee;
+
+  /* Rose gold — metallic accent from the logo lettering */
+  --rose-gold: #c98a78;
+  --rose-gold-deep: #a9644f;
+  --rose-gold-light: #ecc3b4;
+  --rose-sheen: linear-gradient(135deg, #f3cdbf 0%, #d99d89 38%, #c27f6c 55%, #ecc3b4 100%);
 
   /* Celadon — kept as the calm "fits your skin / in stock" tone */
   --celadon-700: #2f6b4f;
@@ -40,13 +46,13 @@
   --celadon-200: #cfe8d8;
   --celadon-100: #e6f4ea;
 
-  /* Lemon — the one call to action ("brass" kept as the token name) */
-  --lemon: #fffc54;
-  --brass-700: #6d2f91;
-  --brass-600: #7a3aa0;
-  --brass: #fffc54;
-  --brass-300: #fffb9e;
-  --brass-100: #fffde0;
+  /* The call to action: light rose gold ("lemon"/"brass" kept as token names) */
+  --lemon: #ebb9a7;
+  --brass-700: #7a4038;
+  --brass-600: #9a4f45;
+  --brass: #ebb9a7;
+  --brass-300: #f3cdbf;
+  --brass-100: #fbede7;
 
   /* Status (admin) */
   --ok: #3f7a5f;
@@ -59,8 +65,10 @@
   --info-bg: #e0eaf2;
 
   /* Type */
-  /* Chunky soft serif display; Lalezar carries Arabic at the same weight */
-  --font-display: "Fraunces", "Lalezar", Georgia, serif;
+  /* Elegant high-contrast serif like the logo's "Bright"; El Messiri for Arabic */
+  --font-display: "Playfair Display", "El Messiri", Georgia, serif;
+  /* Script accent like the logo's "Cosmetics" (Latin only, used sparingly) */
+  --font-script: "Great Vibes", "Playfair Display", cursive;
   --font-text: "Readex Pro", system-ui, "Segoe UI", Tahoma, sans-serif;
   /* Small print in a typewriter mono (Latin); Arabic falls back to Readex */
   --font-mono: "Space Mono", "Readex Pro", ui-monospace, monospace;
@@ -94,9 +102,9 @@
   --r-control: 10px;
   --r-pill: 999px;
 
-  --shadow-1: 0 1px 2px rgb(31 2 41 / 0.06), 0 2px 8px rgb(31 2 41 / 0.06);
-  --shadow-2: 0 6px 16px rgb(31 2 41 / 0.10), 0 18px 48px rgb(31 2 41 / 0.14);
-  --shadow-3: 0 24px 64px rgb(18 0 26 / 0.32);
+  --shadow-1: 0 1px 2px rgb(61 28 26 / 0.06), 0 2px 8px rgb(61 28 26 / 0.06);
+  --shadow-2: 0 6px 16px rgb(61 28 26 / 0.10), 0 18px 48px rgb(61 28 26 / 0.14);
+  --shadow-3: 0 24px 64px rgb(46 19 18 / 0.32);
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-door: cubic-bezier(0.7, 0, 0.2, 1);
@@ -236,9 +244,9 @@ td,
   }
 }
 
-/* Lalezar ships one weight; never fake-bold it */
+/* Arabic display weight */
 [dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3, [dir="rtl"] h4 {
-  font-weight: 400;
+  font-weight: 600;
   line-height: 1.25;
 }
 
