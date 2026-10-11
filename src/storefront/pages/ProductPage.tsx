@@ -12,6 +12,7 @@ import { PHOTOS } from '../media'
 import type { Photo } from '../media'
 import { ProductPanes } from '../components/ProductCard'
 import { Provenance } from '../components/Provenance'
+import { ReviewForm } from '../components/ReviewForm'
 import { Arrow, Price, Stars, Stepper } from '../components/bits'
 import { brandSlug, fefoBatch, stepCategoryOk, useActiveProducts, useTitle } from '../lib'
 import NotFound from './NotFound'
@@ -397,6 +398,9 @@ function ProductView({ id }: { id: string }) {
               </ul>
             </div>
           )}
+          <div className="sf-reviews__write">
+            <ReviewForm productId={p.id} />
+          </div>
         </div>
       </section>
 

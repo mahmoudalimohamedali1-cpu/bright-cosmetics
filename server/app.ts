@@ -87,9 +87,19 @@ const initialName = (full: string) => {
   return last ? `${first} ${last[0]}.` : first
 }
 
+/** Stars on a product come only from its published customer reviews. */
+function withRatings(products: Product[], reviews: Review[]) {
+  const by = new Map<string, number[]>()
+  for (const r of reviews) by.set(r.productId, [...(by.get(r.productId) ?? []), r.rating])
+  return products.map((p) => {
+    const rs = by.get(p.id) ?? []
+    return { ...p, reviewCount: rs.length, rating: rs.length ? Math.round((rs.reduce((a, b) => a + b, 0) / rs.length) * 10) / 10 : 0 }
+  })
+}
+
 app.get('/api/public', (c) => {
-  const products = list<Product>('products').filter((p) => p.status === 'active')
   const reviews = list<Review>('reviews').filter((r) => r.status === 'published')
+  const products = withRatings(list<Product>('products').filter((p) => p.status === 'active'), reviews)
   const ids = new Set(reviews.map((r) => r.customerId))
   const reviewers: Customer[] = list<Customer>('customers')
     .filter((x) => ids.has(x.id))
@@ -132,6 +142,68 @@ app.get('/api/orders/:id', (c) => {
   const o = findOrderForPhone(c.req.param('id'), c.req.query('phone') ?? '')
   if (!o) return fail(c, 404, 'not_found', { ar: 'مش لاقيين طلب بالرقم ده والموبايل ده.', en: 'No order matches this number and mobile.' })
   return c.json(publicOrder(o))
+})
+
+/* ───────────── Reviews from shoppers ───────────── */
+
+const reviewLimit = limiter(5, 60 * 60_000)
+app.post('/api/reviews', async (c) => {
+  if (!reviewLimit(clientIp(c))) return fail(c, 429, 'rate_limited', { ar: 'تقييمات كتير من نفس الجهاز. جرّبي بعد شوية.', en: 'Too many reviews from this device. Please try later.' })
+  const b = (await readJson(c)) as Record<string, unknown> | undefined
+  const productId = typeof b?.productId === 'string' ? b.productId : ''
+  const name = typeof b?.name === 'string' ? b.name.trim().slice(0, 60) : ''
+  const phone = normalizePhone(typeof b?.phone === 'string' ? b.phone : '')
+  const rating = typeof b?.rating === 'number' ? Math.round(b.rating) : 0
+  const body = typeof b?.body === 'string' ? b.body.trim().slice(0, 1200) : ''
+  const title = typeof b?.title === 'string' ? b.title.trim().slice(0, 120) : ''
+  const lang = b?.lang === 'en' ? 'en' : 'ar'
+  const product = get<Product>('products', productId)?.doc
+  if (!product || product.status !== 'active') return fail(c, 404, 'not_found', { ar: 'المنتج مش موجود.', en: 'Product not found.' })
+  if (!name) return fail(c, 400, 'bad_name', { ar: 'اكتبي اسمك.', en: 'Please add your name.' }, { field: 'name' })
+  if (!PHONE_RE.test(phone)) return fail(c, 400, 'bad_phone', { ar: 'رقم الموبايل لازم يكون 11 رقم ويبدأ بـ 010 أو 011 أو 012 أو 015.', en: 'Mobile must be 11 digits starting 010, 011, 012 or 015.' }, { field: 'phone' })
+  if (rating < 1 || rating > 5) return fail(c, 400, 'bad_rating', { ar: 'اختاري عدد النجوم.', en: 'Choose a star rating.' }, { field: 'rating' })
+  if (body.length < 10) return fail(c, 400, 'bad_body', { ar: 'اكتبي رأيك في سطر على الأقل (10 حروف).', en: 'Write at least a line (10 characters).' }, { field: 'body' })
+
+  const review = tx(() => {
+    let customer = list<Customer>('customers').find((x) => normalizePhone(x.phone) === phone)
+    if (!customer) {
+      customer = {
+        id: 'c' + randomBytes(5).toString('hex'),
+        name: { ar: name, en: name },
+        email: '',
+        phone,
+        governorateId: 'cai',
+        skinType: 'normal',
+        concerns: [],
+        createdAt: new Date().toISOString(),
+        tags: ['reviewer'],
+        acceptsMarketing: false,
+      }
+      put('customers', customer.id, customer)
+    }
+    const cid = customer.id
+    // "Verified purchase" only when this mobile actually received the product
+    const verified = list<Order>('orders').some(
+      (o) => o.customerId === cid && o.fulfillment === 'delivered' && o.lines.some((l) => l.productId === product.id),
+    )
+    const r: Review = {
+      id: 'rv' + randomBytes(5).toString('hex'),
+      productId: product.id,
+      customerId: cid,
+      rating,
+      title,
+      body,
+      lang,
+      createdAt: new Date().toISOString(),
+      status: 'pending',
+      skinType: customer.skinType,
+      verified,
+    }
+    put('reviews', r.id, r)
+    logActivity(name, { ar: `تقييم جديد على ${product.name.ar} محتاج مراجعة`, en: `New review on ${product.name.en} awaiting moderation` }, '/admin/reviews')
+    return r
+  })
+  return c.json({ id: review.id, status: review.status, verified: review.verified }, 201)
 })
 
 /* ───────────── Events ───────────── */

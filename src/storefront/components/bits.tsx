@@ -42,8 +42,8 @@ export function Stars({ rating, count, size = 14 }: { rating: number; count?: nu
   if (count !== undefined && count <= 0) return null
   const label =
     count === undefined
-      ? tx(`التقييم ${num(rating)} من ٥`, `Rated ${num(rating)} out of 5`)
-      : tx(`التقييم ${num(rating)} من ٥ من ${num(count)} تقييم`, `Rated ${num(rating)} out of 5 from ${num(count)} reviews`)
+      ? tx(`التقييم ${num(rating)} من 5`, `Rated ${num(rating)} out of 5`)
+      : tx(`التقييم ${num(rating)} من 5 من ${num(count)} تقييم`, `Rated ${num(rating)} out of 5 from ${num(count)} reviews`)
   return (
     <span className="sf-stars" role="img" aria-label={label}>
       <span className="sf-stars__row" aria-hidden="true">
