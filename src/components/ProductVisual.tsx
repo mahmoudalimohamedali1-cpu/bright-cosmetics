@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { asset } from '../lib/asset'
 import type { Visual } from '../data/types'
 
 /*
@@ -26,7 +27,7 @@ export function ProductVisual({ visual, brand, size, className, bare, title, ima
   if (image)
     return (
       <img
-        src={image}
+        src={asset(image)}
         alt={title ?? ''}
         className={`pv-img${className ? ` ${className}` : ''}`}
         // Small thumbnails (bare) load right away; big tiles wait until near the viewport

@@ -1,4 +1,5 @@
 import { useEffect, useSyncExternalStore } from 'react'
+import { asset } from '../../../lib/asset'
 import { useI18n } from '../../../i18n'
 import { reducedMotion } from './scroll'
 
@@ -65,12 +66,12 @@ function startIntro() {
     // The logo image is the mark now; wait for it the way we waited for the font
     const l = new Image()
     l.onload = l.onerror = () => res()
-    l.src = '/brand/bright-logo-512.webp'
+    l.src = asset('/brand/bright-logo-512.webp')
   })
   const img = new Promise<void>((res) => {
     const i = new Image()
     i.onload = i.onerror = () => res()
-    i.src = '/products/anua-niacinamide-10-txa-4-serum.webp'
+    i.src = asset('/products/anua-niacinamide-10-txa-4-serum.webp')
   })
   ;(async () => {
     await Promise.race([font, timeout(700)])
@@ -98,7 +99,7 @@ export function Preloader({ phase }: { phase: 'off' | 'draw' | 'wipe' }) {
   return (
     <div className={`v-pre ${phase === 'wipe' ? 'is-wiping' : ''}`} role="status" aria-label={tx('بيحمّل', 'Loading')}>
       <div className="v-pre__mark" aria-hidden="true">
-        <img src="/brand/bright-logo-512.webp" alt="" width={512} height={512} decoding="async" />
+        <img src={asset('/brand/bright-logo-512.webp')} alt="" width={512} height={512} decoding="async" />
         <span className="v-pre__shine" />
       </div>
     </div>

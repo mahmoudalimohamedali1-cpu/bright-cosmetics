@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { asset } from '../../../lib/asset'
 import { Link } from 'react-router-dom'
 import { useI18n } from '../../../i18n'
 import { brandSlug, useActiveProducts } from '../../lib'
@@ -35,7 +36,7 @@ export function BrandStrip() {
         {brands.map((b) => (
           <li key={b.brand}>
             <Link to={`/brand/${brandSlug(b.brand)}`} className="v-bcard">
-              <span className="v-bcard__tile">{b.image && <img src={b.image} alt="" loading="lazy" decoding="async" />}</span>
+              <span className="v-bcard__tile">{b.image && <img src={asset(b.image)} alt="" loading="lazy" decoding="async" />}</span>
               <span className="v-bcard__name" lang="en">
                 {b.brand}
               </span>

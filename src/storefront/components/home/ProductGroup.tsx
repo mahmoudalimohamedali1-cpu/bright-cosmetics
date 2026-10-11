@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react'
+import { asset } from '../../../lib/asset'
 import type { Product } from '../../../data/types'
 
 /*
@@ -25,7 +26,7 @@ export function ProductGroup({ products, className, size = 'lg' }: { products: P
           } as CSSProperties
           return (
             <span key={p.id} className="v-pg__item" style={style}>
-              <img src={p.image} alt="" loading={size === 'lg' ? 'eager' : 'lazy'} decoding="async" draggable={false} />
+              <img src={asset(p.image)} alt="" loading={size === 'lg' ? 'eager' : 'lazy'} decoding="async" draggable={false} />
             </span>
           )
         })}

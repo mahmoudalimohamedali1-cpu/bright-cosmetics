@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { asset } from '../lib/asset'
 import type { FormEvent, ReactNode } from 'react'
 import { Languages, Lock } from 'lucide-react'
 import { useI18n } from '../i18n'
@@ -106,7 +107,7 @@ function AdminLogin({ onDone, initialError }: { onDone: () => void; initialError
       <form className="adm-login__card" onSubmit={submit} noValidate>
         <div className="row-between">
           <span className="row" style={{ gap: 10 }}>
-            <img className="adm-brand__logo" src="/brand/bright-logo-160.webp" alt="" width={44} height={44} />
+            <img className="adm-brand__logo" src={asset('/brand/bright-logo-160.webp')} alt="" width={44} height={44} />
             <span>
             <span className="adm-brand__name">{tx('برايت', 'Bright')}</span>
             <span className="adm-login__sub">{tx('لوحة التحكم', 'Admin')}</span>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { asset } from '../lib/asset'
 import type { ComponentType, KeyboardEvent as ReactKeyboardEvent, ReactElement } from 'react'
 import { Link, NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import {
@@ -196,7 +197,7 @@ function AdminShell({ online, signOut, me }: { online: boolean; signOut: () => v
         <div className="adm-shell">
           <aside className="adm-rail" data-open={railOpen} aria-label={tx('القائمة الرئيسية', 'Main menu')}>
             <Link to="/admin" className="adm-brand">
-              <img className="adm-brand__logo" src="/brand/bright-logo-160.webp" alt="" width={40} height={40} />
+              <img className="adm-brand__logo" src={asset('/brand/bright-logo-160.webp')} alt="" width={40} height={40} />
               <span>
                 <span className="adm-brand__name">{tx('برايت', 'Bright')}</span>
                 <br />

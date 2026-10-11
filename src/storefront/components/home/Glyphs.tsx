@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { asset } from '../../../lib/asset'
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 
@@ -12,7 +13,7 @@ import { ArrowRight } from 'lucide-react'
 export function Wordmark({ className }: { className?: string }) {
   return (
     <span className={`v-mark ${className ?? ''}`} aria-hidden="true">
-      <img className="v-mark__logo" src="/brand/bright-logo-256.webp" srcSet="/brand/bright-logo-160.webp 160w, /brand/bright-logo-256.webp 256w, /brand/bright-logo-384.webp 384w" sizes="(max-width: 430px) 54px, 72px" alt="" width={256} height={256} decoding="async" />
+      <img className="v-mark__logo" src={asset('/brand/bright-logo-256.webp')} srcSet={`${asset('/brand/bright-logo-160.webp')} 160w, ${asset('/brand/bright-logo-256.webp')} 256w, ${asset('/brand/bright-logo-384.webp')} 384w`} sizes="(max-width: 430px) 54px, 72px" alt="" width={256} height={256} decoding="async" />
       <span className="v-mark__words">
         <span className="v-mark__en">Bright</span>
         <span className="v-mark__script">Cosmetics</span>
