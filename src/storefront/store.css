@@ -20,7 +20,7 @@
   color: var(--ink);
   overflow-x: clip;
 }
-/* Arabic display is El Messiri; Arabic has no mono, so small print uses Readex. */
+/* Arabic display is Almarai; Arabic has no mono, so small print uses Readex. */
 [dir='rtl'] .sf { --flip: -1; --mono: var(--font-text); --dw: 700; --dw-mid: 600; }
 .sf main { flex: 1; }
 .sf main:focus { outline: none; }

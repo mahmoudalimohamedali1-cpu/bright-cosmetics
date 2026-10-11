@@ -10,29 +10,12 @@ import { Marquee } from '../components/home/Marquee'
 import { ScrollFillHeading } from '../components/home/ScrollFillHeading'
 import { SpinBand } from '../components/home/SpinBand'
 import { Testimonials } from '../components/home/Testimonials'
-import { WildStrip } from '../components/home/WildStrip'
-import { PHOTOS } from '../media'
-import type { Photo } from '../media'
+import { BrandStrip } from '../components/home/BrandStrip'
+import { ProductGroup } from '../components/home/ProductGroup'
+import { CategoryShelf, ProductRail } from '../components/home/ProductRail'
 import { useActiveProducts, useTitle } from '../lib'
 import '../home.css'
 
-function Img({ ph, w, h, sizes, className }: { ph: Photo; w: number; h: number; sizes: string; className?: string }) {
-  const { lang } = useI18n()
-  const widths = [0.5, 1, 1.5].map((k) => Math.round(w * k))
-  return (
-    <img
-      className={className}
-      src={ph.src(w, h)}
-      srcSet={widths.map((x) => `${ph.src(x, Math.round((x * h) / w))} ${x}w`).join(', ')}
-      sizes={sizes}
-      width={w}
-      height={h}
-      alt={ph.alt[lang]}
-      loading="lazy"
-      decoding="async"
-    />
-  )
-}
 
 export default function Home() {
   const { tx } = useI18n()
@@ -77,11 +60,24 @@ export default function Home() {
     },
   ]
 
+  // Each routine shows three real products that fit it: cleanse, treat, care
+  const pickRoutine = (fit: (p: (typeof products)[number]) => boolean) => {
+    const fits = products.filter((p) => p.image && fit(p))
+    const byStep = [1, 3, 5].map((s) => fits.find((p) => p.routineStep === s)).filter((p): p is NonNullable<typeof p> => !!p)
+    return byStep.length >= 3 ? byStep : fits.slice(0, 3)
+  }
   const routines = [
-    { ph: PHOTOS.centellaHand, title: tx('روتين البشرة الحساسة', 'Calm routine'), to: '/shop?skin=sensitive', isNew: true },
-    { ph: PHOTOS.serumsPink, title: tx('روتين التوهّج', 'Glow routine'), to: '/shop?concern=brightening' },
-    { ph: PHOTOS.amber, title: tx('روتين الحبوب', 'Clear routine'), to: '/shop?concern=acne' },
+    { items: pickRoutine((p) => p.skinTypes.includes('sensitive') && p.concerns.includes('redness')), title: tx('روتين البشرة الحساسة', 'Calm routine'), to: '/shop?skin=sensitive', isNew: true },
+    { items: pickRoutine((p) => p.concerns.includes('brightening')), title: tx('روتين التوهّج', 'Glow routine'), to: '/shop?concern=brightening' },
+    { items: pickRoutine((p) => p.concerns.includes('acne')), title: tx('روتين الحبوب', 'Clear routine'), to: '/shop?concern=acne' },
   ]
+  const offers = useMemo(() => products.filter((p) => p.compareAt && p.compareAt > p.price), [products])
+  const fresh = useMemo(() => [...products].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 10), [products])
+  const ordinary = useMemo(() => products.filter((p) => p.brand === 'The Ordinary'), [products])
+  // "Why Bright" shows a trio of the store's own bottles instead of a model photo
+  const why = ['the-ordinary-caffeine-solution-5-egcg', 'the-ordinary-soothing-barrier-support-serum', 'the-ordinary-retinol-0-2-in-squalane']
+    .map((s) => products.find((p) => p.slug === s))
+    .filter((p): p is NonNullable<typeof p> => !!p)
 
   return (
     <div className="v-home">
@@ -109,11 +105,22 @@ export default function Home() {
         </div>
       </section>
 
+      <ProductRail
+        id="v-offers-h"
+        title={tx('عروض برايت.', 'Bright offers.')}
+        sub={tx('نفس الجودة الأصلية، بسعر أحسن لفترة محدودة.', 'The same authentic quality, at a better price for a while.')}
+        products={offers}
+        to="/shop?sort=price-asc"
+        tone="blush"
+      />
+
+      <CategoryShelf products={products} />
+
       {/* Photo + accordion */}
       <section className="v-why" aria-labelledby="v-why-h">
         <div className="v-wrap v-why__grid">
-          <div className="v-why__photo">
-            <Img ph={PHOTOS.serum} w={720} h={800} sizes="(max-width: 860px) 100vw, 50vw" />
+          <div className="v-why__photo v-why__photo--products">
+            <ProductGroup products={why} size="md" />
           </div>
           <div className="v-why__copy">
             <h2 id="v-why-h" className="v-h2">{tx('كل اللي محتاجاه بشرتك. ولا حاجة زيادة.', "Everything your skin wants. Nothing it doesn't.")}</h2>
@@ -134,11 +141,14 @@ export default function Home() {
 
       {/* Spin band + banner */}
       {spinner && <SpinBand product={spinner} />}
-      <div className="v-wrap">
-        <div className="v-banner">
-          <Img ph={PHOTOS.banner} w={1400} h={620} sizes="100vw" />
-        </div>
-      </div>
+
+      <ProductRail
+        id="v-ordinary-h"
+        title={tx('عالم The Ordinary.', 'The Ordinary edit.')}
+        sub={tx('تركيبات علمية بسيطة، كل واحدة لهدف واحد.', 'Simple, science-led formulas, each for one job.')}
+        products={ordinary}
+        to="/brand/the-ordinary"
+      />
 
       {/* Lot record */}
       {star && (
@@ -169,8 +179,8 @@ export default function Home() {
             {routines.map((r) => (
               <li key={r.to}>
                 <Link to={r.to} className="v-rcard">
-                  <span className="v-rcard__ph">
-                    <Img ph={r.ph} w={600} h={460} sizes="(max-width: 760px) 100vw, 33vw" />
+                  <span className="v-rcard__ph v-rcard__ph--products">
+                    <ProductGroup products={r.items} size="sm" />
                     {r.isNew && <BurstBadge className="v-rcard__badge">{tx('جديد', 'New')}</BurstBadge>}
                   </span>
                   <span className="v-rcard__t">{r.title}</span>
@@ -181,7 +191,16 @@ export default function Home() {
         </div>
       </section>
 
-      <WildStrip />
+      <ProductRail
+        id="v-new-h"
+        title={tx('وصل حديثًا.', 'Just in.')}
+        sub={tx('آخر اللي نزل على رفوف برايت.', 'The latest on Bright’s shelves.')}
+        products={fresh}
+        to="/shop?sort=new"
+        tone="blush"
+      />
+
+      <BrandStrip />
     </div>
   )
 }

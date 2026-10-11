@@ -8,7 +8,6 @@ import type { SkinType } from '../../data/types'
 import { ProductVisual } from '../../components/ProductVisual'
 import { useI18n } from '../../i18n'
 import { stockOf, useProduct, useStore, zoneFor } from '../../store'
-import { PHOTOS } from '../media'
 import type { Photo } from '../media'
 import { ProductPanes } from '../components/ProductCard'
 import { Provenance } from '../components/Provenance'
@@ -18,14 +17,6 @@ import { brandSlug, fefoBatch, stepCategoryOk, useActiveProducts, useTitle } fro
 import NotFound from './NotFound'
 
 const SKINS: SkinType[] = ['oily', 'dry', 'combination', 'sensitive', 'normal']
-const LIFESTYLE: Photo[] = [PHOTOS.texture, PHOTOS.serum, PHOTOS.dropper, PHOTOS.centellaHand, PHOTOS.glass, PHOTOS.amber, PHOTOS.serumsPink]
-
-/** Three lifestyle shots per product, picked steadily from its id so they never shuffle. */
-function lifestyleFor(id: string) {
-  let h = 0
-  for (const ch of id) h = (h * 31 + ch.charCodeAt(0)) >>> 0
-  return [0, 1, 2].map((k) => LIFESTYLE[(h + k * 2) % LIFESTYLE.length])
-}
 
 export default function ProductPage() {
   const { slug } = useParams()
@@ -77,7 +68,8 @@ function ProductView({ id }: { id: string }) {
   const zone = zoneFor(gov, zones)
   const name = pick(p.name)
   const low = stock > 0 && stock <= p.lowStockAt
-  const shots = useMemo(() => lifestyleFor(p.id), [p.id])
+  // Product pages show only the product's own photos (credibility over mood)
+  const shots: Photo[] = []
   // Product photos first (main packshot + extra angles), then lifestyle photos
   const packs = useMemo(() => [p.image, ...(p.gallery ?? [])], [p.image, p.gallery])
   const shot = view >= packs.length ? shots[view - packs.length] : undefined

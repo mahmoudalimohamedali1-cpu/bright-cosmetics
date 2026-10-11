@@ -1,13 +1,14 @@
-import { useRef } from 'react'
+import { useMemo, useRef } from 'react'
 import type { CSSProperties } from 'react'
 import { useI18n } from '../../i18n'
-import { PHOTOS } from '../media'
+import { useActiveProducts } from '../lib'
+import { ProductGroup } from './home/ProductGroup'
 import { LetterDrop } from './home/LetterDrop'
 import { Pill, SparkSticker } from './home/Glyphs'
 import { clamp01, reducedMotion, useScrollFrame } from './home/scroll'
 
 /*
-  The intro. A full-bleed photo under the transparent header; the headline
+  The intro. The store's own bestsellers on a blush stage; the headline
   drops in (letters for Latin, words for Arabic) with a springy overshoot.
   Scrolling the first 60% of the viewport shrinks the photo into an inset
   rounded card: one CSS var (--hp, 0..1) and a computed scale (--hs).
@@ -29,7 +30,19 @@ export function Hero({ hold = 0 }: { hold?: number }) {
     el.style.setProperty('--hs', (1 - (p * gap * 2) / vw).toFixed(5))
   }, motion)
 
-  const ph = PHOTOS.hero
+  // The store's own bestsellers stand in the hero instead of a model photo
+  const products = useActiveProducts()
+  const stage = useMemo(() => {
+    const order = [
+      'the-ordinary-niacinamide-10-zinc-1',
+      'anua-niacinamide-10-txa-4-serum',
+      'dr-althea-345-relief-cream',
+      'eqqualberry-lush-blush-nad-peptide-boosting-serum',
+      'arencia-fresh-rosehip-rice-mochi-cleanser',
+    ]
+    const picked = order.map((s) => products.find((p) => p.slug === s)).filter((p): p is NonNullable<typeof p> => !!p)
+    return picked.length >= 3 ? picked : products.filter((p) => p.image).slice(0, 5)
+  }, [products])
   const headline = tx('بشرتك، بس أحلى.', 'Your skin, only brighter.')
 
   return (
@@ -40,16 +53,7 @@ export function Hero({ hold = 0 }: { hold?: number }) {
       style={{ ['--hold' as string]: `${hold}ms` } as CSSProperties}
     >
       <div className="v-hero__card" ref={card}>
-        <img
-          className="v-hero__img"
-          src={ph.src(1600)}
-          srcSet={[640, 960, 1280, 1600, 2200].map((w) => `${ph.src(w)} ${w}w`).join(', ')}
-          sizes="100vw"
-          alt={ph.alt[lang]}
-          fetchPriority="high"
-          decoding="async"
-        />
-        <div className="v-hero__shade" aria-hidden="true" />
+        <ProductGroup products={stage} className="v-hero__stage" size="lg" />
         <div className="v-hero__copy">
           <SparkSticker className="v-hero__sticker" />
           <h1 id="v-hero-h" className="v-hero__h" key={lang}>

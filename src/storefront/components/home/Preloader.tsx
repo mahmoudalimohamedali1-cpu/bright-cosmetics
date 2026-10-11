@@ -1,6 +1,5 @@
 import { useEffect, useSyncExternalStore } from 'react'
 import { useI18n } from '../../../i18n'
-import { PHOTOS } from '../../media'
 import { reducedMotion } from './scroll'
 
 /*
@@ -71,7 +70,7 @@ function startIntro() {
   const img = new Promise<void>((res) => {
     const i = new Image()
     i.onload = i.onerror = () => res()
-    i.src = PHOTOS.hero.src(1600)
+    i.src = '/products/anua-niacinamide-10-txa-4-serum.webp'
   })
   ;(async () => {
     await Promise.race([font, timeout(700)])

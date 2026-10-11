@@ -65,8 +65,8 @@
   --info-bg: #e0eaf2;
 
   /* Type */
-  /* Elegant high-contrast serif like the logo's "Bright"; El Messiri for Arabic */
-  --font-display: "Playfair Display", "El Messiri", Georgia, serif;
+  /* Elegant high-contrast serif like the logo's "Bright"; Almarai for Arabic */
+  --font-display: "Playfair Display", "Almarai", Georgia, serif;
   /* Script accent like the logo's "Cosmetics" (Latin only, used sparingly) */
   --font-script: "Great Vibes", "Playfair Display", cursive;
   --font-text: "Readex Pro", system-ui, "Segoe UI", Tahoma, sans-serif;
