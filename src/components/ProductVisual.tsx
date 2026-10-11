@@ -28,11 +28,11 @@ export function ProductVisual({ visual, brand, size, className, bare, title, ima
       <img
         src={image}
         alt={title ?? ''}
-        className={className}
-        loading="lazy"
+        className={`pv-img${className ? ` ${className}` : ''}`}
+        // Small thumbnails (bare) load right away; big tiles wait until near the viewport
+        loading={bare ? 'eager' : 'lazy'}
         decoding="async"
         draggable={false}
-        style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: '50% 100%', display: 'block' }}
       />
     )
   const { shape, body, cap, label, text } = visual

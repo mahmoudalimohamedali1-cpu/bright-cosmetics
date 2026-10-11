@@ -1233,3 +1233,9 @@
   .sf-404__mark .sf-sticker { inline-size: 168px !important; block-size: 168px !important; }
   .sf-404__n { font-size: 3rem; }
 }
+
+/* Packshot photos in the slots that position the drawn SVG absolutely */
+.sf-pdp__tile > .pv-img { position: absolute; top: 5%; inset-inline-start: 8%; width: 84%; height: 90%; }
+.sf-qv__pane .pv-img { position: absolute; top: 6%; inset-inline-start: 10%; width: 80%; height: 88%; }
+.sf-plan__pane .pv-img { position: absolute; top: 6%; inset-inline-start: 12%; width: 76%; height: 88%; }
+.sf-thumb .pv-img { width: 84%; height: 90%; }
