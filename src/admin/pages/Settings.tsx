@@ -1,37 +1,22 @@
 import { useEffect, useState } from 'react'
 import type { ComponentType } from 'react'
 import { Link } from 'react-router-dom'
-import { Bell, Boxes, Check, CreditCard, Languages, Minus, Plug, Receipt, ShieldAlert, Store, Users } from 'lucide-react'
+import { Bell, Boxes, CreditCard, History, Languages, Plug, Receipt, ShieldAlert, Store, Users } from 'lucide-react'
 import type { LucideProps } from 'lucide-react'
 import { useI18n } from '../../i18n'
 import { useStore } from '../../store'
-import type { Settings as SettingsT, Staff } from '../../data/types'
+import type { Settings as SettingsT } from '../../data/types'
 import { Avatar, Badge, DemoNote, Field, PageHeader, Pane, Switch, useAdmin } from '../ui'
 import { Note } from '../parts/growth'
 import { IntegrationsPane } from '../parts/integrations'
 import { api } from '../../lib/api'
 import { loadAdmin } from '../../lib/sync'
+import { ROLE_LABEL } from '../../lib/permissions'
+import type { Permission } from '../../lib/permissions'
+import { AuditPane, PermissionMatrix, StaffPane } from '../parts/staff'
 
-type Section = 'store' | 'lang' | 'tax' | 'pay' | 'integrations' | 'inv' | 'staff' | 'notify' | 'danger'
+type Section = 'store' | 'lang' | 'tax' | 'pay' | 'integrations' | 'inv' | 'staff' | 'audit' | 'notify' | 'danger'
 
-const ROLE: Record<Staff['role'], { ar: string; en: string }> = {
-  owner: { ar: 'المالك', en: 'Owner' },
-  manager: { ar: 'مدير', en: 'Manager' },
-  fulfillment: { ar: 'تجهيز وشحن', en: 'Fulfilment' },
-  support: { ar: 'خدمة العملاء', en: 'Support' },
-  marketing: { ar: 'تسويق', en: 'Marketing' },
-}
-const AREAS: { key: string; ar: string; en: string; roles: Staff['role'][] }[] = [
-  { key: 'orders', ar: 'الطلبات', en: 'Orders', roles: ['owner', 'manager', 'fulfillment', 'support'] },
-  { key: 'refunds', ar: 'الاسترداد والإلغاء', en: 'Refunds and cancels', roles: ['owner', 'manager'] },
-  { key: 'products', ar: 'المنتجات والأسعار', en: 'Products and prices', roles: ['owner', 'manager'] },
-  { key: 'inventory', ar: 'المخزون والتشغيلات', en: 'Stock and batches', roles: ['owner', 'manager', 'fulfillment'] },
-  { key: 'customers', ar: 'العملاء', en: 'Customers', roles: ['owner', 'manager', 'support', 'marketing'] },
-  { key: 'discounts', ar: 'الخصومات والحملات', en: 'Discounts and campaigns', roles: ['owner', 'manager', 'marketing'] },
-  { key: 'analytics', ar: 'التحليلات والأرباح', en: 'Analytics and profit', roles: ['owner', 'manager', 'marketing'] },
-  { key: 'settings', ar: 'الإعدادات والفريق', en: 'Settings and staff', roles: ['owner'] },
-]
-const ROLES: Staff['role'][] = ['owner', 'manager', 'fulfillment', 'support', 'marketing']
 
 const LRI = String.fromCharCode(0x2066)
 const PDI = String.fromCharCode(0x2069)
@@ -43,7 +28,7 @@ const sameSettings = (a: SettingsT, b: SettingsT) => JSON.stringify(a) === JSON.
 
 export default function Settings() {
   const { tx, pick, num, money, relTime } = useI18n()
-  const { toast, staff: me, online } = useAdmin()
+  const { toast, staff: me, me: account, online, can } = useAdmin()
   const settings = useStore((s) => s.settings)
   const staff = useStore((s) => s.staff)
   const updateSettings = useStore((s) => s.updateSettings)
@@ -112,17 +97,21 @@ export default function Settings() {
     }
   }
 
-  const nav: { id: Section; ar: string; en: string; icon: ComponentType<LucideProps>; danger?: boolean }[] = [
-    { id: 'store', ar: 'بيانات المتجر', en: 'Store details', icon: Store },
-    { id: 'lang', ar: 'اللغة والعملة', en: 'Languages and currency', icon: Languages },
-    { id: 'tax', ar: 'الضرايب', en: 'Taxes', icon: Receipt },
-    { id: 'pay', ar: 'طرق الدفع', en: 'Payments', icon: CreditCard },
-    { id: 'integrations', ar: 'الربط مع الخدمات', en: 'Integrations', icon: Plug },
-    { id: 'inv', ar: 'قواعد المخزون', en: 'Inventory rules', icon: Boxes },
-    { id: 'staff', ar: 'الفريق والصلاحيات', en: 'Staff and permissions', icon: Users },
+  const allNav: { id: Section; ar: string; en: string; icon: ComponentType<LucideProps>; danger?: boolean; perm?: Permission; online?: boolean }[] = [
+    { id: 'store', ar: 'بيانات المتجر', en: 'Store details', icon: Store, perm: 'settings.edit' },
+    { id: 'lang', ar: 'اللغة والعملة', en: 'Languages and currency', icon: Languages, perm: 'settings.edit' },
+    { id: 'tax', ar: 'الضرايب', en: 'Taxes', icon: Receipt, perm: 'settings.edit' },
+    { id: 'pay', ar: 'طرق الدفع', en: 'Payments', icon: CreditCard, perm: 'settings.edit' },
+    { id: 'integrations', ar: 'الربط مع الخدمات', en: 'Integrations', icon: Plug, perm: 'integrations.use' },
+    { id: 'inv', ar: 'قواعد المخزون', en: 'Inventory rules', icon: Boxes, perm: 'settings.edit' },
+    { id: 'staff', ar: 'الفريق والصلاحيات', en: 'Staff and permissions', icon: Users, perm: 'staff.manage' },
+    { id: 'audit', ar: 'سجل التعديلات', en: 'Audit log', icon: History, perm: 'audit.view', online: true },
     { id: 'notify', ar: 'التنبيهات', en: 'Notifications', icon: Bell },
-    { id: 'danger', ar: 'منطقة الخطر', en: 'Danger zone', icon: ShieldAlert, danger: true },
+    { id: 'danger', ar: 'منطقة الخطر', en: 'Danger zone', icon: ShieldAlert, danger: true, perm: 'data.reset' },
   ]
+  const nav = allNav.filter((n) => (!n.perm || can(n.perm)) && (!n.online || online))
+  // A role without the store sections lands on the first section it can use.
+  const current: Section = nav.some((n) => n.id === section) ? section : (nav[0]?.id ?? 'notify')
 
   const vatPart = (price: number) => (draft.taxIncluded ? price - price / (1 + draft.vatRate / 100) : (price * draft.vatRate) / 100)
 
@@ -141,7 +130,7 @@ export default function Settings() {
       <div className="gr-settings">
         <nav className="gr-subnav" aria-label={tx('أقسام الإعدادات', 'Settings sections')}>
           {nav.map((n) => (
-            <button key={n.id} type="button" aria-current={section === n.id} className={n.danger ? 'gr-subnav__danger' : undefined} onClick={() => setSection(n.id)}>
+            <button key={n.id} type="button" aria-current={current === n.id} className={n.danger ? 'gr-subnav__danger' : undefined} onClick={() => setSection(n.id)}>
               <n.icon size={16} aria-hidden />
               {tx(n.ar, n.en)}
             </button>
@@ -149,7 +138,7 @@ export default function Settings() {
         </nav>
 
         <div className="stack" style={{ minWidth: 0 }}>
-          {section === 'store' && (
+          {current === 'store' && (
             <>
               <Pane title={tx('بيانات المتجر', 'Store details')} description={tx('بتظهر للعملاء في المتجر والرسايل والفواتير', 'Shown to customers in the store, messages and invoices')}>
                 <div className="gr-form">
@@ -200,7 +189,7 @@ export default function Settings() {
             </>
           )}
 
-          {section === 'lang' && (
+          {current === 'lang' && (
             <Pane title={tx('اللغة والعملة', 'Languages and currency')}>
               <div className="gr-form">
                 <Field label={tx('لغة المتجر الافتراضية', 'Default store language')} hint={tx('أول ما الزائر يفتح المتجر. يقدر يغيّرها من الزرار في الأعلى.', 'What a first-time visitor sees. They can switch from the top bar.')} htmlFor="st-lang">
@@ -222,7 +211,7 @@ export default function Settings() {
             </Pane>
           )}
 
-          {section === 'tax' && (
+          {current === 'tax' && (
             <Pane title={tx('الضرايب', 'Taxes')} description={tx('ضريبة القيمة المضافة في مصر 14٪', 'Egyptian VAT is 14%')}>
               <div className="gr-form">
                 <Field label={tx('نسبة ضريبة القيمة المضافة ٪', 'VAT rate (%)')} error={errors.vatRate} htmlFor="st-vat">
@@ -245,7 +234,7 @@ export default function Settings() {
             </Pane>
           )}
 
-          {section === 'pay' && (
+          {current === 'pay' && (
             <Pane title={tx('طرق الدفع', 'Payments')} flush>
               <ul className="list">
                 <li>
@@ -285,9 +274,9 @@ export default function Settings() {
             </Pane>
           )}
 
-          {section === 'integrations' && <IntegrationsPane />}
+          {current === 'integrations' && <IntegrationsPane />}
 
-          {section === 'inv' && (
+          {current === 'inv' && (
             <Pane title={tx('قواعد المخزون', 'Inventory rules')}>
               <div className="gr-form">
                 <Field label={tx('حد المخزون المنخفض الافتراضي', 'Default low-stock level')} error={errors.lowStockDefault} hint={tx('للمنتجات الجديدة. كل منتج له حده الخاص في صفحته.', 'For new products. Each product has its own level on its page.')} htmlFor="st-low">
@@ -307,78 +296,56 @@ export default function Settings() {
             </Pane>
           )}
 
-          {section === 'staff' && (
+          {current === 'staff' && (
             <>
-              <Pane title={tx('الفريق', 'Staff')} flush>
-                <div className="table-wrap">
-                  <table className="table">
-                    <thead>
-                      <tr>
-                        <th>{tx('الاسم', 'Name')}</th>
-                        <th>{tx('البريد', 'Email')}</th>
-                        <th>{tx('الدور', 'Role')}</th>
-                        <th>{tx('آخر نشاط', 'Last active')}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {staff.map((s) => (
-                        <tr key={s.id}>
-                          <td>
-                            <span className="row" style={{ gap: 10 }}>
-                              <Avatar name={s.name} />
-                              <span className="strong">{s.name}</span>
-                              {s.name === me && <Badge plain>{tx('الحساب الحالي', 'You')}</Badge>}
-                            </span>
-                          </td>
-                          <td className="small muted gr-ltr">{s.email}</td>
-                          <td>
-                            <Badge tone={s.role === 'owner' ? 'info' : undefined} plain>
-                              {pick(ROLE[s.role])}
-                            </Badge>
-                          </td>
-                          <td className="small muted">{relTime(Math.min(Date.now(), new Date(s.lastActive).getTime()))}</td>
+              {online ? (
+                <StaffPane />
+              ) : (
+                <Pane title={tx('الفريق', 'Staff')} flush>
+                  <div className="table-wrap">
+                    <table className="table">
+                      <thead>
+                        <tr>
+                          <th>{tx('الاسم', 'Name')}</th>
+                          <th>{tx('البريد', 'Email')}</th>
+                          <th>{tx('الدور', 'Role')}</th>
+                          <th>{tx('آخر نشاط', 'Last active')}</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="pane__foot">
-                  <span>{tx('إضافة أعضاء وتسجيل الدخول محتاجين حسابات حقيقية، ودي غير متاحة في النسخة التجريبية.', 'Inviting staff and sign-in need real accounts, which this demo doesn’t have.')}</span>
-                </div>
-              </Pane>
-              <Pane title={tx('الصلاحيات حسب الدور', 'Permissions by role')} description={tx('للعرض فقط', 'Read only')} flush>
-                <div className="table-wrap">
-                  <table className="table gr-matrix gr-table-tight">
-                    <thead>
-                      <tr>
-                        <th>{tx('القسم', 'Area')}</th>
-                        {ROLES.map((r) => (
-                          <th key={r}>{pick(ROLE[r])}</th>
+                      </thead>
+                      <tbody>
+                        {staff.map((s) => (
+                          <tr key={s.id}>
+                            <td>
+                              <span className="row" style={{ gap: 10 }}>
+                                <Avatar name={s.name} />
+                                <span className="strong">{s.name}</span>
+                                {s.id === account.id && <Badge plain>{tx('الحساب الحالي', 'You')}</Badge>}
+                              </span>
+                            </td>
+                            <td className="small muted gr-ltr">{s.email}</td>
+                            <td>
+                              <Badge tone={s.role === 'owner' ? 'info' : undefined} plain>
+                                {pick(ROLE_LABEL[s.role])}
+                              </Badge>
+                            </td>
+                            <td className="small muted">{relTime(Math.min(Date.now(), new Date(s.lastActive).getTime()))}</td>
+                          </tr>
                         ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {AREAS.map((a) => (
-                        <tr key={a.key}>
-                          <td>{tx(a.ar, a.en)}</td>
-                          {ROLES.map((r) => {
-                            const ok = a.roles.includes(r)
-                            return (
-                              <td key={r}>
-                                {ok ? <Check size={16} className="yes" aria-label={tx('مسموح', 'Allowed')} /> : <Minus size={16} className="no" aria-label={tx('غير مسموح', 'Not allowed')} />}
-                              </td>
-                            )
-                          })}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </Pane>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="pane__foot">
+                    <span>{tx('إضافة أعضاء وتسجيل الدخول محتاجين حسابات حقيقية، ودي غير متاحة في النسخة التجريبية.', 'Inviting staff and sign-in need real accounts, which this demo doesn’t have.')}</span>
+                  </div>
+                </Pane>
+              )}
+              <PermissionMatrix />
             </>
           )}
 
-          {section === 'notify' && (
+          {current === 'audit' && <AuditPane />}
+
+          {current === 'notify' && (
             <Pane title={tx('التنبيهات', 'Notifications')} description={tx('بتتحفظ في المتصفح ده فقط', 'Saved in this browser only')}>
               {(
                 [
@@ -404,7 +371,7 @@ export default function Settings() {
             </Pane>
           )}
 
-          {section === 'danger' && (
+          {current === 'danger' && (
             <Pane title={tx('منطقة الخطر', 'Danger zone')}>
               <div className="stack" style={{ gap: 12 }}>
                 <div>

@@ -28,7 +28,7 @@ const CANCEL_REASONS: { id: string; ar: string; en: string }[] = [
 export default function OrderDetail() {
   const { id } = useParams()
   const { tx, pick, money, num, pct, date, relTime, dir } = useI18n()
-  const { toast, staff, online } = useAdmin()
+  const { toast, staff, online, can } = useAdmin()
   const integrations = useIntegrations()
   const [busy, setBusy] = useState<'bosta' | 'wa' | null>(null)
   const navigate = useNavigate()
@@ -318,13 +318,13 @@ export default function OrderDetail() {
                   {tx('تم التحصيل', 'Mark paid')}
                 </button>
               )}
-              {o.paymentStatus === 'paid' && (
+              {o.paymentStatus === 'paid' && can('orders.refund') && (
                 <button className="btn" onClick={() => setDrawer('refund')}>
                   <RotateCcw size={16} aria-hidden />
                   {tx('استرداد', 'Refund')}
                 </button>
               )}
-              {!cancelled && (o.fulfillment === 'unfulfilled' || o.fulfillment === 'packed') && (
+              {!cancelled && (o.fulfillment === 'unfulfilled' || o.fulfillment === 'packed') && can('orders.refund') && (
                 <button className="btn btn--danger" onClick={() => setDrawer('cancel')}>
                   <Ban size={16} aria-hidden />
                   {tx('إلغاء الطلب', 'Cancel order')}

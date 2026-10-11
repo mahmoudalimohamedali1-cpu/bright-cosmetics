@@ -20,6 +20,7 @@ const { serveStatic } = await import('@hono/node-server/serve-static')
 const { env } = await import('./env')
 const { seed } = await import('./db')
 const { app } = await import('./app')
+const { bootstrapOwner } = await import('./auth')
 
 if (seed()) console.log('[db] seeded a fresh database from buildSeed()')
 
@@ -41,7 +42,11 @@ if (env.production) {
   app.get('*', (c) => c.html(html))
 }
 
-if (!env.adminPassword) console.warn('[admin] ADMIN_PASSWORD is not set: admin sign-in is disabled until it is')
+if (await bootstrapOwner()) console.log(`[admin] created the owner sign-in for ${env.adminEmail} (password from ADMIN_PASSWORD)`)
+else if (!env.adminPassword) {
+  const { allAuth } = await import('./auth')
+  if (!allAuth().length) console.warn('[admin] no staff accounts and ADMIN_PASSWORD is not set: admin sign-in is disabled until it is')
+}
 
 serve({ fetch: app.fetch, port: env.port }, (info) => {
   console.log(`[api] NURI ${env.production ? 'production' : 'dev'} server on http://localhost:${info.port}`)

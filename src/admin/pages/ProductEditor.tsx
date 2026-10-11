@@ -5,7 +5,7 @@ import { ExternalLink, Minus, Plus, Trash2 } from 'lucide-react'
 import { useI18n } from '../../i18n'
 import type { Bi } from '../../i18n'
 import { useStore } from '../../store'
-import { Drawer, Empty, Field, PageHeader, Pane, Seg, useAdmin } from '../ui'
+import { Badge, Drawer, Empty, Field, PageHeader, Pane, Seg, useAdmin } from '../ui'
 import { ProductVisual } from '../../components/ProductVisual'
 import { CATEGORY_LABEL, CONCERN_LABEL, SKIN_LABEL, STEP_LABEL, originName } from '../../data/catalog'
 import type { Batch, Category, Concern, Origin, Product, ProductStatus, Shape, SkinType } from '../../data/types'
@@ -79,7 +79,9 @@ export default function ProductEditor() {
   const { id } = useParams()
   const isNew = !id || id === 'new'
   const { tx, pick, money, num, pct, date, lang } = useI18n()
-  const { toast, staff } = useAdmin()
+  const { toast, staff, can } = useAdmin()
+  // View-only roles see the product as-is: every field disabled, no save or delete.
+  const readOnly = !can('products.edit')
   const navigate = useNavigate()
   const products = useStore((s) => s.products)
   const shipments = useStore((s) => s.shipments)
@@ -344,7 +346,18 @@ export default function ProductEditor() {
       <PageHeader
         back={{ to: '/admin/products', label: tx('المنتجات', 'Products') }}
         title={isNew ? tx('إضافة منتج', 'Add product') : pick(base?.name) || tx('منتج بدون اسم', 'Untitled product')}
-        description={!isNew ? `${d.brand} ${d.sku}` : tx('الحقول بالعربي والإنجليزي جنب بعض', 'Arabic and English fields side by side')}
+        description={
+          readOnly ? (
+            <>
+              {`${d.brand} ${d.sku} `}
+              <Badge plain>{tx('للعرض فقط لدورك', 'View only for your role')}</Badge>
+            </>
+          ) : !isNew ? (
+            `${d.brand} ${d.sku}`
+          ) : (
+            tx('الحقول بالعربي والإنجليزي جنب بعض', 'Arabic and English fields side by side')
+          )
+        }
         actions={
           <>
             {!isNew && d.status === 'active' && (
@@ -353,20 +366,22 @@ export default function ProductEditor() {
                 {tx('عرض في المتجر', 'View in store')}
               </a>
             )}
-            {!isNew && (
+            {!isNew && !readOnly && (
               <button className="btn btn--danger" onClick={() => setConfirmDelete(true)}>
                 <Trash2 size={16} aria-hidden />
                 {tx('حذف', 'Delete')}
               </button>
             )}
-            <button className="btn btn--primary" onClick={save} disabled={!dirty && !isNew}>
-              {tx('حفظ', 'Save')}
-            </button>
+            {!readOnly && (
+              <button className="btn btn--primary" onClick={save} disabled={!dirty && !isNew}>
+                {tx('حفظ', 'Save')}
+              </button>
+            )}
           </>
         }
       />
 
-      {dirty && (
+      {dirty && !readOnly && (
         <div className="core-sticky-save" role="region" aria-label={tx('تغييرات غير محفوظة', 'Unsaved changes')}>
           <span className="small">{tx('فيه تغييرات لسه ما اتحفظتش', 'You have unsaved changes')}</span>
           <div className="row">
@@ -380,6 +395,13 @@ export default function ProductEditor() {
         </div>
       )}
 
+      {readOnly && can('inventory.edit') && (
+        <p className="small muted" style={{ marginBottom: 12 }}>
+          {tx('الكميات والتشغيلات بتتعدّل من ', 'Stock and batches are adjusted in ')}
+          <Link to="/admin/inventory">{tx('المخزون والصلاحية', 'Stock & expiry')}</Link>
+        </p>
+      )}
+      <fieldset disabled={readOnly} className="adm-readonly">
       <div className="grid grid-main">
         <div className="stack">
           {pane(
@@ -729,6 +751,7 @@ export default function ProductEditor() {
           )}
         </div>
       </div>
+      </fieldset>
 
       <Drawer
         open={pendingNav !== null}

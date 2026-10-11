@@ -1,12 +1,38 @@
-import { createHash, randomBytes, timingSafeEqual } from 'node:crypto'
+import { randomBytes } from 'node:crypto'
 import { Hono } from 'hono'
-import type { Context, Next } from 'hono'
+import type { Context } from 'hono'
 import { bodyLimit } from 'hono/body-limit'
-import type { Customer, Discount, Order, Product, Review, Settings, Shipment, ShippingZone } from '../src/data/types'
+import { createMiddleware } from 'hono/factory'
+import type { Customer, Discount, Order, OrderEvent, Product, Review, Settings, Shipment, ShippingZone, Staff } from '../src/data/types'
 import { normalizePhone, PHONE_RE } from '../src/lib/commerce'
+import { changedKeys, isRole, PERMISSION_LABEL, writePermission } from '../src/lib/permissions'
+import type { Permission } from '../src/lib/permissions'
 import { EVENT_TYPES, funnelStats, liveStats, recordEvent } from './analytics'
 import type { EventType } from './analytics'
-import { bootstrap, db, get, getSettings, isCollection, list, put, remove, seed, tx } from './db'
+import {
+  activeOwners,
+  allAuth,
+  audit,
+  authByEmail,
+  authById,
+  checkLogin,
+  createLogin,
+  deleteLogin,
+  endSession,
+  endSessions,
+  generatePassword,
+  keepStaff,
+  MIN_PASSWORD,
+  recentAudit,
+  sessionStaff,
+  setDisabled,
+  setLoginEmail,
+  setPassword,
+  startSession,
+  touch,
+} from './auth'
+import type { Me } from './auth'
+import { bootstrap, db, get, getSettings, isCollection, list, put, remove, revsOf, seed, tx } from './db'
 import type { DocCollection } from './db'
 import { configured, env } from './env'
 import { clientIp, fail, limiter, notConfigured, ProviderError, readJson } from './http'
@@ -16,7 +42,9 @@ import type { PaymobTxn } from './integrations/paymob'
 import { sendText, WHATSAPP_VARS } from './integrations/whatsapp'
 import { createOrder, findOrderForPhone, logActivity, orderEvent, updateOrder } from './orders'
 
-export const app = new Hono()
+type AppEnv = { Variables: { me: Me } }
+
+export const app = new Hono<AppEnv>()
 
 app.use('/api/*', bodyLimit({ maxSize: 8 * 1024 * 1024, onError: (c) => fail(c, 413, 'too_large', { ar: 'الطلب كبير جدًا.', en: 'Request body too large.' }) }))
 app.use('/api/*', async (c, next) => {
@@ -170,36 +198,172 @@ app.post('/api/payments/paymob/webhook', async (c) => {
 
 /* ───────────── Admin auth ───────────── */
 
-const SESSION_MS = 7 * 24 * 3600_000
 const loginLimit = limiter(10, 15 * 60_000)
-const sha = (s: string) => createHash('sha256').update(s).digest()
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 app.post('/api/admin/login', async (c) => {
-  if (!env.adminPassword) return fail(c, 503, 'admin_not_configured', { ar: 'كلمة سر الأدمن مش متضبطة على السيرفر (ADMIN_PASSWORD).', en: 'ADMIN_PASSWORD is not set on the server.' })
-  if (!loginLimit(clientIp(c))) return fail(c, 429, 'rate_limited', { ar: 'محاولات كتير. استنى ربع ساعة.', en: 'Too many attempts. Wait 15 minutes.' })
-  const b = (await readJson(c)) as { password?: unknown } | undefined
-  const pw = typeof b?.password === 'string' ? b.password : ''
-  if (!pw || !timingSafeEqual(sha(pw), sha(env.adminPassword))) return fail(c, 401, 'bad_password', { ar: 'كلمة السر مش صحيحة.', en: 'Wrong password.' })
-  const token = randomBytes(32).toString('base64url')
-  db.prepare('DELETE FROM admin_sessions WHERE created_at < ?').run(Date.now() - SESSION_MS)
-  db.prepare('INSERT INTO admin_sessions (token, created_at) VALUES (?, ?)').run(token, Date.now())
-  return c.json({ token })
+  if (!allAuth().length) return fail(c, 503, 'admin_not_configured', { ar: 'مفيش حساب أدمن على السيرفر. لازم ضبط ADMIN_PASSWORD (و ADMIN_EMAIL) وإعادة تشغيل السيرفر.', en: 'No admin account exists yet. Set ADMIN_PASSWORD (and ADMIN_EMAIL) and restart the server.' })
+  if (!loginLimit(clientIp(c))) return fail(c, 429, 'rate_limited', { ar: 'محاولات كتير. الانتظار ربع ساعة مطلوب.', en: 'Too many attempts. Wait 15 minutes.' })
+  const b = (await readJson(c)) as { email?: unknown; password?: unknown } | undefined
+  const email = typeof b?.email === 'string' ? b.email.trim().slice(0, 120) : ''
+  const pw = typeof b?.password === 'string' ? b.password.slice(0, 200) : ''
+  if (!email || !pw) return fail(c, 400, 'missing_credentials', { ar: 'البريد وكلمة السر مطلوبين.', en: 'Email and password are required.' })
+  const r = await checkLogin(email, pw)
+  if (!r.ok && r.disabled) return fail(c, 403, 'account_disabled', { ar: 'الحساب ده متوقف. التواصل مع المالك مطلوب.', en: 'This account is disabled. Contact the store owner.' })
+  if (!r.ok) return fail(c, 401, 'bad_credentials', { ar: 'البريد أو كلمة السر مش صحيحين.', en: 'Wrong email or password.' })
+  const token = startSession(r.auth.staff_id)
+  touch(r.auth.staff_id)
+  const me = sessionStaff(token)
+  return c.json({ token, me })
 })
 
 const bearer = (c: Context) => c.req.header('authorization')?.match(/^Bearer\s+(\S+)$/i)?.[1]
 
-async function requireAdmin(c: Context, next: Next) {
+const requireAdmin = createMiddleware<AppEnv>(async (c, next) => {
   if (c.req.path === '/api/admin/login') return next()
-  const t = bearer(c)
-  const row = t ? (db.prepare('SELECT created_at FROM admin_sessions WHERE token = ?').get(t) as { created_at: number } | undefined) : undefined
-  if (!row || Date.now() - Number(row.created_at) > SESSION_MS) return fail(c, 401, 'unauthorized', { ar: 'لازم تسجيل الدخول.', en: 'Sign in required.' })
+  const me = sessionStaff(bearer(c))
+  if (!me) return fail(c, 401, 'unauthorized', { ar: 'لازم تسجيل الدخول.', en: 'Sign in required.' })
+  c.set('me', me)
+  touch(me.id)
   return next()
-}
+})
 app.use('/api/admin/*', requireAdmin)
 
+const forbidden = (c: Context, p: Permission | null, extra?: Record<string, unknown>) => {
+  const label = p ? PERMISSION_LABEL[p] : { ar: 'تعديل الفريق من هنا', en: 'editing staff this way' }
+  return fail(c, 403, 'forbidden', { ar: `مش متاح لدورك: ${label.ar}.`, en: `Not available for your role: ${label.en}.` }, { permission: p, ...extra })
+}
+
+/** Route guard: the signed-in staff member needs at least one of these permissions. */
+const need = (...perms: Permission[]) =>
+  createMiddleware<AppEnv>(async (c, next) => {
+    const me = c.get('me')
+    if (!perms.some((p) => me.permissions.includes(p))) return forbidden(c, perms[0])
+    return next()
+  })
+
+const allowed = (me: Me, p: Permission | 'signed-in' | null) => p === 'signed-in' || (p !== null && me.permissions.includes(p))
+
 app.post('/api/admin/logout', (c) => {
-  db.prepare('DELETE FROM admin_sessions WHERE token = ?').run(bearer(c) ?? '')
+  endSession(bearer(c) ?? '')
   return c.json({ ok: true })
+})
+
+app.get('/api/admin/me', (c) => {
+  const me = c.get('me')
+  const doc = get<Staff>('staff', me.id)!.doc
+  return c.json({ staff: { ...doc, email: me.email }, permissions: me.permissions })
+})
+
+/* ───────────── Staff accounts (staff.manage) ───────────── */
+
+type StaffRow = Staff & { login: boolean; disabled: boolean }
+const staffRow = (s: Staff, auth = authById(s.id)): StaffRow => ({ ...s, email: auth?.email ?? s.email, login: !!auth, disabled: !!auth?.disabled })
+const LAST_OWNER = { ar: 'لازم يفضل مالك واحد على الأقل يقدر يدخل.', en: 'At least one owner must keep a working sign-in.' }
+const SHORT_PW = { ar: `كلمة السر لازم تكون ${MIN_PASSWORD} حروف على الأقل.`, en: `Passwords need at least ${MIN_PASSWORD} characters.` }
+const EMAIL_TAKEN = { ar: 'البريد ده مستخدم لحساب تاني.', en: 'That email already has an account.' }
+
+app.get('/api/admin/staff', need('staff.manage'), (c) => {
+  const auth = new Map(allAuth().map((a) => [a.staff_id, a]))
+  return c.json({ staff: list<Staff>('staff').map((s) => staffRow(s, auth.get(s.id))), revs: revsOf('staff') })
+})
+
+app.post('/api/admin/staff', need('staff.manage'), async (c) => {
+  const me = c.get('me')
+  const b = (await readJson(c)) as { name?: unknown; email?: unknown; role?: unknown; password?: unknown } | undefined
+  const name = typeof b?.name === 'string' ? b.name.trim().slice(0, 60) : ''
+  const email = typeof b?.email === 'string' ? b.email.trim().toLowerCase().slice(0, 120) : ''
+  const role = b?.role
+  const given = typeof b?.password === 'string' && b.password ? b.password : undefined
+  if (!name) return fail(c, 400, 'bad_name', { ar: 'الاسم مطلوب.', en: 'Name is required.' }, { field: 'name' })
+  if (!EMAIL_RE.test(email)) return fail(c, 400, 'bad_email', { ar: 'البريد مش صحيح.', en: 'Not a valid email.' }, { field: 'email' })
+  if (!isRole(role)) return fail(c, 400, 'bad_role', { ar: 'دور غير معروف.', en: 'Unknown role.' }, { field: 'role' })
+  if (given !== undefined && given.length < MIN_PASSWORD) return fail(c, 400, 'weak_password', SHORT_PW, { field: 'password' })
+  if (authByEmail(email)) return fail(c, 409, 'email_taken', EMAIL_TAKEN, { field: 'email' })
+  // A staff record without a login (e.g. from the seed) with this email gets the login.
+  const existing = list<Staff>('staff').find((s) => s.email.toLowerCase() === email && !authById(s.id))
+  const doc: Staff = { id: existing?.id ?? 's' + randomBytes(5).toString('hex'), name, email, role, lastActive: existing?.lastActive ?? new Date(0).toISOString() }
+  const password = given ?? generatePassword()
+  await createLogin(doc.id, email, password)
+  const rev = put('staff', doc.id, doc)
+  audit(me, 'staff', doc.id, 'create', `role: ${role}`)
+  return c.json({ staff: staffRow(doc), rev, ...(given ? {} : { password }) }, 201)
+})
+
+app.put('/api/admin/staff/:id', need('staff.manage'), async (c) => {
+  const me = c.get('me')
+  const id = c.req.param('id')
+  const cur = get<Staff>('staff', id)?.doc
+  if (!cur) return fail(c, 404, 'not_found', { ar: 'الحساب مش موجود.', en: 'No such staff member.' })
+  const b = (await readJson(c)) as { name?: unknown; email?: unknown; role?: unknown; disabled?: unknown } | undefined
+  const next: Staff = { ...cur }
+  if (b?.name !== undefined) {
+    const name = typeof b.name === 'string' ? b.name.trim().slice(0, 60) : ''
+    if (!name) return fail(c, 400, 'bad_name', { ar: 'الاسم مطلوب.', en: 'Name is required.' }, { field: 'name' })
+    next.name = name
+  }
+  if (b?.role !== undefined) {
+    if (!isRole(b.role)) return fail(c, 400, 'bad_role', { ar: 'دور غير معروف.', en: 'Unknown role.' }, { field: 'role' })
+    next.role = b.role
+  }
+  let email: string | undefined
+  if (b?.email !== undefined) {
+    email = typeof b.email === 'string' ? b.email.trim().toLowerCase() : ''
+    if (!EMAIL_RE.test(email)) return fail(c, 400, 'bad_email', { ar: 'البريد مش صحيح.', en: 'Not a valid email.' }, { field: 'email' })
+    const other = authByEmail(email)
+    if (other && other.staff_id !== id) return fail(c, 409, 'email_taken', EMAIL_TAKEN, { field: 'email' })
+    next.email = email
+  }
+  const auth = authById(id)
+  const disable = typeof b?.disabled === 'boolean' ? b.disabled : undefined
+  if (disable !== undefined && !auth) return fail(c, 400, 'no_login', { ar: 'الحساب ده مالوش تسجيل دخول.', en: 'This staff member has no sign-in.' })
+  const losesOwner = cur.role === 'owner' && !!auth && !auth.disabled && (next.role !== 'owner' || disable === true)
+  if (losesOwner && activeOwners(id).length === 0) return fail(c, 400, 'last_owner', LAST_OWNER)
+  const rev = put('staff', id, next)
+  if (email && auth) setLoginEmail(id, email)
+  if (disable !== undefined) setDisabled(id, disable)
+  const what = [...changedKeys(cur as unknown as Record<string, unknown>, next as unknown as Record<string, unknown>), ...(disable !== undefined ? [disable ? 'disabled' : 'enabled'] : [])]
+  audit(me, 'staff', id, 'update', what.join(', ') + (next.role !== cur.role ? ` (${cur.role} → ${next.role})` : ''))
+  return c.json({ staff: staffRow(next), rev })
+})
+
+app.post('/api/admin/staff/:id/password', need('staff.manage'), async (c) => {
+  const me = c.get('me')
+  const id = c.req.param('id')
+  const doc = get<Staff>('staff', id)?.doc
+  if (!doc) return fail(c, 404, 'not_found', { ar: 'الحساب مش موجود.', en: 'No such staff member.' })
+  const b = (await readJson(c)) as { password?: unknown } | undefined
+  const given = typeof b?.password === 'string' && b.password ? b.password : undefined
+  if (given !== undefined && given.length < MIN_PASSWORD) return fail(c, 400, 'weak_password', SHORT_PW, { field: 'password' })
+  const password = given ?? generatePassword()
+  if (authById(id)) {
+    await setPassword(id, password)
+    endSessions(id, id === me.id ? bearer(c) : undefined)
+  } else {
+    if (authByEmail(doc.email)) return fail(c, 409, 'email_taken', EMAIL_TAKEN, { field: 'email' })
+    await createLogin(id, doc.email, password)
+  }
+  audit(me, 'staff', id, 'password')
+  return c.json({ staff: staffRow(doc), ...(given ? {} : { password }) })
+})
+
+app.delete('/api/admin/staff/:id', need('staff.manage'), (c) => {
+  const me = c.get('me')
+  const id = c.req.param('id')
+  const doc = get<Staff>('staff', id)?.doc
+  if (!doc) return fail(c, 404, 'not_found', { ar: 'الحساب مش موجود.', en: 'No such staff member.' })
+  if (id === me.id) return fail(c, 400, 'self', { ar: 'مينفعش حذف الحساب اللي داخل بيه دلوقتي.', en: 'You can’t delete the account you’re signed in with.' })
+  const auth = authById(id)
+  if (doc.role === 'owner' && auth && !auth.disabled && activeOwners(id).length === 0) return fail(c, 400, 'last_owner', LAST_OWNER)
+  deleteLogin(id)
+  remove('staff', id)
+  audit(me, 'staff', id, 'delete', doc.name)
+  return c.json({ ok: true })
+})
+
+app.get('/api/admin/audit', need('audit.view'), (c) => {
+  const limit = Math.max(1, Math.min(500, Number(c.req.query('limit')) || 100))
+  return c.json({ entries: recentAudit(limit) })
 })
 
 /* ───────────── Admin data ───────────── */
@@ -208,22 +372,49 @@ app.get('/api/admin/bootstrap', (c) => c.json(bootstrap()))
 
 const validDoc = (doc: unknown, id: string) => !!doc && typeof doc === 'object' && !Array.isArray(doc) && (doc as { id?: unknown }).id === id
 
-app.put('/api/admin/settings', async (c) => {
+type AnyDoc = Record<string, unknown>
+
+/** Attribution the client can't fake: new order events and new activity entries carry the signed-in name. */
+function stamp(collection: string, before: AnyDoc | undefined, after: AnyDoc, me: Me): AnyDoc {
+  if (collection === 'orders' && Array.isArray(after.events)) {
+    const from = Array.isArray(before?.events) ? before.events.length : 0
+    return { ...after, events: (after.events as OrderEvent[]).map((e, i) => (i >= from && e && typeof e === 'object' ? { ...e, by: me.name } : e)) }
+  }
+  if (collection === 'activity' && !before) return { ...after, who: me.name }
+  return after
+}
+
+const auditWrite = (me: Me, collection: string, id: string, before: AnyDoc | undefined, after: AnyDoc | undefined) => {
+  if (!after) audit(me, collection, id, 'delete')
+  else if (!before) audit(me, collection, id, 'create')
+  else audit(me, collection, id, 'update', changedKeys(before, after).join(', '))
+}
+
+app.put('/api/admin/settings', need('settings.edit'), async (c) => {
+  const me = c.get('me')
   const b = await readJson(c)
   if (!b || typeof b !== 'object' || Array.isArray(b)) return fail(c, 400, 'bad_doc', { ar: 'إعدادات غير صالحة.', en: 'Invalid settings.' })
-  const rev = put('settings', 'main', { ...getSettings(), ...(b as Partial<Settings>) })
+  const before = getSettings()
+  const rev = put('settings', 'main', { ...before, ...(b as Partial<Settings>) })
+  auditWrite(me, 'settings', 'main', before as unknown as AnyDoc, getSettings() as unknown as AnyDoc)
   return c.json({ settings: getSettings(), rev })
 })
 
 app.put('/api/admin/:collection/:id', async (c) => {
+  const me = c.get('me')
   const { collection, id } = c.req.param()
   if (!isCollection(collection)) return fail(c, 404, 'unknown_collection', { ar: 'مجموعة غير معروفة.', en: 'Unknown collection.' })
   const doc = await readJson(c)
   if (!validDoc(doc, id)) return fail(c, 400, 'bad_doc', { ar: 'المستند لازم يكون JSON و id مطابق.', en: 'Body must be a JSON object whose id matches the URL.' })
   const base = c.req.query('rev')
-  const cur = get(collection, id)
+  const cur = get<AnyDoc>(collection, id)
+  const perm = writePermission(collection, cur?.doc, doc as AnyDoc)
+  if (!allowed(me, perm)) return forbidden(c, perm === 'signed-in' ? null : perm, { doc: cur?.doc ?? null, rev: cur?.rev ?? 0 })
   if (base !== undefined && (cur?.rev ?? 0) !== Number(base)) return fail(c, 409, 'conflict', { ar: 'السجل اتغيّر من مكان تاني.', en: 'The record changed elsewhere.' }, { doc: cur?.doc ?? null, rev: cur?.rev ?? 0 })
-  return c.json({ doc, rev: put(collection, id, doc) })
+  const next = stamp(collection, cur?.doc, doc as AnyDoc, me)
+  const rev = put(collection, id, next)
+  auditWrite(me, collection, id, cur?.doc, next)
+  return c.json({ doc: next, rev })
 })
 
 app.get('/api/admin/:collection/:id', (c) => {
@@ -235,16 +426,28 @@ app.get('/api/admin/:collection/:id', (c) => {
 })
 
 app.delete('/api/admin/:collection/:id', (c) => {
+  const me = c.get('me')
   const { collection, id } = c.req.param()
   if (!isCollection(collection)) return fail(c, 404, 'unknown_collection', { ar: 'مجموعة غير معروفة.', en: 'Unknown collection.' })
+  const cur = get<AnyDoc>(collection, id)
+  const perm = writePermission(collection, cur?.doc, undefined)
+  if (!allowed(me, perm)) return forbidden(c, perm === 'signed-in' ? null : perm)
   remove(collection, id)
+  if (cur) auditWrite(me, collection, id, cur.doc, undefined)
   return c.json({ ok: true })
 })
 
 type BatchOp = { op?: unknown; collection?: unknown; id?: unknown; doc?: unknown; rev?: unknown }
+type Denied = { collection: string; id: string; doc: unknown; rev: number; permission: Permission | null }
 
-/** Many puts/deletes in one transaction, each checked against the revision the client last saw. */
+/**
+ * Many puts/deletes in one transaction, each checked against the revision the
+ * client last saw. Every op is checked against the role first: if any is not
+ * allowed, nothing is written and the 403 lists the refused records with their
+ * stored versions so the client can put them back.
+ */
 app.post('/api/admin/batch', async (c) => {
+  const me = c.get('me')
   const b = (await readJson(c)) as { ops?: BatchOp[] } | undefined
   if (!Array.isArray(b?.ops) || b.ops.length > 5000) return fail(c, 400, 'bad_batch', { ar: 'دفعة غير صالحة.', en: 'Invalid batch.' })
   for (const o of b.ops) {
@@ -253,12 +456,20 @@ app.post('/api/admin/batch', async (c) => {
       return fail(c, 400, 'bad_op', { ar: 'عملية غير صالحة في الدفعة.', en: 'Invalid operation in batch.' }, { op: { collection: o.collection, id: o.id, op: o.op } })
   }
   const result = tx(() => {
+    const denied: Denied[] = []
+    for (const o of b.ops!) {
+      const cur = get<AnyDoc>(o.collection as DocCollection, o.id as string)
+      const perm = writePermission(o.collection as string, cur?.doc, o.op === 'put' ? (o.doc as AnyDoc) : undefined)
+      if (!allowed(me, perm)) denied.push({ collection: o.collection as string, id: o.id as string, doc: cur?.doc ?? null, rev: cur?.rev ?? 0, permission: perm === 'signed-in' ? null : perm })
+    }
+    if (denied.length) return { denied }
+
     const revs: Record<string, Record<string, number>> = {}
     const conflicts: { collection: string; id: string; doc: unknown; rev: number }[] = []
     for (const o of b.ops!) {
       const coll = o.collection as DocCollection
       const id = o.id as string
-      const cur = get(coll, id)
+      const cur = get<AnyDoc>(coll, id)
       const base = typeof o.rev === 'number' ? o.rev : undefined
       const stale = base === undefined ? !!cur : (cur?.rev ?? 0) !== base
       if (stale) {
@@ -268,34 +479,46 @@ app.post('/api/admin/batch', async (c) => {
       if (o.op === 'delete') {
         remove(coll, id)
         ;(revs[coll] ??= {})[id] = 0
-      } else (revs[coll] ??= {})[id] = put(coll, id, o.doc)
+        if (cur) auditWrite(me, coll, id, cur.doc, undefined)
+      } else {
+        const next = stamp(coll, cur?.doc, o.doc as AnyDoc, me)
+        ;(revs[coll] ??= {})[id] = put(coll, id, next)
+        auditWrite(me, coll, id, cur?.doc, next)
+      }
     }
     return { revs, conflicts }
   })
-  return c.json(result)
+  if (result.denied) return forbidden(c, result.denied[0].permission, { denied: result.denied })
+  return c.json({ revs: result.revs, conflicts: result.conflicts })
 })
 
-app.post('/api/admin/reset', (c) => {
+app.post('/api/admin/reset', need('data.reset'), (c) => {
+  const me = c.get('me')
+  // Logins outlive a data reset: keep every staff record (and role) as it is now.
+  const staff = list<Staff>('staff')
   seed(true)
+  tx(() => keepStaff(staff))
   db.exec('DELETE FROM events')
+  audit(me, 'all', '*', 'reset')
   return c.json({ ok: true })
 })
 
 /* ───────────── Admin live + analytics ───────────── */
 
-app.get('/api/admin/live', (c) => {
+app.get('/api/admin/live', need('analytics.view'), (c) => {
   const names = new Map(list<Customer>('customers').map((x) => [x.id, x.name]))
   return c.json(liveStats(list<Order>('orders'), (id) => names.get(id)))
 })
 
-app.get('/api/admin/funnel', (c) => {
+app.get('/api/admin/funnel', need('analytics.view'), (c) => {
   const days = Math.max(1, Math.min(365, Number(c.req.query('days')) || 30))
   return c.json(funnelStats(days))
 })
 
 /* ───────────── Admin integrations ───────────── */
 
-app.get('/api/admin/integrations', (c) =>
+// Status only (booleans and variable names): the order page needs it to offer courier booking and server-sent confirmations.
+app.get('/api/admin/integrations', need('integrations.use', 'orders.edit'), (c) =>
   c.json({
     paymob: { configured: configured.paymob(), vars: PAYMOB_VARS },
     bosta: { configured: configured.bosta(), vars: BOSTA_VARS },
@@ -303,11 +526,12 @@ app.get('/api/admin/integrations', (c) =>
   }),
 )
 
-app.post('/api/admin/couriers/bosta/:orderId', async (c) => {
+// Booking a courier and sending the order-confirmation message are part of working an order.
+app.post('/api/admin/couriers/bosta/:orderId', need('orders.edit'), async (c) => {
   if (!configured.bosta()) return notConfigured(c, 'Bosta', BOSTA_VARS)
+  const me = c.get('me')
   const id = c.req.param('orderId')
-  const b = (await readJson(c)) as { by?: unknown } | undefined
-  const by = typeof b?.by === 'string' ? b.by.slice(0, 60) : 'Admin'
+  const by = me.name
   const o = get<Order>('orders', id)?.doc
   if (!o) return fail(c, 404, 'not_found', { ar: 'الطلب مش موجود.', en: 'Order not found.' })
   if (o.status === 'cancelled') return fail(c, 409, 'cancelled', { ar: 'الطلب ده ملغي.', en: 'This order is cancelled.' })
@@ -325,20 +549,23 @@ app.post('/api/admin/couriers/bosta/:orderId', async (c) => {
       events: [...x.events, orderEvent('shipped', by, `Bosta ${r.tracking}`)],
     }))
     logActivity(by, { ar: `اتعمل شحنة بوسطة لطلب #${o.number}`, en: `Created Bosta delivery for order #${o.number}` }, `/admin/orders/${id}`)
+    audit(me, 'orders', id, 'courier', `Bosta ${r.tracking}`)
     return c.json({ order: updated, rev: get('orders', id)!.rev })
   } catch (e) {
     return providerFail(c, 'Bosta', e)
   }
 })
 
-app.post('/api/admin/whatsapp/send', async (c) => {
+app.post('/api/admin/whatsapp/send', need('orders.edit'), async (c) => {
   if (!configured.whatsapp()) return notConfigured(c, 'WhatsApp', WHATSAPP_VARS)
   const b = (await readJson(c)) as { to?: unknown; text?: unknown } | undefined
   const to = normalizePhone(typeof b?.to === 'string' ? b.to : '')
   const text = typeof b?.text === 'string' ? b.text.trim().slice(0, 4096) : ''
   if (!PHONE_RE.test(to) || !text) return fail(c, 400, 'bad_message', { ar: 'الرقم أو الرسالة مش صحيحين.', en: 'Invalid number or empty message.' })
   try {
-    return c.json(await sendText(to, text))
+    const r = await sendText(to, text)
+    audit(c.get('me'), 'whatsapp', to.slice(-4), 'message')
+    return c.json(r)
   } catch (e) {
     return providerFail(c, 'WhatsApp', e)
   }

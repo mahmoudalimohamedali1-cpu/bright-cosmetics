@@ -17,7 +17,7 @@ const PAGE = 50
 
 export default function Customers() {
   const { tx, pick, money, num, pct, relTime } = useI18n()
-  const { toast, staff } = useAdmin()
+  const { toast, staff, can } = useAdmin()
   const stats = useCustomerStats()
   const upsertCustomer = useStore((s) => s.upsertCustomer)
   const log = useStore((s) => s.log)
@@ -203,7 +203,7 @@ export default function Customers() {
             <Download size={14} aria-hidden />
             {tx('تصدير CSV', 'Export CSV')}
           </button>
-          {tagOpen ? (
+          {!can('customers.edit') ? null : tagOpen ? (
             <form
               className="row"
               onSubmit={(e) => {
@@ -236,10 +236,10 @@ export default function Customers() {
               {tx('إضافة وسم', 'Add tag')}
             </button>
           )}
-          <button className="btn btn--sm" onClick={() => setComposer((n) => n + 1)}>
+          {(can('customers.edit') || can('marketing.edit')) && <button className="btn btn--sm" onClick={() => setComposer((n) => n + 1)}>
             <MessageCircle size={14} aria-hidden />
             {tx('رسالة واتساب', 'WhatsApp message')}
-          </button>
+          </button>}
           <button className="btn btn--sm btn--icon" style={{ marginInlineStart: 'auto' }} onClick={() => setSelected(new Set())} aria-label={tx('إلغاء التحديد', 'Clear selection')}>
             <X size={14} />
           </button>

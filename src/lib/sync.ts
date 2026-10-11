@@ -1,8 +1,10 @@
 import { create } from 'zustand'
 import { useStore } from '../store'
 import type { Db } from '../data/seed'
-import type { Customer, Discount, Order, Product, Review, Settings, Shipment, ShippingZone } from '../data/types'
+import type { Customer, Discount, Order, Product, Review, Settings, Shipment, ShippingZone, Staff } from '../data/types'
 import { api, apiAvailable, ApiError } from './api'
+import { PERMISSIONS } from './permissions'
+import type { Permission, Role } from './permissions'
 
 /*
   Bridges the zustand store and the API.
@@ -123,7 +125,25 @@ const snap = (): Snapshot => {
 /** Safety net: a client wiping a whole collection is a bug, not an edit. */
 const MAX_DELETES = 25
 
-export function startAdminSync(opts: { onError: (msg: { ar: string; en: string }) => void; onConflict: () => void }) {
+type Denied = { collection: Collection | 'settings'; id: string; doc: unknown | null; rev: number }
+
+/** Put records the server refused back to its stored version (no echo as a write). */
+function revertDenied(denied: Denied[]) {
+  const s = useStore.getState() as unknown as Record<string, unknown>
+  const patch: Record<string, unknown> = {}
+  for (const d of denied) {
+    revs[d.collection] = { ...revs[d.collection], [d.id]: d.rev }
+    if (d.collection === 'settings') {
+      if (d.doc) patch.settings = d.doc
+      continue
+    }
+    const list = (patch[d.collection] ?? s[d.collection]) as { id: string }[]
+    patch[d.collection] = d.doc ? (list.some((x) => x.id === d.id) ? list.map((x) => (x.id === d.id ? d.doc : x)) : [d.doc, ...list]) : list.filter((x) => x.id !== d.id)
+  }
+  applyRemote(patch)
+}
+
+export function startAdminSync(opts: { onError: (msg: { ar: string; en: string }) => void; onConflict: () => void; onForbidden: (msg: { ar: string; en: string }) => void }) {
   let prev = snap()
   const pending = new Map<string, Op>()
   let timer: ReturnType<typeof setTimeout> | undefined
@@ -159,8 +179,22 @@ export function startAdminSync(opts: { onError: (msg: { ar: string; en: string }
       }
       useRemote.setState({ saving: 'saved' })
     } catch (e) {
-      useRemote.setState({ saving: 'error' })
-      opts.onError(e instanceof ApiError ? e.bi : { ar: 'التعديل ما اتحفظش.', en: 'The change was not saved.' })
+      const denied = e instanceof ApiError && e.status === 403 && Array.isArray(e.detail.denied) ? (e.detail.denied as Denied[]) : undefined
+      if (e instanceof ApiError && denied) {
+        // The role can't make these changes: put them back as stored, and retry the rest.
+        const refused = new Set(denied.map((d) => `${d.collection}/${d.id}`))
+        revertDenied(denied)
+        prev = snap()
+        for (const o of ops) {
+          const key = `${o.collection}/${o.id}`
+          if (!refused.has(key) && !pending.has(key)) pending.set(key, { op: o.op, collection: o.collection, id: o.id, doc: o.doc })
+        }
+        useRemote.setState({ saving: pending.size ? 'saving' : 'error' })
+        opts.onForbidden(e.bi)
+      } else {
+        useRemote.setState({ saving: 'error' })
+        opts.onError(e instanceof ApiError ? e.bi : { ar: 'التعديل ما اتحفظش.', en: 'The change was not saved.' })
+      }
     } finally {
       inflight = false
       if (pending.size) schedule()
@@ -229,6 +263,25 @@ export function applyServerDoc(collection: Collection, doc: { id: string }, rev:
   applyRemote({ [collection]: list.some((x) => x.id === doc.id) ? list.map((x) => (x.id === doc.id ? doc : x)) : [doc, ...list] })
 }
 
-export async function adminLogin(password: string) {
-  return api<{ token: string }>('/api/admin/login', { body: { password } })
+/** Drop one record the server just deleted (e.g. a removed staff member) from the store. */
+export function removeServerDoc(collection: Collection, id: string) {
+  if (revs[collection]) delete revs[collection][id]
+  const list = useStore.getState()[collection] as { id: string }[]
+  applyRemote({ [collection]: list.filter((x) => x.id !== id) })
+}
+
+/* ───────────── Signed-in staff ───────────── */
+
+export type AdminMe = { id: string; name: string; email: string; role: Role; permissions: Permission[] }
+
+/** Browser-only demo mode has no accounts: it runs as the seed owner with every permission. */
+export const DEMO_ME: AdminMe = { id: 's1', name: 'Karim Nabil', email: 'owner@nuri.example', role: 'owner', permissions: [...PERMISSIONS] }
+
+export async function adminLogin(email: string, password: string) {
+  return api<{ token: string; me: AdminMe }>('/api/admin/login', { body: { email, password } })
+}
+
+export async function fetchMe(): Promise<AdminMe> {
+  const r = await api<{ staff: Staff; permissions: Permission[] }>('/api/admin/me', { admin: true })
+  return { id: r.staff.id, name: r.staff.name, email: r.staff.email, role: r.staff.role, permissions: r.permissions }
 }

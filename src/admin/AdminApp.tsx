@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { ComponentType, KeyboardEvent as ReactKeyboardEvent } from 'react'
+import type { ComponentType, KeyboardEvent as ReactKeyboardEvent, ReactElement } from 'react'
 import { Link, NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import {
   BarChart3,
@@ -26,9 +26,12 @@ import {
 } from 'lucide-react'
 import { useI18n } from '../i18n'
 import { useStore } from '../store'
-import { AdminContext, ToastHost, useToasts } from './ui'
+import { AdminContext, Guard, ToastHost, useToasts } from './ui'
 import { expiringBatches, stock } from '../lib/metrics'
 import { loadAdmin, startAdminSync, useRemote } from '../lib/sync'
+import type { AdminMe } from '../lib/sync'
+import type { Permission } from '../lib/permissions'
+import { canOpen, PAGE_PERMS } from './access'
 import { AdminGate } from './AdminGate'
 import './admin.css'
 
@@ -57,7 +60,7 @@ export default function AdminApp() {
   return <AdminGate>{(p) => <AdminShell {...p} />}</AdminGate>
 }
 
-function AdminShell({ online, signOut }: { online: boolean; signOut: () => void }) {
+function AdminShell({ online, signOut, me }: { online: boolean; signOut: () => void; me: AdminMe }) {
   const { tx, toggle, lang, dir } = useI18n()
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     try {
@@ -78,6 +81,7 @@ function AdminShell({ online, signOut }: { online: boolean; signOut: () => void 
     const sync = startAdminSync({
       onError: (m) => toast(tx(`${m.ar} مااتحفظش على السيرفر.`, `${m.en} Not saved to the server.`)),
       onConflict: () => toast(tx('في سجل اتغيّر من مكان تاني، فاتحمّلت آخر نسخة منه.', 'A record changed elsewhere, so its latest version was loaded.')),
+      onForbidden: (m) => toast(tx(`${m.ar} التعديل رجع لآخر نسخة محفوظة.`, `${m.en} The change was reverted to the saved version.`)),
     })
     let last = Date.now()
     const onVis = () => {
@@ -173,10 +177,18 @@ function AdminShell({ online, signOut }: { online: boolean; signOut: () => void 
     },
   ]
 
+  const can = useMemo(() => {
+    const set = new Set(me.permissions)
+    return (p: Permission) => set.has(p)
+  }, [me])
+  const allowedTo = (to: string) => canOpen(can, to)
+  const navGroups = groups.map((g) => ({ ...g, items: g.items.filter((it) => allowedTo(it.to)) })).filter((g) => g.items.length)
+
   const ctx = useMemo(
-    () => ({ theme, setTheme, toast, staff: 'Karim Nabil', openPalette: () => setPaletteOpen(true), online }),
-    [theme, toast, online],
+    () => ({ theme, setTheme, toast, staff: me.name, me, can, openPalette: () => setPaletteOpen(true), online }),
+    [theme, toast, online, me, can],
   )
+  const guard = (to: string, el: ReactElement) => (PAGE_PERMS[to] ? <Guard any={PAGE_PERMS[to]}>{el}</Guard> : el)
 
   return (
     <AdminContext.Provider value={ctx}>
@@ -191,7 +203,7 @@ function AdminShell({ online, signOut }: { online: boolean; signOut: () => void 
               </span>
             </Link>
             <nav className="adm-nav">
-              {groups.map((g) => (
+              {navGroups.map((g) => (
                 <div className="adm-nav__group" key={g.en}>
                   <div className="adm-nav__heading">{tx(g.ar, g.en)}</div>
                   {g.items.map((it) => (
@@ -257,28 +269,28 @@ function AdminShell({ online, signOut }: { online: boolean; signOut: () => void 
             <main className="adm-content" dir={dir}>
               <Routes>
                 <Route index element={<Overview />} />
-                <Route path="live" element={<Live />} />
-                <Route path="orders" element={<Orders />} />
-                <Route path="orders/:id" element={<OrderDetail />} />
-                <Route path="products" element={<Products />} />
-                <Route path="products/new" element={<ProductEditor />} />
-                <Route path="products/:id" element={<ProductEditor />} />
-                <Route path="inventory" element={<Inventory />} />
-                <Route path="customers" element={<Customers />} />
-                <Route path="customers/:id" element={<CustomerDetail />} />
-                <Route path="segments" element={<Segments />} />
-                <Route path="discounts" element={<Discounts />} />
-                <Route path="analytics" element={<Analytics />} />
-                <Route path="abandoned" element={<Abandoned />} />
-                <Route path="reviews" element={<Reviews />} />
-                <Route path="shipping" element={<Shipping />} />
-                <Route path="settings" element={<SettingsPage />} />
+                <Route path="live" element={guard('/admin/live', <Live />)} />
+                <Route path="orders" element={guard('/admin/orders', <Orders />)} />
+                <Route path="orders/:id" element={guard('/admin/orders', <OrderDetail />)} />
+                <Route path="products" element={guard('/admin/products', <Products />)} />
+                <Route path="products/new" element={guard('/admin/products/new', <ProductEditor />)} />
+                <Route path="products/:id" element={guard('/admin/products', <ProductEditor />)} />
+                <Route path="inventory" element={guard('/admin/inventory', <Inventory />)} />
+                <Route path="customers" element={guard('/admin/customers', <Customers />)} />
+                <Route path="customers/:id" element={guard('/admin/customers', <CustomerDetail />)} />
+                <Route path="segments" element={guard('/admin/segments', <Segments />)} />
+                <Route path="discounts" element={guard('/admin/discounts', <Discounts />)} />
+                <Route path="analytics" element={guard('/admin/analytics', <Analytics />)} />
+                <Route path="abandoned" element={guard('/admin/abandoned', <Abandoned />)} />
+                <Route path="reviews" element={guard('/admin/reviews', <Reviews />)} />
+                <Route path="shipping" element={guard('/admin/shipping', <Shipping />)} />
+                <Route path="settings" element={guard('/admin/settings', <SettingsPage />)} />
                 <Route path="*" element={<Overview />} />
               </Routes>
             </main>
           </div>
         </div>
-        {paletteOpen && <CommandPalette onClose={() => setPaletteOpen(false)} />}
+        {paletteOpen && <CommandPalette onClose={() => setPaletteOpen(false)} allowed={allowedTo} />}
         <ToastHost toasts={toasts} />
       </div>
     </AdminContext.Provider>
@@ -287,9 +299,9 @@ function AdminShell({ online, signOut }: { online: boolean; signOut: () => void 
 
 /* ───────────── Command palette: every record and action in one box ───────────── */
 
-type Cmd = { id: string; group: string; label: string; hint?: string; run: () => void }
+type Cmd = { id: string; group: string; label: string; hint?: string; run: () => void; to?: string }
 
-function CommandPalette({ onClose }: { onClose: () => void }) {
+function CommandPalette({ onClose, allowed }: { onClose: () => void; allowed: (to: string) => boolean }) {
   const { tx, pick, money, toggle } = useI18n()
   const navigate = useNavigate()
   const orders = useStore((s) => s.orders)
@@ -309,43 +321,43 @@ function CommandPalette({ onClose }: { onClose: () => void }) {
   const items = useMemo<Cmd[]>(() => {
     const s = q.trim().toLowerCase()
     const pages: Cmd[] = [
-      { id: 'pg-home', group: tx('صفحات', 'Pages'), label: tx('الرئيسية', 'Home'), run: go('/admin') },
-      { id: 'pg-orders', group: tx('صفحات', 'Pages'), label: tx('الطلبات', 'Orders'), run: go('/admin/orders') },
-      { id: 'pg-products', group: tx('صفحات', 'Pages'), label: tx('المنتجات', 'Products'), run: go('/admin/products') },
-      { id: 'pg-inventory', group: tx('صفحات', 'Pages'), label: tx('المخزون والصلاحية', 'Stock & expiry'), run: go('/admin/inventory') },
-      { id: 'pg-customers', group: tx('صفحات', 'Pages'), label: tx('العملاء', 'Customers'), run: go('/admin/customers') },
-      { id: 'pg-segments', group: tx('صفحات', 'Pages'), label: tx('الشرائح', 'Segments'), run: go('/admin/segments') },
-      { id: 'pg-analytics', group: tx('صفحات', 'Pages'), label: tx('التحليلات', 'Analytics'), run: go('/admin/analytics') },
-      { id: 'pg-discounts', group: tx('صفحات', 'Pages'), label: tx('الخصومات', 'Discounts'), run: go('/admin/discounts') },
-      { id: 'pg-abandoned', group: tx('صفحات', 'Pages'), label: tx('سلال متروكة', 'Abandoned carts'), run: go('/admin/abandoned') },
-      { id: 'pg-reviews', group: tx('صفحات', 'Pages'), label: tx('التقييمات', 'Reviews'), run: go('/admin/reviews') },
-      { id: 'pg-shipping', group: tx('صفحات', 'Pages'), label: tx('الشحن والمحافظات', 'Shipping'), run: go('/admin/shipping') },
-      { id: 'pg-settings', group: tx('صفحات', 'Pages'), label: tx('الإعدادات', 'Settings'), run: go('/admin/settings') },
-      { id: 'pg-live', group: tx('صفحات', 'Pages'), label: tx('مباشر الآن', 'Live view'), run: go('/admin/live') },
+      { id: 'pg-home', group: tx('صفحات', 'Pages'), label: tx('الرئيسية', 'Home'), run: go('/admin'), to: '/admin' },
+      { id: 'pg-orders', group: tx('صفحات', 'Pages'), label: tx('الطلبات', 'Orders'), run: go('/admin/orders'), to: '/admin/orders' },
+      { id: 'pg-products', group: tx('صفحات', 'Pages'), label: tx('المنتجات', 'Products'), run: go('/admin/products'), to: '/admin/products' },
+      { id: 'pg-inventory', group: tx('صفحات', 'Pages'), label: tx('المخزون والصلاحية', 'Stock & expiry'), run: go('/admin/inventory'), to: '/admin/inventory' },
+      { id: 'pg-customers', group: tx('صفحات', 'Pages'), label: tx('العملاء', 'Customers'), run: go('/admin/customers'), to: '/admin/customers' },
+      { id: 'pg-segments', group: tx('صفحات', 'Pages'), label: tx('الشرائح', 'Segments'), run: go('/admin/segments'), to: '/admin/segments' },
+      { id: 'pg-analytics', group: tx('صفحات', 'Pages'), label: tx('التحليلات', 'Analytics'), run: go('/admin/analytics'), to: '/admin/analytics' },
+      { id: 'pg-discounts', group: tx('صفحات', 'Pages'), label: tx('الخصومات', 'Discounts'), run: go('/admin/discounts'), to: '/admin/discounts' },
+      { id: 'pg-abandoned', group: tx('صفحات', 'Pages'), label: tx('سلال متروكة', 'Abandoned carts'), run: go('/admin/abandoned'), to: '/admin/abandoned' },
+      { id: 'pg-reviews', group: tx('صفحات', 'Pages'), label: tx('التقييمات', 'Reviews'), run: go('/admin/reviews'), to: '/admin/reviews' },
+      { id: 'pg-shipping', group: tx('صفحات', 'Pages'), label: tx('الشحن والمحافظات', 'Shipping'), run: go('/admin/shipping'), to: '/admin/shipping' },
+      { id: 'pg-settings', group: tx('صفحات', 'Pages'), label: tx('الإعدادات', 'Settings'), run: go('/admin/settings'), to: '/admin/settings' },
+      { id: 'pg-live', group: tx('صفحات', 'Pages'), label: tx('مباشر الآن', 'Live view'), run: go('/admin/live'), to: '/admin/live' },
     ]
     const actions: Cmd[] = [
-      { id: 'ac-new', group: tx('إجراءات', 'Actions'), label: tx('إضافة منتج', 'Add product'), run: go('/admin/products/new') },
-      { id: 'ac-discount', group: tx('إجراءات', 'Actions'), label: tx('إنشاء خصم', 'Create discount'), run: go('/admin/discounts?new=1') },
-      { id: 'ac-fulfill', group: tx('إجراءات', 'Actions'), label: tx('الطلبات اللي محتاجة تجهيز', 'Orders to fulfill'), run: go('/admin/orders?view=unfulfilled') },
+      { id: 'ac-new', group: tx('إجراءات', 'Actions'), label: tx('إضافة منتج', 'Add product'), run: go('/admin/products/new'), to: '/admin/products/new' },
+      { id: 'ac-discount', group: tx('إجراءات', 'Actions'), label: tx('إنشاء خصم', 'Create discount'), run: go('/admin/discounts?new=1'), to: '/admin/discounts' },
+      { id: 'ac-fulfill', group: tx('إجراءات', 'Actions'), label: tx('الطلبات اللي محتاجة تجهيز', 'Orders to fulfill'), run: go('/admin/orders?view=unfulfilled'), to: '/admin/orders' },
       { id: 'ac-lang', group: tx('إجراءات', 'Actions'), label: tx('Switch to English', 'التحويل للعربية'), run: () => { toggle(); onClose() } },
-      { id: 'ac-store', group: tx('إجراءات', 'Actions'), label: tx('افتح المتجر', 'View store'), run: go('/') },
+      { id: 'ac-store', group: tx('إجراءات', 'Actions'), label: tx('افتح المتجر', 'View store'), run: go('/'), to: '/' },
     ]
     const match = (t: string) => !s || t.toLowerCase().includes(s)
-    const out = [...pages, ...actions].filter((c) => match(c.label))
+    const out = [...pages, ...actions].filter((c) => match(c.label) && allowed(c.to ?? '/admin'))
     if (s) {
       const num = s.replace(/[#\s]/g, '')
-      orders
+      if (allowed('/admin/orders')) orders
         .filter((o) => String(o.number).includes(num))
         .slice(-6)
         .reverse()
         .forEach((o) =>
           out.push({ id: o.id, group: tx('طلبات', 'Orders'), label: `#${o.number}`, hint: money(o.total), run: go(`/admin/orders/${o.id}`) }),
         )
-      products
+      if (allowed('/admin/products')) products
         .filter((p) => match(p.name.en) || match(p.name.ar) || match(p.brand) || match(p.sku))
         .slice(0, 6)
         .forEach((p) => out.push({ id: p.id, group: tx('منتجات', 'Products'), label: pick(p.name), hint: p.brand, run: go(`/admin/products/${p.id}`) }))
-      customers
+      if (allowed('/admin/customers')) customers
         .filter((c) => match(c.name.en) || match(c.name.ar) || c.phone.includes(s) || match(c.email))
         .slice(0, 6)
         .forEach((c) => out.push({ id: c.id, group: tx('عملاء', 'Customers'), label: pick(c.name), hint: c.phone, run: go(`/admin/customers/${c.id}`) }))

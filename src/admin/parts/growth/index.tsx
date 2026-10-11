@@ -117,7 +117,7 @@ export function Composer({
   offerDiscount?: boolean
 }) {
   const { tx, pick, num, lang: uiLang } = useI18n()
-  const { toast, staff } = useAdmin()
+  const { toast, staff, can } = useAdmin()
   const discounts = useStore((s) => s.discounts)
   const upsertDiscount = useStore((s) => s.upsertDiscount)
   const log = useStore((s) => s.log)
@@ -293,7 +293,7 @@ export function Composer({
         </Field>
         {!template.trim() && <span className="field__error">{tx('الرسالة فاضية', 'The message is empty')}</span>}
 
-        {offerDiscount && (
+        {offerDiscount && can('marketing.edit') && (
           <div className="pane">
             <div className="pane__body stack" style={{ gap: 12 }}>
               <div className="row-between">

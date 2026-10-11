@@ -4,12 +4,12 @@ Bilingual (Arabic RTL / English LTR) storefront and a full admin dashboard, buil
 
 ```bash
 npm install
-cp .env.example .env   # then set ADMIN_PASSWORD
+cp .env.example .env   # then set ADMIN_EMAIL and ADMIN_PASSWORD
 npm run dev            # Vite on :5173 + API on :8787 (Vite proxies /api)
 ```
 
 - Store: http://localhost:5173/
-- Admin: http://localhost:5173/admin (sign in with `ADMIN_PASSWORD`; press Ctrl K anywhere in the admin to search orders, products, customers and run commands)
+- Admin: http://localhost:5173/admin (first sign-in: `ADMIN_EMAIL` + `ADMIN_PASSWORD`, the owner account; press Ctrl K anywhere in the admin to search orders, products, customers and run commands)
 
 `npm run dev:web` runs the front end alone. Without the API the app falls back to browser-only demo mode (see below).
 
@@ -44,7 +44,8 @@ What the server does:
 
 - **Checkout** — `POST /api/orders` re-prices every order from the database (prices, codes, zone shipping, free-shipping threshold, COD fee and limit), checks stock, takes stock from the earliest-expiring lots (FEFO), finds or creates the customer by phone, and numbers the order inside one transaction. Errors come back bilingual: `{ error: { code, message: { ar, en } } }`.
 - **Storefront data** — `GET /api/public` returns active products (without landed cost), zones, settings, published reviews, and automatic offers only; discount codes are checked one at a time (`POST /api/public/code`). Order lookup needs the matching phone (`GET /api/orders/:id?phone=`).
-- **Admin** — sign-in with `ADMIN_PASSWORD` returns a bearer token (7 days). The dashboard loads everything from `GET /api/admin/bootstrap` and saves each changed record as you work (`POST /api/admin/batch`; `PUT`/`DELETE /api/admin/:collection/:id` also exist). Every record carries a revision, so a stale edit (for example a product whose stock a shopper just bought) is refused and the latest version reloaded instead of overwriting it.
+- **Staff accounts and roles** — every staff member signs in with their own email and password (scrypt-hashed in `staff_auth`; tokens last 7 days). On first start, with no accounts yet, the owner's login is created from `ADMIN_EMAIL` + `ADMIN_PASSWORD`; after that the owner adds staff, changes roles, resets passwords and disables accounts under **Settings → Staff and permissions** (`/api/admin/staff`). Roles (owner, manager, fulfilment, support, marketing) map to permissions in `src/lib/permissions.ts`, which both the server and the admin UI read: the server checks every admin endpoint and every record write (for example a fulfilment account can mark an order packed but gets `403 forbidden` for a price change or a cancel/refund), and the UI hides what the role can't use. Every write is recorded in an audit log (`GET /api/admin/audit`, owner and manager), and new order events and activity entries are attributed to the signed-in name by the server.
+- **Admin** — the sign-in returns a bearer token. The dashboard loads everything from `GET /api/admin/bootstrap` and saves each changed record as you work (`POST /api/admin/batch`; `PUT`/`DELETE /api/admin/:collection/:id` also exist). Every record carries a revision, so a stale edit (for example a product whose stock a shopper just bought) is refused and the latest version reloaded instead of overwriting it.
 - **Live view and funnel** — the storefront sends first-party events (page view, product view, add to cart, checkout start, purchase) with a random per-tab session id, no cookies, and nothing when the browser sends Do Not Track. `GET /api/admin/live` and `GET /api/admin/funnel?days=N` read them.
 - **Integrations** — real calls to Paymob, Bosta and WhatsApp Cloud API, each switched on by its environment variables. Without keys the endpoints answer `501 not_configured`; the admin shows the status under **Settings → Integrations**.
 
@@ -52,7 +53,8 @@ What the server does:
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
-| `ADMIN_PASSWORD` | yes | Admin sign-in. Use a long random value. Without it, admin sign-in is disabled |
+| `ADMIN_PASSWORD` | first start | Password for the bootstrap owner account, used only while no staff accounts exist. Use a long random value. With no accounts and no password, admin sign-in is disabled |
+| `ADMIN_EMAIL` | no | Email for the bootstrap owner account (default `owner@nuri.example`) |
 | `PORT` | no | Server port (default 8787). In dev the API is pinned with `--port 8787` |
 | `APP_URL` | for Paymob | Public origin, e.g. `https://shop.example.com`, used for the payment redirect and webhook URLs |
 | `DATA_DIR` | no | Folder for `nuri.db` (default `server/data`, `/data` in Docker) |

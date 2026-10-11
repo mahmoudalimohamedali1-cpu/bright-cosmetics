@@ -13,11 +13,14 @@ export class ApiError extends Error {
   status: number
   code: string
   bi: Bi
-  constructor(status: number, code: string, bi: Bi) {
+  /** The rest of the server's error object (e.g. `denied` on a 403 batch) */
+  detail: Record<string, unknown>
+  constructor(status: number, code: string, bi: Bi, detail: Record<string, unknown> = {}) {
     super(bi.en)
     this.status = status
     this.code = code
     this.bi = bi
+    this.detail = detail
   }
 }
 
@@ -78,9 +81,9 @@ export async function api<T>(path: string, opts: { method?: string; body?: unkno
   const isJson = (r.headers.get('content-type') ?? '').includes('json')
   const data = isJson ? await r.json().catch(() => undefined) : undefined
   if (!r.ok) {
-    const e = (data as { error?: { code?: string; message?: Bi | string } } | undefined)?.error
+    const e = (data as { error?: { code?: string; message?: Bi | string } & Record<string, unknown> } | undefined)?.error
     const msg = typeof e?.message === 'object' ? e.message : { ar: `حصل خطأ (${r.status}).`, en: e?.message || `Request failed (${r.status}).` }
-    throw new ApiError(r.status, e?.code ?? 'http_' + r.status, msg)
+    throw new ApiError(r.status, e?.code ?? 'http_' + r.status, msg, e ?? {})
   }
   return data as T
 }

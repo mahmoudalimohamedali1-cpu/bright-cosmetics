@@ -16,7 +16,8 @@ export default function CustomerDetail() {
   const { id } = useParams()
   const { hash } = useLocation()
   const { tx, pick, money, num, date, relTime, lang } = useI18n()
-  const { toast, staff } = useAdmin()
+  const { toast, staff, can } = useAdmin()
+  const readOnly = !can('customers.edit')
   const stats = useCustomerStats()
   const orders = useStore((s) => s.orders)
   const products = useStore((s) => s.products)
@@ -327,7 +328,7 @@ export default function CustomerDetail() {
                 <Link to={`/admin/customers?gov=${c.governorateId}`}>{gov ? pick(gov.name) : c.governorateId}</Link>
               </dd>
             </dl>
-            <div className="gr-toggle-row" style={{ marginTop: 12, borderTop: '1px solid var(--line)', paddingTop: 12 }}>
+            <fieldset disabled={readOnly} className="gr-toggle-row adm-readonly" style={{ marginTop: 12, borderTop: '1px solid var(--line)', paddingTop: 12 }}>
               <div>
                 <div className="small strong">{tx('موافق على رسائل التسويق', 'Accepts marketing')}</div>
                 <div className="tiny faint">{tx('العروض على واتساب والبريد', 'Offers by WhatsApp and email')}</div>
@@ -340,11 +341,11 @@ export default function CustomerDetail() {
                 }}
                 label={tx('موافق على رسائل التسويق', 'Accepts marketing')}
               />
-            </div>
+            </fieldset>
           </Pane>
 
           <Pane title={tx('ملف البشرة', 'Skin profile')}>
-            <div className="stack" style={{ gap: 12 }}>
+            <fieldset disabled={readOnly} className="stack adm-readonly" style={{ gap: 12 }}>
               <label className="field">
                 <span className="field__label">{tx('نوع البشرة', 'Skin type')}</span>
                 <select className="select" value={c.skinType} onChange={(e) => save({ skinType: e.target.value as SkinType }, tx('تم تحديث ملف البشرة', 'Skin profile updated'))}>
@@ -365,11 +366,11 @@ export default function CustomerDetail() {
                   ))}
                 </div>
               </div>
-            </div>
+            </fieldset>
           </Pane>
 
           <Pane title={tx('الوسوم والملاحظات', 'Tags and notes')}>
-            <div className="stack" style={{ gap: 12 }}>
+            <fieldset disabled={readOnly} className="stack adm-readonly" style={{ gap: 12 }}>
               <div className="gr-chips">
                 {c.tags.length === 0 && <span className="small faint">{tx('بدون وسوم', 'No tags')}</span>}
                 {c.tags.map((t) => (
@@ -410,7 +411,7 @@ export default function CustomerDetail() {
                   {tx('حفظ الملاحظة', 'Save note')}
                 </button>
               </div>
-            </div>
+            </fieldset>
           </Pane>
         </div>
       </div>

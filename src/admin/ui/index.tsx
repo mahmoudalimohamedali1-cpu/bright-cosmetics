@@ -5,6 +5,8 @@ import { ArrowDownRight, ArrowUpRight, Check, ChevronLeft, ChevronRight, Minus, 
 import { useI18n } from '../../i18n'
 import { ProductVisual } from '../../components/ProductVisual'
 import type { FulfillmentStatus, OrderStatus, PaymentStatus, Product } from '../../data/types'
+import type { Permission } from '../../lib/permissions'
+import type { AdminMe } from '../../lib/sync'
 
 /* ───────────── Admin context: theme, toasts, current staff ───────────── */
 
@@ -13,7 +15,12 @@ type AdminCtx = {
   theme: 'light' | 'dark'
   setTheme: (t: 'light' | 'dark') => void
   toast: (text: string) => void
+  /** Display name of the signed-in staff member, used for attribution */
   staff: string
+  /** The signed-in staff member (the seed owner in demo mode) */
+  me: AdminMe
+  /** Whether the signed-in role has a permission (from src/lib/permissions.ts) */
+  can: (p: Permission) => boolean
   openPalette: () => void
   /** True when the dashboard is backed by the API (signed in), false in browser-only demo mode */
   online: boolean
@@ -316,6 +323,22 @@ export function ChartTip({
       ))}
     </div>
   )
+}
+
+/** Shown in place of a page the signed-in role can't use (e.g. a URL opened directly). */
+export function NotAllowed() {
+  const { tx } = useI18n()
+  return (
+    <Empty title={tx('مش متاح لدورك', 'Not available for your role')} action={<Link to="/admin" className="btn btn--sm">{tx('الرجوع للرئيسية', 'Back to Home')}</Link>}>
+      {tx('الصفحة دي محتاجة صلاحية مش موجودة في دور الحساب ده. المالك يقدر يغيّر الدور من الإعدادات.', 'This page needs a permission your role doesn’t include. The owner can change roles in Settings.')}
+    </Empty>
+  )
+}
+
+/** Render children only when the role has one of the permissions. */
+export function Guard({ any, children }: { any: Permission[]; children: ReactNode }) {
+  const { can } = useAdmin()
+  return any.some(can) ? <>{children}</> : <NotAllowed />
 }
 
 export function DemoNote() {

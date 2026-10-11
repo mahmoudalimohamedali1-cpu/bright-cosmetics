@@ -12,13 +12,16 @@ import { CATEGORY_LABEL } from '../../data/catalog'
 import type { Category } from '../../data/types'
 import { BarList, ChartLegend, Forward } from '../parts/core/ui'
 import { LEAD_DAYS, gov, inView } from '../parts/core/lib'
+import { canOpen } from '../access'
 
 type Period = '1' | '7' | '30' | '90'
 type TipPayload = { name?: string; value?: number; color?: string; dataKey?: string }[]
 
 export default function Overview() {
   const { tx, pick, money, num, pct, date, relTime, dir } = useI18n()
-  const { staff } = useAdmin()
+  const { staff, can } = useAdmin()
+  // Sales, margin and profit figures are analytics; other roles get their queues and the activity feed.
+  const seeSales = can('analytics.view')
   const [period, setPeriod] = useState<Period>('30')
   const days = Number(period)
 
@@ -133,8 +136,9 @@ export default function Overview() {
       to: '/admin/abandoned',
     },
   ]
-  const open = rows.filter((r) => r.count > 0)
-  const clear = rows.filter((r) => r.count === 0)
+  const mine = rows.filter((r) => canOpen(can, r.to))
+  const open = mine.filter((r) => r.count > 0)
+  const clear = mine.filter((r) => r.count === 0)
 
   /* ───── Chart ───── */
   const series = useMemo(() => {
@@ -312,7 +316,7 @@ export default function Overview() {
       <div className="stack">
         <Pane
           title={tx('محتاج إجراء النهارده', 'Needs action today')}
-          description={open.length ? tx(`${num(open.length)} من ${num(rows.length)} قوائم فيها شغل`, `${open.length} of ${rows.length} queues have work waiting`) : undefined}
+          description={open.length ? tx(`${num(open.length)} من ${num(mine.length)} قوائم فيها شغل`, `${open.length} of ${mine.length} queues have work waiting`) : undefined}
           flush
         >
           <ul className="core-queue">
@@ -339,6 +343,7 @@ export default function Overview() {
           </ul>
         </Pane>
 
+        {seeSales && (
         <div className="ledger" style={{ ['--cols' as string]: 4 }}>
           <Link className="ledger__cell" to="/admin/analytics">
             <div className="ledger__label">{tx('صافي المبيعات', 'Net sales')}</div>
@@ -373,7 +378,9 @@ export default function Overview() {
             </div>
           </Link>
         </div>
+        )}
 
+        {seeSales && (
         <div className="grid grid-main">
           <Pane
             title={tx('صافي المبيعات', 'Net sales')}
@@ -446,8 +453,11 @@ export default function Overview() {
             )}
           </Pane>
         </div>
+        )}
 
         <div className="grid grid-3">
+          {seeSales && (
+          <>
           <Pane title={tx('أعلى المنتجات ربحًا', 'Top products by profit')} description={tx('بعد تكلفة الاستيراد، في الفترة المختارة', 'After landed cost, in this period')} flush>
             {topProducts.length ? (
               <ul className="list">
@@ -484,6 +494,8 @@ export default function Overview() {
               }))}
             />
           </Pane>
+          </>
+          )}
 
           <Pane title={tx('آخر النشاطات', 'Recent activity')} flush>
             {recent.length ? (

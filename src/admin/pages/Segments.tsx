@@ -5,7 +5,7 @@ import { useI18n } from '../../i18n'
 import { useStore } from '../../store'
 import { cohorts, SEGMENT_LABEL } from '../../lib/metrics'
 import type { Segment } from '../../lib/metrics'
-import { DemoNote, PageHeader, Pane } from '../ui'
+import { DemoNote, PageHeader, Pane, useAdmin } from '../ui'
 import { Composer, LedgerCell, SegmentBadge, Takeaway, useCustomerStats } from '../parts/growth'
 import { heat, SEGMENT_ORDER } from '../parts/growth/util'
 
@@ -43,6 +43,7 @@ const CAMPAIGN: Record<Segment, { ar: string; en: string }> = {
 export default function Segments() {
   const { tx, pick, money, num, pct, date } = useI18n()
   const stats = useCustomerStats()
+  const { can } = useAdmin()
   const orders = useStore((s) => s.orders)
   const [campaign, setCampaign] = useState<{ seg: Segment; n: number } | null>(null)
 
@@ -255,10 +256,12 @@ export default function Segments() {
                         <Users size={14} aria-hidden />
                         {tx('العملاء', 'View customers')}
                       </Link>
-                      <button className="btn btn--sm" disabled={!x.size} onClick={() => setCampaign({ seg: x.s, n: Date.now() })}>
-                        <Megaphone size={14} aria-hidden />
-                        {tx('إنشاء حملة', 'Create campaign')}
-                      </button>
+                      {can('marketing.edit') && (
+                        <button className="btn btn--sm" disabled={!x.size} onClick={() => setCampaign({ seg: x.s, n: Date.now() })}>
+                          <Megaphone size={14} aria-hidden />
+                          {tx('إنشاء حملة', 'Create campaign')}
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

@@ -18,7 +18,8 @@ const PAGE = 50
 
 export default function Products() {
   const { tx, pick, money, num, pct } = useI18n()
-  const { toast, staff } = useAdmin()
+  const { toast, staff, can } = useAdmin()
+  const canEdit = can('products.edit')
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const products = useStore((s) => s.products)
@@ -161,10 +162,12 @@ export default function Products() {
               <Download size={16} aria-hidden />
               {tx('تصدير CSV', 'Export CSV')}
             </button>
-            <Link className="btn btn--primary" to="/admin/products/new">
-              <Plus size={16} aria-hidden />
-              {tx('إضافة منتج', 'Add product')}
-            </Link>
+            {canEdit && (
+              <Link className="btn btn--primary" to="/admin/products/new">
+                <Plus size={16} aria-hidden />
+                {tx('إضافة منتج', 'Add product')}
+              </Link>
+            )}
           </>
         }
       />
@@ -242,18 +245,22 @@ export default function Products() {
           <div className="bulkbar" style={{ margin: 12 }}>
             <strong className="num">{tx(`${num(sel.size)} محدد`, `${sel.size} selected`)}</strong>
             <span style={{ flex: 1 }} />
-            <button className="btn btn--sm" onClick={() => setStatus('active')}>
-              <Eye size={14} aria-hidden />
-              {tx('تفعيل', 'Set active')}
-            </button>
-            <button className="btn btn--sm" onClick={() => setStatus('draft')}>
-              <EyeOff size={14} aria-hidden />
-              {tx('تحويل لمسودة', 'Set as draft')}
-            </button>
-            <button className="btn btn--sm" onClick={() => setStatus('archived')}>
-              <Archive size={14} aria-hidden />
-              {tx('أرشفة', 'Archive')}
-            </button>
+            {canEdit && (
+              <>
+                <button className="btn btn--sm" onClick={() => setStatus('active')}>
+                  <Eye size={14} aria-hidden />
+                  {tx('تفعيل', 'Set active')}
+                </button>
+                <button className="btn btn--sm" onClick={() => setStatus('draft')}>
+                  <EyeOff size={14} aria-hidden />
+                  {tx('تحويل لمسودة', 'Set as draft')}
+                </button>
+                <button className="btn btn--sm" onClick={() => setStatus('archived')}>
+                  <Archive size={14} aria-hidden />
+                  {tx('أرشفة', 'Archive')}
+                </button>
+              </>
+            )}
             <button className="btn btn--sm" onClick={() => exportCSV(rows.filter((r) => sel.has(r.p.id)))}>
               <Download size={14} aria-hidden />
               CSV
@@ -280,9 +287,11 @@ export default function Products() {
             <Empty
               title={tx('مفيش منتجات هنا', 'No products here')}
               action={
-                <Link className="btn btn--primary" to="/admin/products/new">
-                  {tx('إضافة منتج', 'Add product')}
-                </Link>
+                canEdit ? (
+                  <Link className="btn btn--primary" to="/admin/products/new">
+                    {tx('إضافة منتج', 'Add product')}
+                  </Link>
+                ) : undefined
               }
             />
           )
