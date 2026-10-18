@@ -615,7 +615,7 @@ export default function StorefrontPage() {
                     setSel(item.id)
                   }}
                 >
-                  <Plus size={14} /> {tx('رابط', 'Link')}
+                  <Plus size={14} aria-hidden /> {tx('ضيفي رابط', 'Add link')}
                 </button>
               </div>
             </Pane>
@@ -685,7 +685,7 @@ export default function StorefrontPage() {
               className="btn btn--sm"
               onClick={() => edit((d) => ({ ...d, footer: { ...d.footer, columns: [...d.footer.columns, { id: uid('c'), title: { ar: 'عمود', en: 'Column' }, mode: 'links', links: [], limit: 6 }] } }))}
             >
-              <Plus size={14} /> {tx('عمود', 'Column')}
+              <Plus size={14} aria-hidden /> {tx('ضيفي عمود', 'Add column')}
             </button>
             <Pane title={tx('سطر الشحن', 'Shipping line')}>
               <div className="stack">
