@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { AlertTriangle, Ban, Check, ChevronLeft, ChevronRight, MessageCircle, PackageCheck, Phone, Printer, RotateCcw, Truck, Wallet } from 'lucide-react'
+import { AlertTriangle, Ban, Check, CornerDownLeft, ChevronLeft, ChevronRight, MessageCircle, PackageCheck, Phone, Printer, RotateCcw, Truck, Wallet } from 'lucide-react'
 import { useI18n } from '../../i18n'
 import { useStore } from '../../store'
 import { Avatar, Badge, Drawer, Empty, Field, FulfillmentBadge, OrderStatusBadge, PageHeader, Pane, PaymentBadge, Thumb, useAdmin } from '../ui'
@@ -14,7 +14,8 @@ import '../parts/core/core.css'
 import { api, ApiError } from '../../lib/api'
 import { applyServerDoc } from '../../lib/sync'
 import { useIntegrations } from '../parts/integrations'
-import type { Order } from '../../data/types'
+import type { Order, Product } from '../../data/types'
+import { canCancel, canReturn } from '../../lib/commerce'
 
 const CANCEL_REASONS: { id: string; ar: string; en: string }[] = [
   { id: 'unreachable', ar: 'العميل مش بيرد', en: 'Customer unreachable' },
@@ -37,13 +38,17 @@ export default function OrderDetail() {
   const products = useStore((s) => s.products)
   const customers = useStore((s) => s.customers)
   const settings = useStore((s) => s.settings)
-  const { confirmOrder, updateFulfillment, cancelOrder, markPaid, refundOrder, addOrderNote, log } = useStore.getState()
+  const { confirmOrder, updateFulfillment, cancelOrder, returnOrder, markPaid, refundOrder, addOrderNote, log } = useStore.getState()
 
   const order = orders.find((o) => o.id === id)
   const [courier, setCourier] = useState<Courier>((order?.courier as Courier) ?? 'Bosta')
   const [note, setNote] = useState('')
   const [noteErr, setNoteErr] = useState('')
-  const [drawer, setDrawer] = useState<'cancel' | 'refund' | null>(null)
+  const [drawer, setDrawer] = useState<'cancel' | 'refund' | 'return' | null>(null)
+  const [retRestock, setRetRestock] = useState(true)
+  const [retRefund, setRetRefund] = useState(true)
+  const [retNote, setRetNote] = useState('')
+  const [stockBusy, setStockBusy] = useState(false)
   const [reason, setReason] = useState('unreachable')
   const [reasonText, setReasonText] = useState('')
   const [reasonErr, setReasonErr] = useState('')
@@ -148,6 +153,32 @@ export default function OrderDetail() {
     act(() => updateFulfillment(o.id, 'shipped', staff), `اتسلّم الطلب لـ${courier}`, `Handed to ${courier}`)
   }
 
+  /*
+    Cancel and return move stock. With a server, the server does both in one
+    transaction (a client-side restock could be lost if the product changed
+    meanwhile, e.g. a new order). In demo mode the store does the same locally.
+  */
+  type StockResult = { order: Order; rev: number; products: { doc: Product; rev: number }[]; lost: { productId: string; qty: number }[] }
+  const stockAction = async (path: 'cancel' | 'return', body: Record<string, unknown>, local: () => void, ar: string, en: string) => {
+    if (!online) {
+      act(local, ar, en)
+      setDrawer(null)
+      return
+    }
+    setStockBusy(true)
+    try {
+      const r = await api<StockResult>(`/api/admin/orders/${o.id}/${path}`, { body, admin: true })
+      applyServerDoc('orders', r.order, r.rev)
+      for (const p of r.products) applyServerDoc('products', p.doc, p.rev)
+      const lost = r.lost.reduce((n, l) => n + l.qty, 0)
+      toast(lost ? tx(`${ar}. ${num(lost)} قطعة مالهاش مكان في المخزون (المنتج اتمسح أو مفيش تشغيلات).`, `${en}. ${lost} unit(s) had no stock record to go back to (product deleted or no lots).`) : tx(ar, en))
+      setDrawer(null)
+    } catch (e) {
+      toast(e instanceof ApiError ? tx(e.bi.ar, e.bi.en) : tx('ما اتحفظش، جرّبي تاني.', 'Not saved. Try again.'))
+    } finally {
+      setStockBusy(false)
+    }
+  }
   const doCancel = () => {
     const r = CANCEL_REASONS.find((x) => x.id === reason)!
     if (reason === 'other' && !reasonText.trim()) {
@@ -155,8 +186,13 @@ export default function OrderDetail() {
       return
     }
     const text = reason === 'other' ? reasonText.trim() : `${r.en} / ${r.ar}`
-    act(() => cancelOrder(o.id, text, staff), 'اتلغى الطلب ورجعت القطع للمخزون', 'Order cancelled, items restocked')
-    setDrawer(null)
+    void stockAction('cancel', { reason: text }, () => cancelOrder(o.id, text, staff), 'اتلغى الطلب ورجعت القطع للمخزون', 'Order cancelled, items restocked')
+  }
+  const doReturn = () => {
+    const opts = { restock: retRestock, refund: retRefund && o.paymentStatus === 'paid', note: retNote.trim() }
+    const ar = opts.restock ? 'اتسجّل المرتجع ورجعت القطع للمخزون' : 'اتسجّل المرتجع'
+    const en = opts.restock ? 'Return recorded, items restocked' : 'Return recorded'
+    void stockAction('return', opts, () => returnOrder(o.id, opts, staff), ar, en)
   }
   const doRefund = () => {
     act(() => refundOrder(o.id, staff), 'اترد المبلغ', 'Refund recorded')
@@ -175,7 +211,9 @@ export default function OrderDetail() {
 
   /* The one next step for this order — the brass action on this screen. */
   let next: { title: string; hint: string; button: ReactNode } | null = null
-  if (!cancelled) {
+  const returned = o.fulfillment === 'returned'
+  // A cancelled or returned order has no next step: nothing to pack, ship or collect.
+  if (!cancelled && !returned) {
     if (o.status === 'open')
       next = {
         title: tx('تأكيد الطلب مع العميل', 'Confirm the order with the customer'),
@@ -296,7 +334,7 @@ export default function OrderDetail() {
               </span>
               <span className="core-badges">
                 <OrderStatusBadge s={o.status} />
-                {!cancelled && <PaymentBadge s={o.paymentStatus} cod={o.payment === 'cod'} />}
+                {!cancelled && !(returned && o.paymentStatus === 'pending') && <PaymentBadge s={o.paymentStatus} cod={o.payment === 'cod'} />}
                 {!cancelled && <FulfillmentBadge s={o.fulfillment} />}
               </span>
             </>
@@ -313,7 +351,7 @@ export default function OrderDetail() {
                 <Printer size={16} aria-hidden />
                 {tx('طباعة الفاتورة', 'Print invoice')}
               </button>
-              {!cancelled && o.paymentStatus === 'pending' && o.fulfillment !== 'delivered' && canEdit && (
+              {!cancelled && !returned && o.paymentStatus === 'pending' && o.fulfillment !== 'delivered' && canEdit && (
                 <button className="btn" onClick={() => act(() => markPaid(o.id, staff), 'اتسجّل التحصيل', 'Payment collected')}>
                   <Wallet size={16} aria-hidden />
                   {tx('تم التحصيل', 'Mark paid')}
@@ -325,7 +363,13 @@ export default function OrderDetail() {
                   {tx('استرداد', 'Refund')}
                 </button>
               )}
-              {!cancelled && (o.fulfillment === 'unfulfilled' || o.fulfillment === 'packed') && can('orders.refund') && (
+              {canReturn(o) && can('orders.refund') && (
+                <button className="btn" onClick={() => { setRetRestock(true); setRetRefund(true); setRetNote(''); setDrawer('return') }}>
+                  <CornerDownLeft size={16} aria-hidden />
+                  {tx('تسجيل مرتجع', 'Record return')}
+                </button>
+              )}
+              {canCancel(o) && can('orders.refund') && (
                 <button className="btn btn--danger" onClick={() => setDrawer('cancel')}>
                   <Ban size={16} aria-hidden />
                   {tx('إلغاء الطلب', 'Cancel order')}
@@ -428,7 +472,7 @@ export default function OrderDetail() {
               </div>
             </Pane>
 
-            <Pane title={tx('الدفع', 'Payment')} actions={<PaymentBadge s={o.paymentStatus} cod={o.payment === 'cod'} />}>
+            <Pane title={tx('الدفع', 'Payment')} actions={(cancelled || returned) && o.paymentStatus === 'pending' ? undefined : <PaymentBadge s={o.paymentStatus} cod={o.payment === 'cod'} />}>
               <dl className="core-dl">
                 <dt>{tx('طريقة الدفع', 'Method')}</dt>
                 <dd>{pick(PAYMENT_LABEL[o.payment])}</dd>
@@ -457,7 +501,7 @@ export default function OrderDetail() {
                 )}
                 <dt className="core-dl__total">{tx('الإجمالي', 'Total')}</dt>
                 <dd className="core-dl__total">{money(o.total)}</dd>
-                <dt>{o.paymentStatus === 'paid' ? tx('مدفوع', 'Paid') : o.paymentStatus === 'pending' ? tx('مستحق', 'Due') : tx('مسترد', 'Refunded')}</dt>
+                <dt>{o.paymentStatus === 'paid' ? tx('مدفوع', 'Paid') : o.paymentStatus === 'pending' ? (cancelled || returned ? tx('ما اتحصّلش', 'Not collected') : tx('مستحق', 'Due')) : tx('مسترد', 'Refunded')}</dt>
                 <dd>{money(o.total)}</dd>
               </dl>
             </Pane>
@@ -613,7 +657,7 @@ export default function OrderDetail() {
             <button className="btn" onClick={() => setDrawer(null)}>
               {tx('رجوع', 'Keep order')}
             </button>
-            <button className="btn btn--danger" onClick={doCancel}>
+            <button className="btn btn--danger" onClick={doCancel} disabled={stockBusy} aria-busy={stockBusy || undefined}>
               {tx('إلغاء الطلب', 'Cancel order')}
             </button>
           </>
@@ -647,6 +691,45 @@ export default function OrderDetail() {
             </Field>
           )}
           {o.paymentStatus === 'paid' && <p className="small">{tx('الطلب مدفوع، وهيتسجّل كمسترد.', 'This order is paid and will be marked refunded.')}</p>}
+        </div>
+      </Drawer>
+
+      <Drawer
+        open={drawer === 'return'}
+        onClose={() => setDrawer(null)}
+        title={tx(`مرتجع الطلب #${o.number}`, `Return for order #${o.number}`)}
+        footer={
+          <>
+            <button className="btn" onClick={() => setDrawer(null)}>
+              {tx('رجوع', 'Back')}
+            </button>
+            <button className="btn btn--danger" onClick={doReturn} disabled={stockBusy} aria-busy={stockBusy || undefined}>
+              {tx('تسجيل المرتجع', 'Record return')}
+            </button>
+          </>
+        }
+      >
+        <div className="stack">
+          <p className="small muted">
+            {o.fulfillment === 'shipped'
+              ? tx('الشحنة رجعت قبل التسليم، زي لما العميل يرفض الاستلام.', 'The parcel came back before delivery, for example when the customer refused it.')
+              : tx('العميل رجّع الطلب بعد ما استلمه.', 'The customer sent the order back after delivery.')}
+          </p>
+          <label className="row">
+            <input type="checkbox" checked={retRestock} onChange={(e) => setRetRestock(e.target.checked)} />
+            {tx(`رجّعي ${num(o.lines.reduce((n, l) => n + l.qty, 0))} قطعة للمخزون (لو سليمة ومقفولة)`, `Put ${o.lines.reduce((n, l) => n + l.qty, 0)} unit(s) back in stock (only if sealed and sellable)`)}
+          </label>
+          {o.paymentStatus === 'paid' ? (
+            <label className="row">
+              <input type="checkbox" checked={retRefund} onChange={(e) => setRetRefund(e.target.checked)} />
+              {tx(`سجّلي استرداد ${money(o.total)}`, `Record a refund of ${money(o.total)}`)}
+            </label>
+          ) : (
+            <p className="small">{tx('الطلب ما اتدفعش، فمفيش فلوس ترجع.', 'Nothing was paid, so there is nothing to refund.')}</p>
+          )}
+          <Field label={tx('ملاحظة (اختياري)', 'Note (optional)')} htmlFor="return-note">
+            <textarea id="return-note" className="textarea" style={{ minHeight: 64 }} value={retNote} maxLength={300} onChange={(e) => setRetNote(e.target.value)} />
+          </Field>
         </div>
       </Drawer>
 

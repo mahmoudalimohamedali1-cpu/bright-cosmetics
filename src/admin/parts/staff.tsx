@@ -460,6 +460,8 @@ const ACTION_LABEL: Record<string, { ar: string; en: string; tone?: 'ok' | 'warn
   password: { ar: 'كلمة سر', en: 'Password', tone: 'warn' },
   courier: { ar: 'شحنة كورير', en: 'Courier booked', tone: 'info' },
   message: { ar: 'رسالة', en: 'Message', tone: 'info' },
+  cancel: { ar: 'إلغاء طلب', en: 'Order cancelled', tone: 'bad' },
+  return: { ar: 'مرتجع', en: 'Return recorded', tone: 'warn' },
 }
 
 function recordLink(collection: string, id: string): string | undefined {

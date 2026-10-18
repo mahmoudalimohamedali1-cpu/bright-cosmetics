@@ -1,10 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import type { Order, OrderEvent } from '../../data/types'
 import { useI18n } from '../../i18n'
+import { fetchHistory, useRemote } from '../../lib/sync'
 import { useStore } from '../../store'
-import { PHONE_RE, normalizePhone, useTitle } from '../lib'
+import { PHONE_RE, normalizePhone, useTitle, westernDigits } from '../lib'
 import { Arrow } from '../components/bits'
 
 const FLOW: OrderEvent['type'][] = ['placed', 'confirmed', 'packed', 'shipped', 'delivered']
@@ -12,29 +13,49 @@ const FLOW: OrderEvent['type'][] = ['placed', 'confirmed', 'packed', 'shipped', 
 export default function Account() {
   const { tx, pick } = useI18n()
   useTitle(tx('حسابي', 'My account'))
+  const online = useRemote((s) => s.online)
   const me = useStore((s) => s.customers.find((c) => c.id === s.me))
   const orders = useStore((s) => s.orders)
-  const customers = useStore((s) => s.customers)
   const [phone, setPhone] = useState('')
-  const [looked, setLooked] = useState<string | undefined>()
-  const [err, setErr] = useState<string | undefined>()
+  const [orderNo, setOrderNo] = useState('')
+  const [found, setFound] = useState<Order[] | undefined>()
+  const [err, setErr] = useState<{ field: 'phone' | 'order'; text: string } | undefined>()
+  const [busy, setBusy] = useState(false)
 
   const mine = useMemo(() => (me ? orders.filter((o) => o.customerId === me.id).sort((a, b) => b.createdAt.localeCompare(a.createdAt)) : []), [me, orders])
-  const found = useMemo(() => {
-    if (!looked) return undefined
-    const c = customers.find((x) => x.phone === looked)
-    return c ? orders.filter((o) => o.customerId === c.id).sort((a, b) => b.createdAt.localeCompare(a.createdAt)) : []
-  }, [looked, customers, orders])
 
-  const lookup = (e: FormEvent) => {
+  // With a server, "My orders" comes from there: current statuses, and orders placed on other devices too.
+  useEffect(() => {
+    if (!online || !me) return
+    const latest = useStore.getState().orders.filter((o) => o.customerId === me.id).sort((a, b) => b.number - a.number)[0]
+    if (latest) void fetchHistory(me.phone, latest.number)
+  }, [online, me])
+
+  const lookup = async (e: FormEvent) => {
     e.preventDefault()
     const ph = normalizePhone(phone)
+    const n = Number(westernDigits(orderNo).replace(/\D/g, ''))
     if (!PHONE_RE.test(ph)) {
-      setErr(tx('اكتبي موبايل مصري من ١١ رقم يبدأ بـ 010 أو 011 أو 012 أو 015.', 'Enter an 11-digit Egyptian mobile starting with 010, 011, 012 or 015.'))
+      setErr({ field: 'phone', text: tx('اكتبي موبايل مصري من ١١ رقم يبدأ بـ 010 أو 011 أو 012 أو 015.', 'Enter an 11-digit Egyptian mobile starting with 010, 011, 012 or 015.') })
+      return
+    }
+    if (!n) {
+      setErr({ field: 'order', text: tx('اكتبي رقم أي طلب من طلباتك. موجود في رسالة التأكيد.', 'Enter the number of any of your orders. It is in your confirmation message.') })
       return
     }
     setErr(undefined)
-    setLooked(ph)
+    if (online) {
+      setBusy(true)
+      const list = await fetchHistory(ph, n)
+      setBusy(false)
+      setFound(list ?? [])
+      return
+    }
+    // Demo mode: the same check against this browser's data.
+    const s = useStore.getState()
+    const c = s.customers.find((x) => x.phone === ph)
+    const owns = c && s.orders.some((o) => o.customerId === c.id && o.number === n)
+    setFound(owns ? s.orders.filter((o) => o.customerId === c.id).sort((a, b) => b.createdAt.localeCompare(a.createdAt)) : [])
   }
 
   return (
@@ -43,8 +64,8 @@ export default function Account() {
         <h1 className="sf-display">{me ? tx(`أهلًا يا ${pick(me.name).split(' ')[0]}`, `Hello, ${pick(me.name).split(' ')[0]}`) : tx('تابعي طلبك', 'Track your order')}</h1>
         <p className="sf-pagehead__lede">
           {me
-            ? tx('دي طلباتك من الجهاز ده. مفيش باسورد، الحساب مربوط برقم موبايلك.', 'These are your orders on this device. No password: your account follows your mobile number.')
-            : tx('اكتبي رقم الموبايل اللي طلبتي بيه ونعرضلك طلباتك وحالتها.', 'Enter the mobile number you ordered with to see your orders and their status.')}
+            ? tx('دي طلباتك. مفيش باسورد، الحساب مربوط برقم موبايلك.', 'These are your orders. No password: your account follows your mobile number.')
+            : tx('اكتبي رقم الموبايل اللي طلبتي بيه ورقم أي طلب، ونعرضلك كل طلباتك وحالتها.', 'Enter the mobile you ordered with and any order number to see all your orders and their status.')}
         </p>
       </header>
 
@@ -56,26 +77,42 @@ export default function Account() {
       )}
 
       <section aria-labelledby="h-lookup" className="sf-account__sec">
-        <h2 id="h-lookup" className="sf-formh">{me ? tx('دوّري على طلب برقم تاني', 'Look up another number') : tx('دوّري برقم الموبايل', 'Look up by mobile number')}</h2>
-        <form className="sf-lookup" onSubmit={lookup} noValidate>
-          <label htmlFor="lk-phone" className="sr-only">{tx('رقم الموبايل', 'Mobile number')}</label>
-          <input
-            id="lk-phone"
-            type="tel"
-            inputMode="tel"
-            dir="ltr"
-            placeholder="01X XXXX XXXX"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            aria-invalid={!!err || undefined}
-            aria-describedby={err ? 'lk-err' : undefined}
-          />
-          <button type="submit" className="sf-iconbtn sf-lookup__go" aria-label={tx('اعرضي الطلبات', 'Show orders')}>
+        <h2 id="h-lookup" className="sf-formh">{me ? tx('دوّري على طلبات رقم تاني', 'Look up another number') : tx('دوّري على طلباتك', 'Find your orders')}</h2>
+        <form className="sf-lookup sf-lookup--two" onSubmit={lookup} noValidate>
+          <div className="sf-lookup__field">
+            <label htmlFor="lk-phone" className="sf-lookup__label">{tx('رقم الموبايل', 'Mobile number')}</label>
+            <input
+              id="lk-phone"
+              type="tel"
+              inputMode="tel"
+              dir="ltr"
+              autoComplete="tel"
+              placeholder="01X XXXX XXXX"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              aria-invalid={err?.field === 'phone' || undefined}
+              aria-describedby={err?.field === 'phone' ? 'lk-err' : undefined}
+            />
+          </div>
+          <div className="sf-lookup__field sf-lookup__field--short">
+            <label htmlFor="lk-order" className="sf-lookup__label">{tx('رقم الطلب', 'Order number')}</label>
+            <input
+              id="lk-order"
+              inputMode="numeric"
+              dir="ltr"
+              placeholder="1234"
+              value={orderNo}
+              onChange={(e) => setOrderNo(e.target.value)}
+              aria-invalid={err?.field === 'order' || undefined}
+              aria-describedby={err?.field === 'order' ? 'lk-err' : undefined}
+            />
+          </div>
+          <button type="submit" className="sf-iconbtn sf-lookup__go" aria-label={tx('اعرضي الطلبات', 'Show orders')} disabled={busy} aria-busy={busy || undefined}>
             <Arrow size={20} />
           </button>
         </form>
-        {err && <p className="sf-field__err" id="lk-err" role="alert">{err}</p>}
-        {found && (found.length ? <OrderList orders={found} /> : <p className="sf-muted" role="status">{tx('مفيش طلبات بالرقم ده.', 'No orders found for this number.')}</p>)}
+        {err && <p className="sf-field__err" id="lk-err" role="alert">{err.text}</p>}
+        {found && (found.length ? <OrderList orders={found} /> : <p className="sf-muted" role="status">{tx('مفيش طلب بالموبايل ورقم الطلب دول. اتأكدي من الرقمين.', 'No order matches this mobile and order number. Check both.')}</p>)}
       </section>
     </div>
   )

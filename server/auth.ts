@@ -196,7 +196,7 @@ const qaud = {
   recent: db.prepare('SELECT id, at, staff_id, staff_name, collection, doc_id, action, detail FROM audit ORDER BY id DESC LIMIT ?'),
 }
 
-export type AuditAction = 'create' | 'update' | 'delete' | 'reset' | 'password' | 'courier' | 'message'
+export type AuditAction = 'create' | 'update' | 'delete' | 'reset' | 'password' | 'courier' | 'message' | 'cancel' | 'return'
 
 export function audit(me: Pick<Me, 'id' | 'name'>, collection: string, docId: string, action: AuditAction, detail?: string) {
   qaud.insert.run(Date.now(), me.id, me.name, collection, docId, action, detail ? detail.slice(0, 300) : null)

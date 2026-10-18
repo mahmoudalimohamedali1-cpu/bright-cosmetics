@@ -4,7 +4,7 @@ import type { Context } from 'hono'
 import { bodyLimit } from 'hono/body-limit'
 import { createMiddleware } from 'hono/factory'
 import type { Customer, Discount, Order, OrderEvent, Product, Review, Settings, Shipment, ShippingZone, Staff } from '../src/data/types'
-import { normalizePhone, PHONE_RE } from '../src/lib/commerce'
+import { canCancel, canReturn, cancelOrderDoc, normalizePhone, PHONE_RE, restockLines, returnOrderDoc } from '../src/lib/commerce'
 import { changedKeys, isRole, PERMISSION_LABEL, writePermission } from '../src/lib/permissions'
 import { sanitizeStorefront } from '../src/data/storefront'
 import type { Permission } from '../src/lib/permissions'
@@ -82,7 +82,14 @@ const publicProduct = (p: Product): Product => ({ ...p, cost: 0 })
 const publicShipment = (s: Shipment): Shipment => ({ id: s.id, supplier: s.supplier, origin: s.origin, createdAt: s.createdAt, arrivedAt: s.arrivedAt, status: s.status, freight: 0, customs: 0, lines: [] })
 const publicDiscount = (d: Discount): Discount => ({ id: d.id, code: d.code, title: d.title, kind: d.kind, value: d.value, minSubtotal: d.minSubtotal, used: 0, startsAt: d.startsAt, endsAt: d.endsAt, active: d.active, automatic: d.automatic, appliesTo: d.appliesTo, target: d.target })
 /** Orders as shoppers see them: landed cost per line stays private. */
-const publicOrder = (o: Order): Order => ({ ...o, lines: o.lines.map((l) => ({ ...l, cost: 0 })) })
+/** What a shopper may see of an order: no costs, internal notes, staff names, tags or risk flags. */
+const publicOrder = (o: Order): Order => ({
+  ...o,
+  lines: o.lines.map((l) => ({ ...l, cost: 0 })),
+  events: o.events.filter((e) => e.type !== 'note').map(({ at, type }) => ({ at, type })),
+  tags: [],
+  risk: 'low',
+})
 const initialName = (full: string) => {
   const [first, last] = full.split(' ')
   return last ? `${first} ${last[0]}.` : first
@@ -143,6 +150,26 @@ app.get('/api/orders/:id', (c) => {
   const o = findOrderForPhone(c.req.param('id'), c.req.query('phone') ?? '')
   if (!o) return fail(c, 404, 'not_found', { ar: 'مش لاقيين طلب بالرقم ده والموبايل ده.', en: 'No order matches this number and mobile.' })
   return c.json(publicOrder(o))
+})
+
+/**
+ * A shopper's order history. Proof of ownership is the mobile plus the number of
+ * any one of their orders, so knowing a phone number alone shows nothing.
+ */
+app.get('/api/orders-history', (c) => {
+  if (!lookupLimit(clientIp(c))) return fail(c, 429, 'rate_limited', { ar: 'محاولات كتير. استني شوية.', en: 'Too many attempts. Please wait a bit.' })
+  const phone = normalizePhone(c.req.query('phone') ?? '')
+  const number = Number(String(c.req.query('order') ?? '').replace(/\D/g, ''))
+  const none = () => fail(c, 404, 'not_found', { ar: 'مش لاقيين طلب بالرقم ده والموبايل ده.', en: 'No order matches this number and mobile.' })
+  if (!PHONE_RE.test(phone) || !number) return none()
+  const proof = findOrderForPhone(`o${number}`, phone)
+  if (!proof) return none()
+  const orders = list<Order>('orders')
+    .filter((o) => o.customerId === proof.customerId)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, 50)
+    .map(publicOrder)
+  return c.json({ orders })
 })
 
 /* ───────────── Reviews from shoppers ───────────── */
@@ -634,6 +661,58 @@ app.post('/api/admin/couriers/bosta/:orderId', need('orders.edit'), async (c) =>
   } catch (e) {
     return providerFail(c, 'Bosta', e)
   }
+})
+
+/*
+  Cancel and return change the order and the stock in one transaction, so a
+  restock can never be lost to an edit conflict on the product.
+*/
+type StockResult = { order: Order; rev: number; products: { doc: Product; rev: number }[]; lost: { productId: string; qty: number }[] }
+
+function restockAndSave(o: Order, next: Order, restock: boolean): StockResult {
+  const { products, lost } = restock ? restockLines(list<Product>('products'), o.lines) : { products: [], lost: [] }
+  const saved = products.map((p) => ({ doc: p, rev: put('products', p.id, p) }))
+  const rev = put('orders', o.id, next)
+  return { order: next, rev, products: saved, lost }
+}
+
+app.post('/api/admin/orders/:id/cancel', need('orders.refund'), async (c) => {
+  const me = c.get('me')
+  const id = c.req.param('id')
+  const b = ((await readJson(c)) ?? {}) as { reason?: unknown }
+  const reason = typeof b.reason === 'string' ? b.reason.trim().slice(0, 300) : ''
+  if (!reason) return fail(c, 400, 'reason_required', { ar: 'سبب الإلغاء مطلوب.', en: 'A cancel reason is required.' })
+  const r = tx(() => {
+    const o = get<Order>('orders', id)?.doc
+    if (!o) return 'missing' as const
+    if (!canCancel(o)) return 'not_cancellable' as const
+    return restockAndSave(o, cancelOrderDoc(o, new Date().toISOString(), reason, me.name), true)
+  })
+  if (r === 'missing') return fail(c, 404, 'not_found', { ar: 'الطلب مش موجود.', en: 'Order not found.' })
+  if (r === 'not_cancellable') return fail(c, 409, 'not_cancellable', { ar: 'الطلب ده اتلغى أو اتشحن خلاص. لو رجع، سجّليه مرتجع.', en: 'This order is already cancelled or has shipped. If it came back, record a return.' })
+  audit(me, 'orders', id, 'cancel', reason)
+  logActivity(me.name, { ar: `لغى طلب #${r.order.number}`, en: `Cancelled order #${r.order.number}` }, `/admin/orders/${id}`)
+  return c.json(r)
+})
+
+app.post('/api/admin/orders/:id/return', need('orders.refund'), async (c) => {
+  const me = c.get('me')
+  const id = c.req.param('id')
+  const b = ((await readJson(c)) ?? {}) as { restock?: unknown; refund?: unknown; note?: unknown }
+  const restock = b.restock !== false
+  const refund = b.refund !== false
+  const note = typeof b.note === 'string' ? b.note.slice(0, 300) : ''
+  const r = tx(() => {
+    const o = get<Order>('orders', id)?.doc
+    if (!o) return 'missing' as const
+    if (!canReturn(o)) return 'not_returnable' as const
+    return restockAndSave(o, returnOrderDoc(o, new Date().toISOString(), { refund, restocked: restock, note }, me.name), restock)
+  })
+  if (r === 'missing') return fail(c, 404, 'not_found', { ar: 'الطلب مش موجود.', en: 'Order not found.' })
+  if (r === 'not_returnable') return fail(c, 409, 'not_returnable', { ar: 'المرتجع بيتسجّل للطلبات اللي اتشحنت أو اتسلّمت بس.', en: 'Returns apply only to shipped or delivered orders.' })
+  audit(me, 'orders', id, 'return', `${restock ? 'restocked' : 'not restocked'}${r.order.paymentStatus === 'refunded' ? ', refunded' : ''}`)
+  logActivity(me.name, { ar: `سجّل مرتجع طلب #${r.order.number}`, en: `Recorded a return for order #${r.order.number}` }, `/admin/orders/${id}`)
+  return c.json(r)
 })
 
 app.post('/api/admin/whatsapp/send', need('orders.edit'), async (c) => {

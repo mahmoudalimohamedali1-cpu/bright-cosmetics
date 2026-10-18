@@ -6,6 +6,7 @@ import type {
   Discount,
   Order,
   OrderEvent,
+  OrderLine,
   PaymentMethod,
   Product,
   Settings,
@@ -68,20 +69,47 @@ export function evaluateCode(code: string | undefined, subtotal: number, discoun
   return { discount: 0, freeShipping: false, valid: false }
 }
 
-/** Remove qty from batches, earliest expiry first (FEFO). Returns the batch used for the first unit. */
-export function consumeFEFO(p: Product, qty: number): { product: Product; batchId?: string } {
+/** Remove qty from batches, earliest expiry first (FEFO). Returns every lot it took from, and the first one. */
+export function consumeFEFO(p: Product, qty: number): { product: Product; batchId?: string; picks: { batchId: string; qty: number }[] } {
   const batches = [...p.batches].sort((a, b) => a.expiry.localeCompare(b.expiry)).map((b) => ({ ...b }))
   let left = qty
-  let first: string | undefined
+  const picks: { batchId: string; qty: number }[] = []
   for (const b of batches) {
     if (left <= 0) break
     if (b.qty <= 0) continue
     const take = Math.min(b.qty, left)
     b.qty -= take
     left -= take
-    first ??= b.id
+    picks.push({ batchId: b.id, qty: take })
   }
-  return { product: { ...p, batches }, batchId: first }
+  return { product: { ...p, batches }, batchId: picks[0]?.batchId, picks }
+}
+
+/**
+ * Put an order's units back on the shelf (cancel before shipping, or a return).
+ * Each unit goes back to the lot it left from; if that lot is gone, to the
+ * earliest-expiring lot still on file. Returns the changed products and the
+ * units that had nowhere to go (product deleted, or it has no lots).
+ */
+export function restockLines(products: Product[], lines: OrderLine[]): { products: Product[]; lost: { productId: string; qty: number }[] } {
+  const changed = new Map<string, Product>()
+  const lost: { productId: string; qty: number }[] = []
+  for (const l of lines) {
+    const p = changed.get(l.productId) ?? products.find((x) => x.id === l.productId)
+    if (!p || !p.batches.length) {
+      lost.push({ productId: l.productId, qty: l.qty })
+      continue
+    }
+    const batches = p.batches.map((b) => ({ ...b }))
+    const fallback = () => [...batches].sort((a, b) => a.expiry.localeCompare(b.expiry))[0]
+    const picks = l.picks?.length ? l.picks : [{ batchId: l.batchId ?? '', qty: l.qty }]
+    for (const pk of picks) {
+      const b = batches.find((x) => x.id === pk.batchId) ?? fallback()
+      b.qty += pk.qty
+    }
+    changed.set(p.id, { ...p, batches })
+  }
+  return { products: [...changed.values()], lost }
 }
 
 /** Merge duplicate product lines and drop non-positive quantities. */
@@ -133,9 +161,9 @@ export function buildOrder(ctx: OrderContext, input: CheckoutInput, cart: CartLi
   const changed = new Map<string, Product>()
   const lines = mergeLines(cart).map((l) => {
     const p = changed.get(l.productId) ?? ctx.products.find((x) => x.id === l.productId)!
-    const { product, batchId } = consumeFEFO(p, l.qty)
+    const { product, batchId, picks } = consumeFEFO(p, l.qty)
     changed.set(p.id, product)
-    return { productId: p.id, qty: l.qty, price: p.price, cost: p.cost, batchId }
+    return { productId: p.id, qty: l.qty, price: p.price, cost: p.cost, batchId, ...(picks.length > 1 ? { picks } : {}) }
   })
   const subtotal = lines.reduce((sum, l) => sum + l.price * l.qty, 0)
   const zone = zoneFor(input.governorateId, ctx.zones)
@@ -263,4 +291,31 @@ export function validateOrder(
   }
 
   return { ok: true, input: { name, phone, email: email || undefined, governorateId, address, payment, code, note }, cart }
+}
+
+/* ───────────── Cancel and return (shared by the server and demo mode) ───────────── */
+
+/** Cancel is for orders still in the warehouse; once shipped, it is a return. */
+export const canCancel = (o: Order) => o.status !== 'cancelled' && (o.fulfillment === 'unfulfilled' || o.fulfillment === 'packed')
+export const canReturn = (o: Order) => o.status !== 'cancelled' && (o.fulfillment === 'shipped' || o.fulfillment === 'delivered')
+
+export function cancelOrderDoc(o: Order, at: string, reason: string, by?: string): Order {
+  return {
+    ...o,
+    status: 'cancelled',
+    paymentStatus: o.paymentStatus === 'paid' ? 'refunded' : o.paymentStatus,
+    events: [...o.events, { at, type: 'cancelled', by, note: reason }],
+  }
+}
+
+/**
+ * A parcel that came back: refused at the door, or returned after delivery.
+ * `refund` only applies to money actually taken (paid orders).
+ */
+export function returnOrderDoc(o: Order, at: string, opts: { refund: boolean; restocked: boolean; note?: string }, by?: string): Order {
+  const refund = opts.refund && o.paymentStatus === 'paid'
+  const note = [opts.note?.trim(), opts.restocked ? 'Restocked / رجع المخزون' : 'Not restocked / مارجعش المخزون'].filter(Boolean).join(' · ')
+  const events: OrderEvent[] = [...o.events, { at, type: 'returned', by, note }]
+  if (refund) events.push({ at, type: 'refunded', by })
+  return { ...o, fulfillment: 'returned', paymentStatus: refund ? 'refunded' : o.paymentStatus, events }
 }

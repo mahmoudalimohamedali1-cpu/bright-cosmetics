@@ -5,8 +5,8 @@
     node scripts/verify.mjs [baseUrl]
 
   Reads ADMIN_EMAIL / ADMIN_PASSWORD from .env (never prints them). Creates a
-  temporary fulfilment staff account and one test order, then removes the
-  account and cancels the order so stock is returned.
+  temporary fulfilment staff account and a few test orders, then removes the
+  account and cancels or returns the orders so all stock is put back.
 */
 import fs from 'node:fs'
 
@@ -102,9 +102,44 @@ for (const type of ['view', 'product_view', 'add_to_cart', 'checkout_start']) {
 const live2 = await call('/admin/live', { token: owner })
 check('Live view counts real sessions from the storefront', live2.status === 200 && (live2.data?.activeSessions ?? 0) >= 1, `active ${live2.data?.activeSessions}`)
 
-// ── Clean up ──
-const latest = (await call(`/admin/orders/${o.id}`, { token: owner })).data
-await call(`/admin/orders/${o.id}`, { method: 'PUT', token: owner, body: { ...(latest?.doc ?? latest ?? stored), status: 'cancelled', fulfillment: 'unfulfilled' } })
+// ── 7. Customer accounts, history, cancel and return ──
+const phone = '01099999999'
+const again = await call('/orders', { method: 'POST', body: { lines: [{ productId: product.id, qty: 2 }], name: 'Verify Again', phone: '+20 10 9999 9999', governorateId: 'cai', address: 'Test address 2', payment: 'cod' } })
+const o2 = again.data
+check('A returning customer (same mobile, other format) is matched, not duplicated', again.status === 201 && o2?.customerId === o?.customerId)
+const histNoProof = await call(`/orders-history?phone=${phone}&order=1`)
+const hist = await call(`/orders-history?phone=${phone}&order=${o.number}`)
+check('Order history needs mobile + an order number, then lists all their orders',
+  histNoProof.status === 404 && hist.status === 200 && [o.id, o2?.id].every((id) => hist.data?.orders?.some((x) => x.id === id)))
+const cur1 = (await call(`/admin/orders/${o.id}`, { token: owner })).data
+const doc1 = cur1?.doc ?? cur1
+await call(`/admin/orders/${o.id}`, { method: 'PUT', token: owner, body: { ...doc1, events: [...doc1.events, { at: new Date().toISOString(), type: 'note', note: 'internal: verify note' }] } })
+const pub = (await call(`/orders/${o.id}?phone=${phone}`)).data
+check('Shoppers never see internal notes, staff names or risk flags',
+  !!pub && !JSON.stringify(pub).includes('internal: verify note') && pub.events.every((e) => !e.by) && pub.risk === 'low' && pub.lines.every((l) => l.cost === 0))
+const ftCancel = await call(`/admin/orders/${o2.id}/cancel`, { method: 'POST', token: ft, body: { reason: 'verify' } })
+check('Fulfilment staff cannot cancel through the cancel endpoint (403)', ftCancel.status === 403)
+const stockNow = async () => stockOf((await call('/admin/bootstrap', { token: owner })).data.data.products.find((p) => p.id === product.id))
+const beforeCancel = await stockNow()
+// A shopper's order lands between "admin loaded the product" and "admin cancels": the case that used to lose stock.
+const between = await call('/orders', { method: 'POST', body: { lines: [{ productId: product.id, qty: 1 }], name: 'Verify Between', phone: '01088888888', governorateId: 'cai', address: 'Test address 3', payment: 'cod' } })
+const cancelled = await call(`/admin/orders/${o2.id}/cancel`, { method: 'POST', token: owner, body: { reason: 'Verify script' } })
+const afterCancel = await stockNow()
+check('Cancel returns the units to stock on the server, even after another order changed the product', cancelled.status === 200 && afterCancel === beforeCancel - 1 + 2, `${beforeCancel} → ${afterCancel}`)
+const twice = await call(`/admin/orders/${o2.id}/cancel`, { method: 'POST', token: owner, body: { reason: 'again' } })
+check('Cancelling twice is refused (no double restock)', twice.status === 409)
+const b3 = between.data
+const cur3 = (await call(`/admin/orders/${b3.id}`, { token: owner })).data
+const doc3 = cur3?.doc ?? cur3
+await call(`/admin/orders/${b3.id}`, { method: 'PUT', token: owner, body: { ...doc3, status: 'confirmed', fulfillment: 'shipped', events: [...doc3.events, { at: new Date().toISOString(), type: 'shipped' }] } })
+const cantCancel = await call(`/admin/orders/${b3.id}/cancel`, { method: 'POST', token: owner, body: { reason: 'too late' } })
+const returned = await call(`/admin/orders/${b3.id}/return`, { method: 'POST', token: owner, body: { restock: true, refund: true, note: 'Refused at the door' } })
+const afterReturn = await stockNow()
+check('A shipped order cannot be cancelled; a return puts it back in stock',
+  cantCancel.status === 409 && returned.status === 200 && returned.data?.order?.fulfillment === 'returned' && afterReturn === afterCancel + 1, `${afterCancel} → ${afterReturn}`)
+
+// ── Clean up (the cancel endpoint puts the stock back) ──
+await call(`/admin/orders/${o.id}/cancel`, { method: 'POST', token: owner, body: { reason: 'Verify script clean-up' } })
 if (staffId) await call(`/admin/staff/${staffId}`, { method: 'DELETE', token: owner })
 await call('/admin/logout', { method: 'POST', token: owner })
 

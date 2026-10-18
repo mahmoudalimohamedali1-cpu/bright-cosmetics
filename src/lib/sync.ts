@@ -88,6 +88,23 @@ export async function fetchCode(code: string): Promise<Discount | undefined> {
   }
 }
 
+/**
+ * A shopper's order history from the server. Needs the mobile and the number of
+ * one of their orders. The orders also land in the store so the status pages
+ * stay current. Returns undefined when nothing matches or the server is down.
+ */
+export async function fetchHistory(phone: string, orderNumber: number): Promise<Order[] | undefined> {
+  try {
+    const r = await api<{ orders: Order[] }>(`/api/orders-history?phone=${encodeURIComponent(phone)}&order=${encodeURIComponent(String(orderNumber))}`)
+    const byId = new Map(r.orders.map((o) => [o.id, o]))
+    const orders = useStore.getState().orders
+    applyRemote({ orders: [...orders.filter((o) => !byId.has(o.id)), ...r.orders] })
+    return r.orders
+  } catch {
+    return undefined
+  }
+}
+
 /** Pull one order's current state (phone must match) into the store. */
 export async function refreshOrder(id: string, phone: string) {
   try {

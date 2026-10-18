@@ -17,7 +17,7 @@ import type {
   ShippingZone,
 } from '../data/types'
 import { uid } from '../lib/rand'
-import { buildOrder } from '../lib/commerce'
+import { buildOrder, canCancel, canReturn, cancelOrderDoc, restockLines, returnOrderDoc } from '../lib/commerce'
 import type { CheckoutInput } from '../lib/commerce'
 import { api, apiAvailable } from '../lib/api'
 import { track } from '../lib/track'
@@ -53,6 +53,7 @@ type State = Db & {
   updateFulfillment: (orderId: string, f: FulfillmentStatus, by?: string, courier?: Order['courier']) => void
   confirmOrder: (orderId: string, via: 'whatsapp' | 'phone', by?: string) => void
   cancelOrder: (orderId: string, reason: string, by?: string) => void
+  returnOrder: (orderId: string, opts: { restock: boolean; refund: boolean; note?: string }, by?: string) => void
   markPaid: (orderId: string, by?: string) => void
   refundOrder: (orderId: string, by?: string) => void
   addOrderNote: (orderId: string, note: string, by?: string) => void
@@ -207,20 +208,24 @@ export const useStore = create<State>()(
       cancelOrder: (orderId, reason, by) =>
         set((s) => {
           const o = s.orders.find((x) => x.id === orderId)
-          if (!o) return {}
-          // Return stock to the batch it came from
-          const products = s.products.map((p) => {
-            const line = o.lines.find((l) => l.productId === p.id)
-            if (!line) return p
-            return { ...p, batches: p.batches.map((b, i) => (b.id === line.batchId || (!line.batchId && i === 0) ? { ...b, qty: b.qty + line.qty } : b)) }
-          })
+          if (!o || !canCancel(o)) return {}
+          // Units go back to the lot they were picked from
+          const { products: back } = restockLines(s.products, o.lines)
+          const changed = new Map(back.map((p) => [p.id, p]))
           return {
-            products,
-            orders: s.orders.map((x) =>
-              x.id === orderId
-                ? { ...x, status: 'cancelled', paymentStatus: x.paymentStatus === 'paid' ? 'refunded' : x.paymentStatus, events: [...x.events, event('cancelled', by, reason)] }
-                : x,
-            ),
+            products: s.products.map((p) => changed.get(p.id) ?? p),
+            orders: s.orders.map((x) => (x.id === orderId ? cancelOrderDoc(x, new Date().toISOString(), reason, by) : x)),
+          }
+        }),
+      returnOrder: (orderId, opts, by) =>
+        set((s) => {
+          const o = s.orders.find((x) => x.id === orderId)
+          if (!o || !canReturn(o)) return {}
+          const { products: back } = opts.restock ? restockLines(s.products, o.lines) : { products: [] }
+          const changed = new Map(back.map((p) => [p.id, p]))
+          return {
+            products: s.products.map((p) => changed.get(p.id) ?? p),
+            orders: s.orders.map((x) => (x.id === orderId ? returnOrderDoc(x, new Date().toISOString(), { refund: opts.refund, restocked: opts.restock, note: opts.note }, by) : x)),
           }
         }),
       markPaid: (orderId, by) =>

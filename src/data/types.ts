@@ -121,7 +121,10 @@ export type OrderLine = {
   qty: number
   price: number
   cost: number
+  /** First lot the units came from */
   batchId?: string
+  /** Every lot, when the units came from more than one */
+  picks?: { batchId: string; qty: number }[]
 }
 
 export type OrderEvent = {
