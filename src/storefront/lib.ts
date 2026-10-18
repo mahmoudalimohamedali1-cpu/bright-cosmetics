@@ -7,8 +7,8 @@ import type { Batch, Category, Origin, Product } from '../data/types'
 
 /* Storefront helpers. Only active products are ever shown to shoppers. */
 
-export const IMPORTED_ORIGINS: Origin[] = ['FR', 'US', 'JP', 'CA', 'DE']
-export const ALL_ORIGINS: Origin[] = ['KR', ...IMPORTED_ORIGINS]
+export const IMPORTED_ORIGINS: Origin[] = ['FR', 'US', 'JP', 'CA', 'DE', 'CN']
+export const ALL_ORIGINS: Origin[] = ['KR', ...IMPORTED_ORIGINS, 'EG']
 export const CATEGORIES: Category[] = ['cleanser', 'toner', 'essence', 'serum', 'eye', 'mask', 'moisturizer', 'sunscreen', 'hair', 'makeup', 'lip']
 
 export function useActiveProducts() {

@@ -278,6 +278,7 @@ export default function Inventory() {
                             <button
                               className="btn btn--sm"
                               disabled={!r.p.batches.length}
+                              aria-label={tx(`تعديل مخزون ${pick(r.p.name)}`, `Adjust stock for ${pick(r.p.name)}`)}
                               onClick={() => setAdj({ p: r.p, batchId: [...r.p.batches].sort((a, b) => a.expiry.localeCompare(b.expiry))[0]?.id ?? '', delta: '', reason: 'count' })}
                             >
                               <SlidersHorizontal size={14} aria-hidden />

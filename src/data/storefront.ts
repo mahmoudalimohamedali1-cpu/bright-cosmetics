@@ -122,7 +122,7 @@ export function defaultStorefront(): StorefrontContent {
       { id: 'nav-home', label: b('الرئيسية', 'Home'), href: '/', kind: 'link', enabled: true, children: [] },
       { id: 'nav-cat', label: b('المنتجات', 'Products'), href: '/shop', kind: 'categories', enabled: true, children: [
         { id: 'nav-kr', label: b('كوري', 'K-beauty'), href: '/shop?origin=KR' },
-        { id: 'nav-imp', label: b('مستورد', 'Imported'), href: '/shop?origin=FR,US,JP,CA,DE' },
+        { id: 'nav-imp', label: b('مستورد', 'Imported'), href: '/shop?origin=FR,US,JP,CA,DE,CN' },
       ] },
       { id: 'nav-brand', label: b('الماركات', 'Brands'), href: '/shop', kind: 'brands', enabled: true, children: [] },
       { id: 'nav-quiz', label: b('اعرفي بشرتك', 'Skin quiz'), href: '/routine', kind: 'link', enabled: true, children: [] },

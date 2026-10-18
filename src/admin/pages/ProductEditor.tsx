@@ -14,7 +14,7 @@ import { uid } from '../../lib/rand'
 import { Chip } from '../parts/core/ui'
 import { today } from '../parts/core/lib'
 
-const ORIGINS: Origin[] = ['KR', 'JP', 'FR', 'US', 'CA', 'DE']
+const ORIGINS: Origin[] = ['KR', 'JP', 'FR', 'US', 'CA', 'DE', 'CN', 'EG']
 const SKINS: SkinType[] = ['oily', 'dry', 'combination', 'sensitive', 'normal']
 const CONCERNS: Concern[] = ['acne', 'hydration', 'brightening', 'aging', 'pores', 'redness', 'sun', 'barrier']
 
@@ -188,7 +188,7 @@ export default function ProductEditor() {
     setErrors(e)
     const n = Object.values(e).filter(Boolean).length
     if (n) {
-      toast(tx(`فيه ${num(n)} حقل محتاج تصحيح`, `${n} field${n > 1 ? 's' : ''} need fixing`))
+      toast(tx(`فيه ${num(n)} حقل محتاج تصحيح`, n === 1 ? '1 field needs fixing' : `${n} fields need fixing`))
       requestAnimationFrame(() => document.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus())
       return
     }
@@ -367,7 +367,7 @@ export default function ProductEditor() {
           <>
             <button type="button" className="btn btn--ghost" onClick={openPreview}>
               <ExternalLink size={16} aria-hidden />
-              {tx('معاينة قبل الحفظ', 'Preview before save')}
+              {readOnly ? tx('شكله في المتجر', 'Preview in store') : tx('معاينة قبل الحفظ', 'Preview before save')}
             </button>
             {!isNew && !readOnly && (
               <button className="btn btn--danger" onClick={() => setConfirmDelete(true)}>
@@ -600,10 +600,12 @@ export default function ProductEditor() {
                     : tx('لسه مفيش صورة. الزبونة هتشوف الرسم ده لحد ما الصورة تتحط.', 'No photo yet. Shoppers see this drawing until a photo is added.')}
                 </p>
                 {dirty && <p className="small muted">{tx('دي نتيجة التعديلات الحالية. المتجر هيتحدث بعد الحفظ.', 'This is the current draft. The store updates after you save.')}</p>}
-                <button type="button" className="btn btn--ghost btn--sm" onClick={openPreview}>
-                  <ExternalLink size={16} aria-hidden />
-                  {tx('عايني الصفحة قبل الحفظ', 'Preview the page before save')}
-                </button>
+                {!readOnly && (
+                  <button type="button" className="btn btn--ghost btn--sm" onClick={openPreview}>
+                    <ExternalLink size={16} aria-hidden />
+                    {tx('عايني الصفحة قبل الحفظ', 'Preview the page before save')}
+                  </button>
+                )}
                 {!isNew && d.status !== 'active' && (
                   <p className="small muted">{tx('المنتج مش ظاهر في المتجر دلوقتي. المعاينة دي شكل العبوة لو اتفعّل.', 'This product is hidden from the store. This is how the pack looks if you activate it.')}</p>
                 )}
