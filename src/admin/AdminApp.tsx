@@ -11,6 +11,7 @@ import {
   Menu,
   Moon,
   Package,
+  PanelsTopLeft,
   Percent,
   Radio,
   Search,
@@ -51,6 +52,7 @@ import Abandoned from './pages/Abandoned'
 import Reviews from './pages/Reviews'
 import Shipping from './pages/Shipping'
 import SettingsPage from './pages/Settings'
+import StorefrontPage from './pages/Storefront'
 import Live from './pages/Live'
 
 type NavItem = { to: string; ar: string; en: string; icon: ComponentType<LucideProps>; count?: number; live?: boolean; end?: boolean }
@@ -172,6 +174,7 @@ function AdminShell({ online, signOut, me }: { online: boolean; signOut: () => v
       en: 'Insight & setup',
       items: [
         { to: '/admin/analytics', ar: 'التحليلات', en: 'Analytics', icon: BarChart3 },
+        { to: '/admin/storefront', ar: 'واجهة المتجر', en: 'Storefront', icon: PanelsTopLeft },
         { to: '/admin/shipping', ar: 'الشحن والمحافظات', en: 'Shipping', icon: Truck },
         { to: '/admin/settings', ar: 'الإعدادات', en: 'Settings', icon: SettingsIcon },
       ],
@@ -286,6 +289,7 @@ function AdminShell({ online, signOut, me }: { online: boolean; signOut: () => v
                 <Route path="abandoned" element={guard('/admin/abandoned', <Abandoned />)} />
                 <Route path="reviews" element={guard('/admin/reviews', <Reviews />)} />
                 <Route path="shipping" element={guard('/admin/shipping', <Shipping />)} />
+                <Route path="storefront" element={guard('/admin/storefront', <StorefrontPage />)} />
                 <Route path="settings" element={guard('/admin/settings', <SettingsPage />)} />
                 <Route path="*" element={<Overview />} />
               </Routes>
@@ -334,6 +338,7 @@ function CommandPalette({ onClose, allowed }: { onClose: () => void; allowed: (t
       { id: 'pg-abandoned', group: tx('صفحات', 'Pages'), label: tx('سلال متروكة', 'Abandoned carts'), run: go('/admin/abandoned'), to: '/admin/abandoned' },
       { id: 'pg-reviews', group: tx('صفحات', 'Pages'), label: tx('التقييمات', 'Reviews'), run: go('/admin/reviews'), to: '/admin/reviews' },
       { id: 'pg-shipping', group: tx('صفحات', 'Pages'), label: tx('الشحن والمحافظات', 'Shipping'), run: go('/admin/shipping'), to: '/admin/shipping' },
+      { id: 'pg-storefront', group: tx('صفحات', 'Pages'), label: tx('واجهة المتجر', 'Storefront'), run: go('/admin/storefront'), to: '/admin/storefront' },
       { id: 'pg-settings', group: tx('صفحات', 'Pages'), label: tx('الإعدادات', 'Settings'), run: go('/admin/settings'), to: '/admin/settings' },
       { id: 'pg-live', group: tx('صفحات', 'Pages'), label: tx('مباشر الآن', 'Live view'), run: go('/admin/live'), to: '/admin/live' },
     ]

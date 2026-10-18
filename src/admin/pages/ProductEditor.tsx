@@ -8,24 +8,12 @@ import { useStore } from '../../store'
 import { Badge, Drawer, Empty, Field, PageHeader, Pane, Seg, useAdmin } from '../ui'
 import { ProductVisual } from '../../components/ProductVisual'
 import { CATEGORY_LABEL, CONCERN_LABEL, SKIN_LABEL, STEP_LABEL, originName } from '../../data/catalog'
-import type { Batch, Category, Concern, Origin, Product, ProductStatus, Shape, SkinType } from '../../data/types'
+import type { Batch, Category, Concern, Origin, Product, ProductStatus, SkinType } from '../../data/types'
 import { daysUntil } from '../../lib/metrics'
 import { uid } from '../../lib/rand'
 import { Chip } from '../parts/core/ui'
 import { today } from '../parts/core/lib'
 
-const SHAPES: Shape[] = ['dropper', 'pump', 'jar', 'tube', 'toner', 'mask', 'cushion', 'tint', 'pad']
-const SHAPE_LABEL: Record<Shape, Bi> = {
-  dropper: { ar: 'زجاجة بقطّارة', en: 'Dropper bottle' },
-  pump: { ar: 'زجاجة ببمب', en: 'Pump bottle' },
-  jar: { ar: 'برطمان', en: 'Jar' },
-  tube: { ar: 'أنبوبة', en: 'Tube' },
-  toner: { ar: 'زجاجة تونر', en: 'Toner bottle' },
-  mask: { ar: 'ماسك شيت', en: 'Sheet mask' },
-  cushion: { ar: 'كوشن', en: 'Cushion compact' },
-  tint: { ar: 'تينت', en: 'Tint' },
-  pad: { ar: 'علبة باد', en: 'Pad jar' },
-}
 const ORIGINS: Origin[] = ['KR', 'JP', 'FR', 'US', 'CA', 'DE']
 const SKINS: SkinType[] = ['oily', 'dry', 'combination', 'sensitive', 'normal']
 const CONCERNS: Concern[] = ['acne', 'hydration', 'brightening', 'aging', 'pores', 'redness', 'sun', 'barrier']
@@ -310,6 +298,20 @@ export default function ProductEditor() {
 
   const statusLabel: Record<ProductStatus, string> = { active: tx('نشط', 'Active'), draft: tx('مسودة', 'Draft'), archived: tx('مؤرشف', 'Archived') }
 
+  const openPreview = () => {
+    // localStorage, not sessionStorage: an already-open preview tab keeps its own
+    // session copy, so it would show the old draft. The storage event updates it live.
+    const payload = { type: 'bright-product-preview', product: d }
+    try {
+      localStorage.setItem(payload.type, JSON.stringify(d))
+    } catch {
+      /* private mode: the postMessage below still delivers the draft */
+    }
+    const preview = window.open(`${import.meta.env.BASE_URL}preview`, 'bright-preview')
+    preview?.focus()
+    window.setTimeout(() => preview?.postMessage(payload, location.origin), 600)
+  }
+
   const card = (l: 'ar' | 'en') => (
     <div className="core-card" dir={l === 'ar' ? 'rtl' : 'ltr'} lang={l}>
       <div className="core-card__img">
@@ -363,12 +365,10 @@ export default function ProductEditor() {
         }
         actions={
           <>
-            {!isNew && d.status === 'active' && (
-              <a className="btn btn--ghost" href={`/p/${slug}`} target="_blank" rel="noopener noreferrer">
-                <ExternalLink size={16} aria-hidden />
-                {tx('عرض في المتجر', 'View in store')}
-              </a>
-            )}
+            <button type="button" className="btn btn--ghost" onClick={openPreview}>
+              <ExternalLink size={16} aria-hidden />
+              {tx('معاينة قبل الحفظ', 'Preview before save')}
+            </button>
             {!isNew && !readOnly && (
               <button className="btn btn--danger" onClick={() => setConfirmDelete(true)}>
                 <Trash2 size={16} aria-hidden />
@@ -587,45 +587,29 @@ export default function ProductEditor() {
           )}
 
           {pane(
-            tx('شكل العبوة', 'Packaging'),
-            <div className="grid grid-2">
-              <div className="stack" style={{ gap: 12 }}>
-                <Field label={tx('نوع العبوة', 'Container')} htmlFor="f-shape">
-                  <select id="f-shape" className="select" value={d.visual.shape} onChange={(e) => set('visual', { ...d.visual, shape: e.target.value as Shape })}>
-                    {SHAPES.map((s) => (
-                      <option key={s} value={s}>
-                        {pick(SHAPE_LABEL[s])}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-                {(
-                  [
-                    ['body', tx('لون العبوة', 'Body')],
-                    ['cap', tx('لون الغطا', 'Cap')],
-                    ['label', tx('لون الملصق', 'Label')],
-                    ['text', tx('لون الكتابة', 'Label text')],
-                  ] as const
-                ).map(([k, label]) => (
-                  <Field key={k} label={label} htmlFor={`f-col-${k}`}>
-                    <div className="core-color">
-                      <input type="color" id={`f-col-${k}`} value={d.visual[k]} onChange={(e) => set('visual', { ...d.visual, [k]: e.target.value })} />
-                      <input
-                        className="input num"
-                        dir="ltr"
-                        value={d.visual[k]}
-                        aria-label={`${label} hex`}
-                        onChange={(e) => /^#[0-9a-fA-F]{0,6}$/.test(e.target.value) && set('visual', { ...d.visual, [k]: e.target.value })}
-                      />
-                    </div>
-                  </Field>
-                ))}
+            tx('معاينة العبوة', 'Packaging preview'),
+            <div className="core-pack">
+              <div className="core-pack__stage" aria-label={tx('شكل العبوة في صفحة المنتج', 'Packaging on the product page')}>
+                <ProductVisual eager image={d.image} visual={d.visual} brand={d.brand || 'Brand'} size={d.size} title={pick(d.name) || tx('معاينة', 'Preview')} />
               </div>
-              <div className="core-visual" aria-label={tx('معاينة العبوة', 'Packaging preview')}>
-                <ProductVisual image={d.image} visual={d.visual} brand={d.brand || 'Brand'} size={d.size} title={d.name.en || 'Preview'} />
+              <div className="stack" style={{ gap: 12 }}>
+                {card(lang)}
+                <p className="small muted">
+                  {d.image
+                    ? tx('الزبونة هتشوف الصورة دي في الكارت وفي صفحة المنتج. الرسم مش هيظهر.', 'Shoppers see this photo on the card and the product page. The drawing stays hidden.')
+                    : tx('لسه مفيش صورة. الزبونة هتشوف الرسم ده لحد ما الصورة تتحط.', 'No photo yet. Shoppers see this drawing until a photo is added.')}
+                </p>
+                {dirty && <p className="small muted">{tx('دي نتيجة التعديلات الحالية. المتجر هيتحدث بعد الحفظ.', 'This is the current draft. The store updates after you save.')}</p>}
+                <button type="button" className="btn btn--ghost btn--sm" onClick={openPreview}>
+                  <ExternalLink size={16} aria-hidden />
+                  {tx('عايني الصفحة قبل الحفظ', 'Preview the page before save')}
+                </button>
+                {!isNew && d.status !== 'active' && (
+                  <p className="small muted">{tx('المنتج مش ظاهر في المتجر دلوقتي. المعاينة دي شكل العبوة لو اتفعّل.', 'This product is hidden from the store. This is how the pack looks if you activate it.')}</p>
+                )}
               </div>
             </div>,
-            tx('رسم مؤقت لحد ما صور المنتج الحقيقية تجهز', 'A drawn stand-in until real product photos exist'),
+            tx('معاينة بس، من غير تعديل. بتتعرض شكل العبوة قبل ما الزبونة تشوفه.', 'Preview only, not an editor. This is the pack before a shopper sees it.'),
           )}
         </div>
 

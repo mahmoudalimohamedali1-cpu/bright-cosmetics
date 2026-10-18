@@ -18,7 +18,8 @@ type Sort = 'new' | 'old' | 'high' | 'low'
 
 export default function Orders() {
   const { tx, pick, money, num, date, relTime } = useI18n()
-  const { toast, staff } = useAdmin()
+  const { toast, staff, can } = useAdmin()
+  const canEdit = can('orders.edit')
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
   const orders = useStore((s) => s.orders)
@@ -333,23 +334,27 @@ export default function Orders() {
                 </button>
               )}
               <span style={{ flex: 1 }} />
-              <button className="btn btn--sm" onClick={bulkConfirm} disabled={!canConfirm.length} title={tx('للطلبات الجديدة بس', 'Applies to new orders only')}>
-                <MessageCircle size={14} aria-hidden />
-                {tx(`تأكيد على واتساب (${num(canConfirm.length)})`, `Confirm on WhatsApp (${canConfirm.length})`)}
-              </button>
-              <button className="btn btn--sm" onClick={bulkPack} disabled={!canPack.length}>
-                <PackageCheck size={14} aria-hidden />
-                {tx(`تجهيز (${num(canPack.length)})`, `Mark packed (${canPack.length})`)}
-              </button>
-              <select className="select core-select-sm" style={{ minWidth: 110, height: 30 }} value={courier} onChange={(e) => setCourier(e.target.value as Courier)} aria-label={tx('شركة الشحن', 'Courier')}>
-                {COURIERS.map((c) => (
-                  <option key={c}>{c}</option>
-                ))}
-              </select>
-              <button className="btn btn--sm" onClick={bulkShip} disabled={!canShip.length}>
-                <Truck size={14} aria-hidden />
-                {tx(`شحن (${num(canShip.length)})`, `Mark shipped (${canShip.length})`)}
-              </button>
+              {canEdit && (
+                <>
+                  <button className="btn btn--sm" onClick={bulkConfirm} disabled={!canConfirm.length} title={tx('للطلبات الجديدة بس', 'Applies to new orders only')}>
+                    <MessageCircle size={14} aria-hidden />
+                    {tx(`تأكيد على واتساب (${num(canConfirm.length)})`, `Confirm on WhatsApp (${canConfirm.length})`)}
+                  </button>
+                  <button className="btn btn--sm" onClick={bulkPack} disabled={!canPack.length}>
+                    <PackageCheck size={14} aria-hidden />
+                    {tx(`تجهيز (${num(canPack.length)})`, `Mark packed (${canPack.length})`)}
+                  </button>
+                  <select className="select core-select-sm" style={{ minWidth: 110, height: 30 }} value={courier} onChange={(e) => setCourier(e.target.value as Courier)} aria-label={tx('شركة الشحن', 'Courier')}>
+                    {COURIERS.map((c) => (
+                      <option key={c}>{c}</option>
+                    ))}
+                  </select>
+                  <button className="btn btn--sm" onClick={bulkShip} disabled={!canShip.length}>
+                    <Truck size={14} aria-hidden />
+                    {tx(`شحن (${num(canShip.length)})`, `Mark shipped (${canShip.length})`)}
+                  </button>
+                </>
+              )}
               <button className="btn btn--sm" onClick={() => setPrintIds(selected.map((o) => o.id))}>
                 <Printer size={14} aria-hidden />
                 {tx('طباعة قوائم التعبئة', 'Print packing slips')}

@@ -247,6 +247,131 @@ export type Activity = {
   link?: string
 }
 
+export type StoreLink = { id: string; label: Bi; href: string }
+
+export type StoreNavKind = 'link' | 'categories' | 'brands'
+
+export type StoreNavItem = {
+  id: string
+  label: Bi
+  href: string
+  kind: StoreNavKind
+  enabled: boolean
+  /** Extra links inside a categories mega menu */
+  children: StoreLink[]
+}
+
+export type StoreColumn = {
+  id: string
+  title: Bi
+  mode: 'links' | 'categories' | 'brands'
+  links: StoreLink[]
+  limit: number
+}
+
+export type StorePage = {
+  id: string
+  slug: string
+  title: Bi
+  body: Bi
+  published: boolean
+  /** sections = the page is the blocks. article = a title and text, then blocks. */
+  layout: 'sections' | 'article'
+  blocks: HomeBlock[]
+}
+
+export type RailSource = 'manual' | 'best' | 'offers' | 'new' | 'brand' | 'category'
+
+/** Visual layouts a shaped section can take. The owner picks one per section, and can add many. */
+export type PanelShape =
+  | 'banner'
+  | 'poster'
+  | 'statement'
+  | 'editorial'
+  | 'split'
+  | 'split-flip'
+  | 'feature'
+  | 'duo'
+  | 'mosaic'
+  | 'shelf'
+  | 'columns'
+  | 'list'
+  | 'steps'
+  | 'claims'
+  | 'quote'
+  | 'cta'
+
+export type HomeBlock =
+  | { id: string; type: 'hero'; enabled: boolean; headline: Bi; sub: Bi; cta: Bi; href: string; slugs: string[] }
+  | { id: string; type: 'bestsellers'; enabled: boolean; title: Bi; cta: Bi; href: string; limit: number; slugs: string[] }
+  | {
+      id: string
+      type: 'rail'
+      enabled: boolean
+      title: Bi
+      sub: Bi
+      cta: Bi
+      href: string
+      tone: 'plain' | 'blush'
+      source: RailSource
+      slugs: string[]
+      brand: string
+      category: string
+      limit: number
+    }
+  | { id: string; type: 'categories'; enabled: boolean; title: Bi; sub: Bi }
+  | { id: string; type: 'promises'; enabled: boolean; title: Bi; slugs: string[]; items: { id: string; title: Bi; body: Bi }[] }
+  | { id: string; type: 'quotes'; enabled: boolean }
+  | { id: string; type: 'marquee'; enabled: boolean; text: Bi; label: Bi }
+  | { id: string; type: 'spin'; enabled: boolean; slug: string }
+  | { id: string; type: 'lot'; enabled: boolean; title: Bi; body: Bi; cta: Bi; href: string; slug: string }
+  | { id: string; type: 'routines'; enabled: boolean; title: Bi; cards: { id: string; title: Bi; href: string; badge: Bi; skin: string; concern: string }[] }
+  | { id: string; type: 'brands'; enabled: boolean; title: Bi; sub: Bi }
+  | { id: string; type: 'text'; enabled: boolean; title: Bi; body: Bi; cta: Bi; href: string }
+  | {
+      id: string
+      type: 'panel'
+      enabled: boolean
+      shape: PanelShape
+      title: Bi
+      sub: Bi
+      body: Bi
+      cta: Bi
+      href: string
+      slugs: string[]
+      items: { id: string; title: Bi; body: Bi }[]
+    }
+
+/** Fixed store pages. Their working part stays; sections can sit above and below it. */
+export type BuiltInPage = 'shop' | 'routine' | 'account' | 'wishlist' | 'product' | 'checkout' | 'missing'
+
+export type PageFrame = {
+  id: BuiltInPage
+  before: HomeBlock[]
+  after: HomeBlock[]
+}
+
+/** Everything the shopper sees that is not a product, order, or review record. */
+export type StorefrontContent = {
+  seoTitle: Bi
+  seoDescription: Bi
+  slogan: Bi
+  ticker: Bi[]
+  nav: StoreNavItem[]
+  blocks: HomeBlock[]
+  footer: {
+    clubTitle: Bi
+    clubNote: Bi
+    clubOk: Bi
+    columns: StoreColumn[]
+    legalMode: 'auto' | 'custom'
+    legal: Bi
+  }
+  pages: StorePage[]
+  /** Extra sections on the fixed pages (shop, checkout, and the rest). */
+  frames: PageFrame[]
+}
+
 export type Settings = {
   storeName: Bi
   email: string
@@ -262,4 +387,6 @@ export type Settings = {
   autoConfirmWhatsapp: boolean
   defaultLang: 'ar' | 'en'
   announcement: Bi
+  /** Absent on older saves: the storefront falls back to the built-in copy. */
+  storefront?: StorefrontContent
 }

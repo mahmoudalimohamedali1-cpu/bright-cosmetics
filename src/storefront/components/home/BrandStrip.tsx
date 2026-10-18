@@ -10,7 +10,7 @@ import { SocialIcons } from './WildStrip'
   each showing that brand's own bottle. Scrolls inside its own strip.
 */
 
-export function BrandStrip() {
+export function BrandStrip({ title, sub }: { title?: string; sub?: string }) {
   const { tx, num } = useI18n()
   const products = useActiveProducts()
   const brands = useMemo(() => {
@@ -27,10 +27,12 @@ export function BrandStrip() {
   return (
     <section className="v-brands" aria-labelledby="v-brands-h">
       <div className="v-wrap v-brands__head">
-        <h2 id="v-brands-h" className="v-h2">{tx('تسوقي بالماركة.', 'Shop by brand.')}</h2>
-        <p className="v-mono">
-          {tx('ماركات كورية ومستوردة أصلية، وكل عبوة عليها رقم تشغيلتها.', 'Authentic Korean and imported brands, every unit with its lot number.')}
-        </p>
+        <h2 id="v-brands-h" className="v-h2">{title ?? tx('تسوقي بالماركة.', 'Shop by brand.')}</h2>
+        {(sub ?? tx('ماركات كورية ومستوردة أصلية، وكل عبوة عليها رقم تشغيلتها.', 'Authentic Korean and imported brands, every unit with its lot number.')) && (
+          <p className="v-mono">
+            {sub ?? tx('ماركات كورية ومستوردة أصلية، وكل عبوة عليها رقم تشغيلتها.', 'Authentic Korean and imported brands, every unit with its lot number.')}
+          </p>
+        )}
       </div>
       <ul className="v-brands__track" aria-label={tx('الماركات', 'Brands')}>
         {brands.map((b) => (

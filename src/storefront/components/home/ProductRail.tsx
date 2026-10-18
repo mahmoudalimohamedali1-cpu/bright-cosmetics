@@ -13,6 +13,7 @@ export function ProductRail({
   sub,
   products,
   to,
+  cta,
   tone,
   children,
 }: {
@@ -20,7 +21,8 @@ export function ProductRail({
   title: string
   sub?: string
   products: Product[]
-  to: string
+  to?: string
+  cta?: string
   tone?: 'blush'
   children?: ReactNode
 }) {
@@ -30,14 +32,18 @@ export function ProductRail({
     <section className={`v-rail ${tone ? `v-rail--${tone}` : ''}`} aria-labelledby={id}>
       <div className="v-wrap v-rail__head">
         <div>
-          <h2 id={id} className="v-h2 v-rail__h">
-            {title}
-          </h2>
+          {title && (
+            <h2 id={id} className="v-h2 v-rail__h">
+              {title}
+            </h2>
+          )}
           {sub && <p className="v-rail__sub">{sub}</p>}
         </div>
-        <Link to={to} className="v-rail__all">
-          {tx('شوفي الكل', 'See all')}
-        </Link>
+        {to && (
+          <Link to={to} className="v-rail__all">
+            {cta || tx('شوفي الكل', 'See all')}
+          </Link>
+        )}
       </div>
       {children}
       <ul className="v-rail__track" aria-label={title}>
@@ -52,7 +58,7 @@ export function ProductRail({
 }
 
 /* Shop by category: tabs over one rail; only categories the store actually stocks. */
-export function CategoryShelf({ products }: { products: Product[] }) {
+export function CategoryShelf({ products, title, sub }: { products: Product[]; title?: string; sub?: string }) {
   const { tx, pick } = useI18n()
   const cats = useMemo(() => {
     const order: Category[] = ['serum', 'cleanser', 'moisturizer', 'toner', 'eye', 'essence', 'mask', 'hair', 'sunscreen', 'makeup', 'lip']
@@ -65,8 +71,8 @@ export function CategoryShelf({ products }: { products: Product[] }) {
   return (
     <ProductRail
       id="v-cats-h"
-      title={tx('تسوقي حسب القسم.', 'Shop by category.')}
-      sub={tx('اختاري الخطوة اللي ناقصة روتينك.', 'Pick the step your routine is missing.')}
+      title={title ?? tx('تسوقي حسب القسم.', 'Shop by category.')}
+      sub={sub ?? tx('اختاري الخطوة اللي ناقصة روتينك.', 'Pick the step your routine is missing.')}
       products={list}
       to={`/shop/${active}`}
       tone="blush"

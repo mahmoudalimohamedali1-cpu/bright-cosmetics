@@ -29,6 +29,7 @@ export default function OrderDetail() {
   const { id } = useParams()
   const { tx, pick, money, num, pct, date, relTime, dir } = useI18n()
   const { toast, staff, online, can } = useAdmin()
+  const canEdit = can('orders.edit')
   const integrations = useIntegrations()
   const [busy, setBusy] = useState<'bosta' | 'wa' | null>(null)
   const navigate = useNavigate()
@@ -181,7 +182,7 @@ export default function OrderDetail() {
         hint: waApi
           ? tx('هيبعت رسالة تأكيد بالعربي والإنجليزي من رقم المتجر على واتساب، ويتسجّل التأكيد في سجل الطلب.', 'Sends a bilingual confirmation from the store’s WhatsApp number and records it in the timeline.')
           : tx('هيفتح واتساب برسالة تأكيد جاهزة بالعربي والإنجليزي، ويتسجّل التأكيد في سجل الطلب.', 'Opens WhatsApp with a ready bilingual confirmation and records it in the timeline.'),
-        button: (
+        button: canEdit ? (
           <div className="row" style={{ flexWrap: 'wrap' }}>
             <button className="btn btn--live" onClick={confirmWA} disabled={!customer || busy === 'wa'} aria-busy={busy === 'wa' || undefined}>
               <MessageCircle size={16} aria-hidden />
@@ -192,24 +193,24 @@ export default function OrderDetail() {
               {tx('اتأكد بالتليفون', 'Confirmed by phone')}
             </button>
           </div>
-        ),
+        ) : null,
       }
     else if (o.fulfillment === 'unfulfilled')
       next = {
         title: tx('تجهيز الطلب', 'Pack the order'),
         hint: tx('سحب القطع بالتشغيلات المكتوبة تحت، عشان الأقرب انتهاءً يخرج الأول.', 'Pick the lots listed below so the earliest expiry leaves first.'),
-        button: (
+        button: canEdit ? (
           <button className="btn btn--live" onClick={() => act(() => updateFulfillment(o.id, 'packed', staff), 'اتجهّز الطلب', 'Marked packed')}>
             <PackageCheck size={16} aria-hidden />
             {tx('تم التجهيز', 'Mark packed')}
           </button>
-        ),
+        ) : null,
       }
     else if (o.fulfillment === 'packed')
       next = {
         title: tx('تسليم لشركة الشحن', 'Hand to a courier'),
         hint: tx(`التوصيل لـ${pick(g?.name)} بياخد ${zone?.etaDays[0]}–${zone?.etaDays[1]} أيام.`, `Delivery to ${pick(g?.name)} takes ${zone?.etaDays[0]}–${zone?.etaDays[1]} days.`),
-        button: (
+        button: canEdit ? (
           <div className="row" style={{ flexWrap: 'wrap' }}>
             <select className="select" style={{ width: 130 }} value={courier} onChange={(e) => setCourier(e.target.value as Courier)} aria-label={tx('شركة الشحن', 'Courier')}>
               {COURIERS.map((c) => (
@@ -238,7 +239,7 @@ export default function OrderDetail() {
               </span>
             )}
           </div>
-        ),
+        ) : null,
       }
     else if (o.fulfillment === 'shipped')
       next = {
@@ -247,23 +248,23 @@ export default function OrderDetail() {
           o.payment === 'cod'
             ? tx(`تسجيل التسليم بيسجّل تحصيل ${money(o.total)} من ${o.courier ?? 'شركة الشحن'}.`, `Marking delivered records ${money(o.total)} collected via ${o.courier ?? 'the courier'}.`)
             : tx('الطلب مدفوع مسبقًا.', 'This order is prepaid.'),
-        button: (
+        button: canEdit ? (
           <button className="btn btn--live" onClick={() => act(() => updateFulfillment(o.id, 'delivered', staff), 'اتسلّم الطلب للعميل', 'Marked delivered')}>
             <Check size={16} aria-hidden />
             {tx('تم التسليم', 'Mark delivered')}
           </button>
-        ),
+        ) : null,
       }
     else if (o.paymentStatus === 'pending')
       next = {
         title: tx('تحصيل المبلغ', 'Collect payment'),
         hint: tx('التحصيل بيتسجّل لما الفلوس توصل من شركة الشحن.', 'Record it once the courier remits the cash.'),
-        button: (
+        button: canEdit ? (
           <button className="btn btn--live" onClick={() => act(() => markPaid(o.id, staff), 'اتسجّل التحصيل', 'Payment collected')}>
             <Wallet size={16} aria-hidden />
             {tx('تم التحصيل', 'Mark paid')}
           </button>
-        ),
+        ) : null,
       }
   }
 
@@ -312,7 +313,7 @@ export default function OrderDetail() {
                 <Printer size={16} aria-hidden />
                 {tx('طباعة الفاتورة', 'Print invoice')}
               </button>
-              {!cancelled && o.paymentStatus === 'pending' && o.fulfillment !== 'delivered' && (
+              {!cancelled && o.paymentStatus === 'pending' && o.fulfillment !== 'delivered' && canEdit && (
                 <button className="btn" onClick={() => act(() => markPaid(o.id, staff), 'اتسجّل التحصيل', 'Payment collected')}>
                   <Wallet size={16} aria-hidden />
                   {tx('تم التحصيل', 'Mark paid')}
@@ -343,7 +344,7 @@ export default function OrderDetail() {
                     <div className="strong">{next.title}</div>
                     <div className="small muted">{next.hint}</div>
                   </div>
-                  {next.button}
+                  {canEdit && next.button}
                 </div>
               </Pane>
             )}
@@ -462,29 +463,31 @@ export default function OrderDetail() {
             </Pane>
 
             <Pane title={tx('سجل الطلب', 'Timeline')}>
-              <div className="stack" style={{ gap: 8, marginBottom: 20 }}>
-                <label htmlFor="order-note" className="field__label">
-                  {tx('ملاحظة داخلية', 'Internal note')}
-                </label>
-                <textarea
-                  id="order-note"
-                  className="textarea"
-                  style={{ minHeight: 72 }}
-                  value={note}
-                  aria-invalid={!!noteErr}
-                  onChange={(e) => {
-                    setNote(e.target.value)
-                    if (noteErr) setNoteErr('')
-                  }}
-                  placeholder={tx('مثلًا: العميل طلب التوصيل بعد الساعة 5', 'For example: customer asked for delivery after 5 pm')}
-                />
-                <div className="row-between">
-                  <span className="field__error">{noteErr}</span>
-                  <button className="btn btn--sm" onClick={addNote}>
-                    {tx('إضافة ملاحظة', 'Add note')}
-                  </button>
+              {canEdit && (
+                <div className="stack" style={{ gap: 8, marginBottom: 20 }}>
+                  <label htmlFor="order-note" className="field__label">
+                    {tx('ملاحظة داخلية', 'Internal note')}
+                  </label>
+                  <textarea
+                    id="order-note"
+                    className="textarea"
+                    style={{ minHeight: 72 }}
+                    value={note}
+                    aria-invalid={!!noteErr}
+                    onChange={(e) => {
+                      setNote(e.target.value)
+                      if (noteErr) setNoteErr('')
+                    }}
+                    placeholder={tx('مثلًا: العميل طلب التوصيل بعد الساعة 5', 'For example: customer asked for delivery after 5 pm')}
+                  />
+                  <div className="row-between">
+                    <span className="field__error">{noteErr}</span>
+                    <button className="btn btn--sm" onClick={addNote}>
+                      {tx('إضافة ملاحظة', 'Add note')}
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
               <ol className="core-timeline">
                 {events.map((e, i) => (
                   <li key={`${e.at}-${i}`} data-kind={e.type === 'note' ? 'note' : e.type === 'cancelled' || e.type === 'returned' ? 'bad' : i === 0 ? 'first' : undefined}>

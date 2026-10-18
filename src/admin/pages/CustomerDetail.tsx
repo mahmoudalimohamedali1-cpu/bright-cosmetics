@@ -133,10 +133,12 @@ export default function CustomerDetail() {
                 {tx('بريد', 'Email')}
               </a>
             )}
-            <a className="btn btn--live" href={waLink(c.phone)} target="_blank" rel="noreferrer">
-              <MessageCircle size={16} aria-hidden />
-              {tx('واتساب', 'WhatsApp')}
-            </a>
+            {!readOnly && (
+              <a className="btn btn--live" href={waLink(c.phone)} target="_blank" rel="noreferrer">
+                <MessageCircle size={16} aria-hidden />
+                {tx('واتساب', 'WhatsApp')}
+              </a>
+            )}
           </>
         }
       />
@@ -199,7 +201,7 @@ export default function CustomerDetail() {
                     <span className="num small">{money(p.price)}</span>
                   </div>
                 ))}
-                {recMsg && (
+                {recMsg && !readOnly && (
                   <div>
                     <a className="btn btn--sm" href={waLink(c.phone, recMsg)} target="_blank" rel="noreferrer">
                       <MessageCircle size={14} aria-hidden />

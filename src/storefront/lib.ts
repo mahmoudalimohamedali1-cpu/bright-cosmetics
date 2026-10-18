@@ -2,6 +2,7 @@ import { useI18n } from '../i18n'
 import { useEffect, useMemo } from 'react'
 import { create } from 'zustand'
 import { useStore, stockOf } from '../store'
+import { resolveStorefront } from '../data/storefront'
 import type { Batch, Category, Origin, Product } from '../data/types'
 
 /* Storefront helpers. Only active products are ever shown to shoppers. */
@@ -52,12 +53,19 @@ export function inStock(p: Product) {
 
 export { PHONE_RE, normalizePhone, westernDigits } from '../lib/commerce'
 
+export function useStorefront() {
+  const settings = useStore((s) => s.settings)
+  return useMemo(() => resolveStorefront(settings), [settings])
+}
+
 export function useTitle(title: string | undefined) {
-  const { lang } = useI18n()
+  const { lang, pick } = useI18n()
+  const seoTitle = useStore((s) => s.settings.storefront?.seoTitle)
   useEffect(() => {
     const brand = lang === 'ar' ? 'برايت كوزمتكس' : 'Bright Cosmetics'
-    document.title = title ? `${title} | ${brand}` : brand
-  }, [title, lang])
+    const custom = seoTitle ? pick(seoTitle).trim() : ''
+    document.title = title ? `${title} | ${brand}` : custom || brand
+  }, [title, lang, seoTitle, pick])
 }
 
 /** Products in a routine step that suit the given category rule. Step 5 and 6 exclude lips/makeup. */

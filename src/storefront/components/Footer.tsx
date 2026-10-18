@@ -3,9 +3,11 @@ import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { CATEGORY_LABEL } from '../../data/catalog'
+import { resolveHref } from '../../data/storefront'
+import type { StoreLink } from '../../data/types'
 import { useI18n } from '../../i18n'
 import { useStore } from '../../store'
-import { CATEGORIES, brandSlug, useBrands } from '../lib'
+import { CATEGORIES, brandSlug, useBrands, useStorefront } from '../lib'
 import { SocialIcons } from './home/WildStrip'
 import { Wordmark } from './home/Glyphs'
 import '../home.css'
@@ -34,17 +36,30 @@ function useFitLine(dep: string) {
   return { box, line }
 }
 
+function FootLink({ link, children }: { link: StoreLink; children: string }) {
+  const settings = useStore((s) => s.settings)
+  const href = resolveHref(link.href, settings)
+  if (href.startsWith('/')) return <Link to={href}>{children}</Link>
+  const external = href.startsWith('http')
+  return (
+    <a href={href} {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
+      {children}
+    </a>
+  )
+}
+
 export function Footer() {
   const { tx, pick, money, lang } = useI18n()
+  const content = useStorefront()
   const zones = useStore((s) => s.zones)
   const settings = useStore((s) => s.settings)
   const brands = useBrands()
   const cairo = zones[0]
   const [email, setEmail] = useState('')
   const [joined, setJoined] = useState(false)
-  const slogan = tx('بشرتك، بس أحلى.', 'Your skin, only brighter.')
+  const slogan = pick(content.slogan).trim() || tx('بشرتك، بس أحلى.', 'Your skin, only brighter.')
   const { box, line } = useFitLine(slogan)
-  const wa = settings.whatsapp.replace(/\D/g, '')
+  const foot = content.footer
 
   const join = (e: FormEvent) => {
     e.preventDefault()
@@ -56,10 +71,10 @@ export function Footer() {
     <footer className="v-foot">
       <div className="v-wrap v-foot__grid">
         <div className="v-foot__club">
-          <h2 className="v-foot__h" id="v-club-h">{tx('انضمي لنادي برايت.', 'Join the Bright club.')}</h2>
+          <h2 className="v-foot__h" id="v-club-h">{pick(foot.clubTitle) || tx('انضمي لنادي برايت.', 'Join the Bright club.')}</h2>
           {joined ? (
             <p className="v-foot__ok" role="status">
-              {tx('اتسجّلتي. هنبعتلك أول عرض.', "You're in. First offer is on its way.")}
+              {pick(foot.clubOk) || tx('اتسجّلتي. هنبعتلك أول عرض.', "You're in. First offer is on its way.")}
             </p>
           ) : (
             <form className="v-news" onSubmit={join} aria-labelledby="v-club-h">
@@ -80,42 +95,47 @@ export function Footer() {
             </form>
           )}
           <p className="v-mono v-foot__note">
-            {tx('عروض وأول المنتجات الجديدة. من غير زحمة.', 'Offers and first look at new drops. No spam.')}
+            {pick(foot.clubNote) || tx('عروض وأول المنتجات الجديدة. من غير زحمة.', 'Offers and first look at new drops. No spam.')}
           </p>
           <Link to="/" className="v-foot__mark" aria-label={tx('برايت، الصفحة الرئيسية', 'Bright home')}>
             <Wordmark />
           </Link>
         </div>
 
-        <nav className="v-foot__col" aria-label={tx('الأقسام', 'Categories')}>
-          <h2 className="v-foot__ch">{tx('تسوّقي', 'Shop')}</h2>
-          <ul>
-            <li><Link to="/shop">{tx('كل المنتجات', 'All products')}</Link></li>
-            {CATEGORIES.slice(0, 6).map((c) => (
-              <li key={c}><Link to={`/shop/${c}`}>{pick(CATEGORY_LABEL[c])}</Link></li>
-            ))}
-          </ul>
-        </nav>
-        <nav className="v-foot__col" aria-label={tx('الماركات', 'Brands')}>
-          <h2 className="v-foot__ch">{tx('الماركات', 'Brands')}</h2>
-          <ul>
-            {brands.slice(0, 7).map(([b]) => (
-              <li key={b}><Link to={`/brand/${brandSlug(b)}`} lang="en"><bdi>{b}</bdi></Link></li>
-            ))}
-          </ul>
-        </nav>
-        <nav className="v-foot__col" aria-label={tx('المساعدة', 'Help')}>
-          <h2 className="v-foot__ch">{tx('مساعدة', 'Help')}</h2>
-          <ul>
-            <li><a href="#v-ship">{tx('الشحن والدفع', 'Shipping')}</a></li>
-            <li><a href={`mailto:${settings.email}?subject=${encodeURIComponent('Return')}`}>{tx('الاسترجاع', 'Returns')}</a></li>
-            <li><a href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer">{tx('كلّمينا واتساب', 'Contact')}</a></li>
-            <li><Link to="/account">{tx('تتبّعي طلبك', 'Track your order')}</Link></li>
-            <li><Link to="/routine">{tx('اعرفي بشرتك', 'Skin quiz')}</Link></li>
-            <li><Link to="/admin">{tx('لوحة التحكم', 'Admin')}</Link></li>
-          </ul>
-          <SocialIcons className="v-foot__social" />
-        </nav>
+        {foot.columns.map((col, i) => (
+          <nav className="v-foot__col" aria-label={pick(col.title)} key={col.id}>
+            <h2 className="v-foot__ch">{pick(col.title)}</h2>
+            <ul>
+              {col.mode === 'categories' && (
+                <>
+                  <li><Link to="/shop">{tx('كل المنتجات', 'All products')}</Link></li>
+                  {CATEGORIES.slice(0, col.limit).map((c) => (
+                    <li key={c}><Link to={`/shop/${c}`}>{pick(CATEGORY_LABEL[c])}</Link></li>
+                  ))}
+                </>
+              )}
+              {col.mode === 'brands' &&
+                brands.slice(0, col.limit).map(([name]) => (
+                  <li key={name}>
+                    <Link to={`/brand/${brandSlug(name)}`} lang="en"><bdi>{name}</bdi></Link>
+                  </li>
+                ))}
+              {col.mode === 'links' &&
+                col.links.slice(0, col.limit || col.links.length).map((link) => {
+                  const label = pick(link.label)
+                  const href = resolveHref(link.href, settings)
+                  const page = content.pages.find((p) => `/info/${p.slug}` === href)
+                  if (!label || (page && !page.published)) return null
+                  return (
+                    <li key={link.id}>
+                      <FootLink link={link}>{label}</FootLink>
+                    </li>
+                  )
+                })}
+            </ul>
+            {i === foot.columns.length - 1 && <SocialIcons className="v-foot__social" />}
+          </nav>
+        ))}
       </div>
 
       <div className="v-foot__slogan" ref={box} aria-hidden="true">
@@ -124,10 +144,14 @@ export function Footer() {
 
       <div className="v-wrap v-foot__legal">
         <p id="v-ship">
-          {tx(
-            `الدفع عند الاستلام في كل المحافظات. التوصيل في ${cairo.name.ar} خلال ${cairo.etaDays[0]}–${cairo.etaDays[1]} يوم، ومجاني فوق ${money(cairo.freeOver)}.`,
-            `Cash on delivery in every governorate. ${cairo.name.en} in ${cairo.etaDays[0]}–${cairo.etaDays[1]} days, free over ${money(cairo.freeOver)}.`,
-          )}
+          {foot.legalMode === 'custom' && pick(foot.legal)
+            ? pick(foot.legal)
+            : cairo
+              ? tx(
+                  `الدفع عند الاستلام في كل المحافظات. التوصيل في ${cairo.name.ar} خلال ${cairo.etaDays[0]}–${cairo.etaDays[1]} يوم، ومجاني فوق ${money(cairo.freeOver)}.`,
+                  `Cash on delivery in every governorate. ${cairo.name.en} in ${cairo.etaDays[0]}–${cairo.etaDays[1]} days, free over ${money(cairo.freeOver)}.`,
+                )
+              : pick(foot.legal)}
         </p>
         <p>
           <bdi>© 2026 Bright</bdi> · <a href={`mailto:${settings.email}`}>{settings.email}</a> · <span dir="ltr">{settings.whatsapp}</span>

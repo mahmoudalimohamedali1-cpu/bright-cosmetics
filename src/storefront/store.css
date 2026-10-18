@@ -581,6 +581,7 @@
 
 /* ---------- page heads ---------- */
 .sf-page { padding-block: var(--s-5) var(--s-9); }
+.sf-prose { max-width: 68ch; margin-top: var(--s-4); white-space: pre-wrap; line-height: 1.75; }
 .sf-page--flush { padding-bottom: 0; }
 .sf-crumbs {
   display: flex;
@@ -688,6 +689,15 @@
 .sf-empty > .sf-muted { max-width: 52ch; }
 
 /* ---------- product page ---------- */
+.sf-previewbar {
+  position: sticky;
+  top: var(--header-h);
+  z-index: 30;
+  padding: 10px 16px;
+  background: var(--lilac);
+  color: var(--plum);
+  text-align: center;
+}
 .sf-pdp__top {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);

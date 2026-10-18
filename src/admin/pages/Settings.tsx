@@ -163,7 +163,7 @@ export default function Settings() {
                   </div>
                 </div>
               </Pane>
-              <Pane title={tx('شريط الإعلان', 'Announcement bar')} description={tx('السطر اللي فوق المتجر', 'The line above the storefront')}>
+              <Pane title={tx('شريط الإعلان', 'Announcement bar')} description={tx('سطر في الشريط فوق المتجر. الأقسام والقائمة والفوتر والصفحات من واجهة المتجر.', 'One line in the bar above the store. Sections, menu, footer and pages are on the storefront page.')}>
                 <div className="gr-form">
                   <Field label={tx('بالعربي', 'Arabic')} hint={`${LRI}${num(draft.announcement.ar.length)} / 120${PDI}`} error={draft.announcement.ar.length > 120 ? errors.announcement : undefined} htmlFor="st-aar">
                     <input id="st-aar" className="input" dir="rtl" lang="ar" value={draft.announcement.ar} onChange={(e) => set('announcement', { ...draft.announcement, ar: e.target.value })} />

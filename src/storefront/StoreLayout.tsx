@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
+import { resolveStorefront } from '../data/storefront'
 import { useI18n } from '../i18n'
 import { useStore } from '../store'
 import { useUi } from './lib'
@@ -24,7 +25,19 @@ function ScrollToTop() {
 }
 
 export default function StoreLayout() {
-  const { tx, dir, lang } = useI18n()
+  const { tx, dir, lang, pick } = useI18n()
+  const settings = useStore((s) => s.settings)
+  useEffect(() => {
+    const d = pick(resolveStorefront(settings).seoDescription).trim()
+    if (!d) return
+    let meta = document.querySelector('meta[name="description"]')
+    if (!meta) {
+      meta = document.createElement('meta')
+      meta.setAttribute('name', 'description')
+      document.head.appendChild(meta)
+    }
+    meta.setAttribute('content', d)
+  }, [settings, pick])
   // With an API, the catalogue, zones, settings and reviews come from the server.
   useEffect(() => {
     void loadPublic()

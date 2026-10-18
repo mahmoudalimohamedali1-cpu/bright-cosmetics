@@ -15,6 +15,7 @@ export const PAGE_PERMS: Record<string, Permission[]> = {
   '/admin/discounts': ['marketing.edit'],
   '/admin/analytics': ['analytics.view'],
   '/admin/shipping': ['settings.edit'],
+  '/admin/storefront': ['settings.edit'],
   '/admin/settings': SETTINGS_ANY,
 }
 

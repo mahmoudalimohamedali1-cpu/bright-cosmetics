@@ -1,18 +1,23 @@
 import { useEffect, useRef, useState } from 'react'
-import type { FormEvent } from 'react'
+import type { FormEvent, ReactNode } from 'react'
 import { Link, NavLink, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { ChevronDown, Heart, Search, ShoppingBag, User, X } from 'lucide-react'
 import { CATEGORY_LABEL } from '../../data/catalog'
+import { resolveHref } from '../../data/storefront'
+import type { StoreNavItem } from '../../data/types'
 import { useI18n } from '../../i18n'
 import { useStore } from '../../store'
-import { CATEGORIES, IMPORTED_ORIGINS, brandSlug, useActiveProducts, useBrands } from '../lib'
+import { CATEGORIES, brandSlug, useActiveProducts, useBrands, useStorefront } from '../lib'
 import { Door } from './Door'
 import { Ticker } from './home/Ticker'
 import { Wordmark } from './home/Glyphs'
 import { useScrollFrame } from './home/scroll'
 import '../home.css'
 
-const IMPORTED_Q = `/shop?origin=${IMPORTED_ORIGINS.join(',')}`
+function ShopLink({ href, className, children }: { href: string; className?: string; children: ReactNode }) {
+  if (href.startsWith('/')) return <Link to={href} className={className}>{children}</Link>
+  return <a href={href} className={className} target={href.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer">{children}</a>
+}
 
 function SearchForm({ id, autoFocus }: { id: string; autoFocus?: boolean }) {
   const { tx } = useI18n()
@@ -46,8 +51,29 @@ function SearchForm({ id, autoFocus }: { id: string; autoFocus?: boolean }) {
   )
 }
 
+function NavHref({ item, className, children, onClick }: { item: StoreNavItem; className?: string; children: ReactNode; onClick?: () => void }) {
+  const settings = useStore((s) => s.settings)
+  const href = item.kind === 'categories' ? '/shop' : resolveHref(item.href, settings)
+  if (href.startsWith('/')) {
+    return (
+      <NavLink to={href} end={href === '/'} className={className} onClick={onClick}>
+        {children}
+      </NavLink>
+    )
+  }
+  return (
+    <a href={href} className={className} target="_blank" rel="noopener noreferrer" onClick={onClick}>
+      {children}
+    </a>
+  )
+}
+
 export function Header() {
   const { tx, pick, toggle, lang, num } = useI18n()
+  const content = useStorefront()
+  const settings = useStore((s) => s.settings)
+  const hiddenPages = new Set(content.pages.filter((p) => !p.published).map((p) => `/info/${p.slug}`))
+  const nav = content.nav.filter((n) => n.enabled && !hiddenPages.has(resolveHref(n.href, settings)) && (pick(n.label) || n.kind !== 'link'))
   const count = useStore((s) => s.cart.reduce((n, l) => n + l.qty, 0))
   const wish = useStore((s) => s.wishlist.length)
   const setCartOpen = useStore((s) => s.setCartOpen)
@@ -138,20 +164,25 @@ export function Header() {
         <div className="v-header__bar">
           <div className="v-header__start">
             <nav className="v-nav v-desk" aria-label={tx('التصفح الرئيسي', 'Main')}>
-              <NavLink to="/" end className="v-nav__a">
-                {tx('الرئيسية', 'Home')}
-              </NavLink>
-              <button type="button" className="v-nav__a" aria-expanded={panel === 'cat'} aria-controls="v-panel-cat" onClick={() => togglePanel('cat')}>
-                {tx('المنتجات', 'Products')}
-                <ChevronDown size={14} aria-hidden="true" />
-              </button>
-              <button type="button" className="v-nav__a" aria-expanded={panel === 'brand'} aria-controls="v-panel-brand" onClick={() => togglePanel('brand')}>
-                {tx('الماركات', 'Brands')}
-                <ChevronDown size={14} aria-hidden="true" />
-              </button>
-              <NavLink to="/routine" className="v-nav__a">
-                {tx('اعرفي بشرتك', 'Skin quiz')}
-              </NavLink>
+              {nav.map((item) =>
+                item.kind === 'link' ? (
+                  <NavHref key={item.id} item={item} className="v-nav__a">
+                    {pick(item.label)}
+                  </NavHref>
+                ) : (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className="v-nav__a"
+                    aria-expanded={panel === (item.kind === 'categories' ? 'cat' : 'brand')}
+                    aria-controls={item.kind === 'categories' ? 'v-panel-cat' : 'v-panel-brand'}
+                    onClick={() => togglePanel(item.kind === 'categories' ? 'cat' : 'brand')}
+                  >
+                    {pick(item.label) || tx(item.kind === 'categories' ? 'المنتجات' : 'الماركات', item.kind === 'categories' ? 'Products' : 'Brands')}
+                    <ChevronDown size={14} aria-hidden="true" />
+                  </button>
+                ),
+              )}
             </nav>
             <div className="v-mob v-header__mobstart">
               <button type="button" className="v-menu" onClick={() => setMobile(true)} aria-label={tx('افتحي القائمة', 'Open menu')}>
@@ -204,16 +235,16 @@ export function Header() {
                   </Link>
                 </li>
               ))}
-              <li>
-                <Link to="/shop?origin=KR" className="v-mega__a">
-                  <span>{tx('كوري', 'K-beauty')}</span>
-                </Link>
-              </li>
-              <li>
-                <Link to={IMPORTED_Q} className="v-mega__a">
-                  <span>{tx('مستورد', 'Imported')}</span>
-                </Link>
-              </li>
+              {nav
+                .filter((n) => n.kind === 'categories')
+                .flatMap((n) => n.children)
+                .map((ch) => (
+                  <li key={ch.id}>
+                    <ShopLink href={resolveHref(ch.href, settings)} className="v-mega__a">
+                      <span>{pick(ch.label)}</span>
+                    </ShopLink>
+                  </li>
+                ))}
             </ul>
           </div>
         </div>
@@ -238,11 +269,21 @@ export function Header() {
           <SearchForm id="v-q-menu" />
           <nav aria-label={tx('التصفح الرئيسي', 'Main')}>
             <ul className="v-mmenu__big">
-              <li><Link to="/">{tx('الرئيسية', 'Home')}</Link></li>
-              <li><Link to="/shop">{tx('كل المنتجات', 'All products')}</Link></li>
-              <li><Link to="/routine">{tx('اعرفي بشرتك', 'Skin quiz')}</Link></li>
-              <li><Link to="/shop?origin=KR">{tx('كوري', 'K-beauty')}</Link></li>
-              <li><Link to={IMPORTED_Q}>{tx('مستورد', 'Imported')}</Link></li>
+              {nav.map((item) =>
+                item.kind === 'brands' ? null : (
+                  <li key={item.id}>
+                    <NavHref item={item}>{pick(item.label) || tx('المنتجات', 'Products')}</NavHref>
+                  </li>
+                ),
+              )}
+              {nav
+                .filter((n) => n.kind === 'categories')
+                .flatMap((n) => n.children)
+                .map((ch) => (
+                  <li key={ch.id}>
+                    <ShopLink href={resolveHref(ch.href, settings)}>{pick(ch.label)}</ShopLink>
+                  </li>
+                ))}
             </ul>
             <ul className="v-mmenu__row">
               <li><Link to="/account">{tx('حسابي وطلباتي', 'My account and orders')}</Link></li>
@@ -253,18 +294,26 @@ export function Header() {
                 </button>
               </li>
             </ul>
-            <h3 className="v-mmenu__h">{tx('الأقسام', 'Categories')}</h3>
-            <ul className="v-mmenu__two">
-              {CATEGORIES.map((c) => (
-                <li key={c}><Link to={`/shop/${c}`}>{pick(CATEGORY_LABEL[c])}</Link></li>
-              ))}
-            </ul>
-            <h3 className="v-mmenu__h">{tx('الماركات', 'Brands')}</h3>
-            <ul className="v-mmenu__two">
-              {brands.map(([b]) => (
-                <li key={b}><Link to={`/brand/${brandSlug(b)}`} lang="en"><bdi>{b}</bdi></Link></li>
-              ))}
-            </ul>
+            {nav.some((n) => n.kind === 'categories') && (
+              <>
+                <h3 className="v-mmenu__h">{tx('الأقسام', 'Categories')}</h3>
+                <ul className="v-mmenu__two">
+                  {CATEGORIES.map((c) => (
+                    <li key={c}><Link to={`/shop/${c}`}>{pick(CATEGORY_LABEL[c])}</Link></li>
+                  ))}
+                </ul>
+              </>
+            )}
+            {nav.some((n) => n.kind === 'brands') && (
+              <>
+                <h3 className="v-mmenu__h">{tx('الماركات', 'Brands')}</h3>
+                <ul className="v-mmenu__two">
+                  {brands.map(([b]) => (
+                    <li key={b}><Link to={`/brand/${brandSlug(b)}`} lang="en"><bdi>{b}</bdi></Link></li>
+                  ))}
+                </ul>
+              </>
+            )}
           </nav>
         </div>
       </Door>

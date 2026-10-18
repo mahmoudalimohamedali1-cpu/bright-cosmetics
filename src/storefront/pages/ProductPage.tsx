@@ -4,7 +4,7 @@ import { Link, useParams } from 'react-router-dom'
 import { BadgeCheck, Heart, Minus, Moon, Plus, Sun, Truck } from 'lucide-react'
 import { CATEGORY_LABEL, CONCERN_LABEL, SKIN_LABEL, STEP_LABEL, originName } from '../../data/catalog'
 import { GOVERNORATES } from '../../data/seed'
-import type { SkinType } from '../../data/types'
+import type { Product, SkinType } from '../../data/types'
 import { ProductVisual } from '../../components/ProductVisual'
 import { useI18n } from '../../i18n'
 import { stockOf, useProduct, useStore, zoneFor } from '../../store'
@@ -38,9 +38,11 @@ function Fold({ title, children, open }: { title: string; children: ReactNode; o
   )
 }
 
-function ProductView({ id }: { id: string }) {
+export function ProductView({ id, draft }: { id: string; draft?: Product }) {
   const { tx, pick, num, money, date, lang } = useI18n()
-  const p = useProduct(id)!
+  const stored = useProduct(draft ? undefined : id)
+  const p = (draft ?? stored)!
+  const preview = !!draft
   const viewed = useStore((s) => s.viewed)
   const addToCart = useStore((s) => s.addToCart)
   const toggleWish = useStore((s) => s.toggleWish)
@@ -59,8 +61,9 @@ function ProductView({ id }: { id: string }) {
 
   useTitle(`${p.brand} ${pick(p.name)}`)
   useEffect(() => {
+    if (preview) return
     viewed(p.id)
-  }, [p.id, viewed])
+  }, [p.id, preview, viewed])
 
   const stock = stockOf(p)
   const room = Math.max(0, stock - inCart)
@@ -212,7 +215,7 @@ function ProductView({ id }: { id: string }) {
               {room > 0 ? (
                 <div className="sf-buyrow">
                   <Stepper value={Math.min(qty, room)} onChange={setQty} max={room} label={tx('الكمية', 'Quantity')} />
-                  <button type="button" className="sf-btn sf-btn--lemon sf-btn--lg sf-btn--grow" onClick={() => addToCart(p.id, Math.min(qty, room))}>
+                  <button type="button" className="sf-btn sf-btn--lemon sf-btn--lg sf-btn--grow" disabled={preview} onClick={() => { if (!preview) addToCart(p.id, Math.min(qty, room)) }}>
                     {tx('أضيفي للسلة', 'Add to bag')}
                     <Arrow />
                   </button>
@@ -221,7 +224,7 @@ function ProductView({ id }: { id: string }) {
                     className="sf-iconbtn sf-iconbtn--lg"
                     aria-pressed={wished}
                     aria-label={wished ? tx('شيليه من المفضلة', 'Remove from wishlist') : tx('احفظيه في المفضلة', 'Save to wishlist')}
-                    onClick={() => toggleWish(p.id)}
+                    onClick={() => { if (!preview) toggleWish(p.id) }}
                   >
                     <Heart size={20} aria-hidden="true" fill={wished ? 'currentColor' : 'none'} />
                   </button>
@@ -233,7 +236,7 @@ function ProductView({ id }: { id: string }) {
                       ? tx('المنتج ده خلص. احفظيه في المفضلة عشان يبقى قدامك.', 'This product is sold out. Save it to your wishlist to keep it handy.')
                       : tx('كل الكمية المتاحة في سلتك.', 'All available stock is in your bag.')}
                   </p>
-                  <button type="button" className="sf-btn sf-btn--quiet" aria-pressed={wished} onClick={() => toggleWish(p.id)}>
+                  <button type="button" className="sf-btn sf-btn--quiet" aria-pressed={wished} disabled={preview} onClick={() => { if (!preview) toggleWish(p.id) }}>
                     <Heart size={18} aria-hidden="true" fill={wished ? 'currentColor' : 'none'} />
                     {wished ? tx('محفوظ في المفضلة', 'Saved to wishlist') : tx('احفظيه في المفضلة', 'Save to wishlist')}
                   </button>

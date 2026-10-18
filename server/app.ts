@@ -6,6 +6,7 @@ import { createMiddleware } from 'hono/factory'
 import type { Customer, Discount, Order, OrderEvent, Product, Review, Settings, Shipment, ShippingZone, Staff } from '../src/data/types'
 import { normalizePhone, PHONE_RE } from '../src/lib/commerce'
 import { changedKeys, isRole, PERMISSION_LABEL, writePermission } from '../src/lib/permissions'
+import { sanitizeStorefront } from '../src/data/storefront'
 import type { Permission } from '../src/lib/permissions'
 import { EVENT_TYPES, funnelStats, liveStats, recordEvent } from './analytics'
 import type { EventType } from './analytics'
@@ -456,6 +457,12 @@ function stamp(collection: string, before: AnyDoc | undefined, after: AnyDoc, me
   return after
 }
 
+/** Storefront copy is rendered on every shop page: store only the cleaned shape, never raw input. */
+const cleanSettings = (doc: unknown) => {
+  const o = doc as Partial<Settings>
+  return o && typeof o === 'object' && o.storefront !== undefined ? { ...o, storefront: sanitizeStorefront(o.storefront) } : doc
+}
+
 const auditWrite = (me: Me, collection: string, id: string, before: AnyDoc | undefined, after: AnyDoc | undefined) => {
   if (!after) audit(me, collection, id, 'delete')
   else if (!before) audit(me, collection, id, 'create')
@@ -467,7 +474,7 @@ app.put('/api/admin/settings', need('settings.edit'), async (c) => {
   const b = await readJson(c)
   if (!b || typeof b !== 'object' || Array.isArray(b)) return fail(c, 400, 'bad_doc', { ar: 'إعدادات غير صالحة.', en: 'Invalid settings.' })
   const before = getSettings()
-  const rev = put('settings', 'main', { ...before, ...(b as Partial<Settings>) })
+  const rev = put('settings', 'main', { ...before, ...(cleanSettings(b) as Partial<Settings>) })
   auditWrite(me, 'settings', 'main', before as unknown as AnyDoc, getSettings() as unknown as AnyDoc)
   return c.json({ settings: getSettings(), rev })
 })
@@ -526,6 +533,7 @@ app.post('/api/admin/batch', async (c) => {
     const okColl = typeof o.collection === 'string' && (isCollection(o.collection) || (o.collection === 'settings' && o.id === 'main' && o.op === 'put'))
     if (!okColl || typeof o.id !== 'string' || (o.op !== 'put' && o.op !== 'delete') || (o.op === 'put' && o.collection !== 'settings' && !validDoc(o.doc, o.id)) || (o.op === 'put' && (typeof o.doc !== 'object' || !o.doc)))
       return fail(c, 400, 'bad_op', { ar: 'عملية غير صالحة في الدفعة.', en: 'Invalid operation in batch.' }, { op: { collection: o.collection, id: o.id, op: o.op } })
+    if (o.collection === 'settings' && o.op === 'put') o.doc = cleanSettings(o.doc)
   }
   const result = tx(() => {
     const denied: Denied[] = []

@@ -126,10 +126,22 @@ export function FacebookIcon({ size = 20 }: { size?: number }) {
 
 /** The lemon elliptical pill: the one call to action per viewport. */
 export function Pill({ to, children, className }: { to: string; children: ReactNode; className?: string }) {
-  return (
-    <Link to={to} className={`v-pill ${className ?? ''}`}>
+  const inner = (
+    <>
       <span className="v-pill__t">{children}</span>
       <ArrowRight size={20} strokeWidth={1.75} className="v-flip" aria-hidden="true" />
+    </>
+  )
+  if (!to.startsWith('/')) {
+    return (
+      <a href={to} className={`v-pill ${className ?? ''}`} target={to.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer">
+        {inner}
+      </a>
+    )
+  }
+  return (
+    <Link to={to} className={`v-pill ${className ?? ''}`}>
+      {inner}
     </Link>
   )
 }

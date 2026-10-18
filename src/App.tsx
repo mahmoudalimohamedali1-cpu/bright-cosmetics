@@ -10,6 +10,9 @@ import Wishlist from './storefront/pages/Wishlist'
 import Routine from './storefront/pages/Routine'
 import Account from './storefront/pages/Account'
 import NotFound from './storefront/pages/NotFound'
+import InfoPage from './storefront/pages/InfoPage'
+import DraftPreview from './storefront/pages/DraftPreview'
+import { Framed } from './storefront/components/PageFrame'
 
 // The admin is its own bundle: shoppers never download it.
 const AdminApp = lazy(() => import('./admin/AdminApp'))
@@ -27,17 +30,19 @@ export default function App() {
       />
       <Route element={<StoreLayout />}>
         <Route index element={<Home />} />
-        <Route path="shop" element={<Shop />} />
-        <Route path="shop/:category" element={<Shop />} />
-        <Route path="brand/:brand" element={<Shop />} />
-        <Route path="search" element={<Shop />} />
-        <Route path="p/:slug" element={<ProductPage />} />
-        <Route path="checkout" element={<Checkout />} />
+        <Route path="shop" element={<Framed id="shop"><Shop /></Framed>} />
+        <Route path="shop/:category" element={<Framed id="shop"><Shop /></Framed>} />
+        <Route path="brand/:brand" element={<Framed id="shop"><Shop /></Framed>} />
+        <Route path="search" element={<Framed id="shop"><Shop /></Framed>} />
+        <Route path="p/:slug" element={<Framed id="product"><ProductPage /></Framed>} />
+        <Route path="checkout" element={<Framed id="checkout"><Checkout /></Framed>} />
         <Route path="order/:id" element={<OrderConfirmation />} />
-        <Route path="wishlist" element={<Wishlist />} />
-        <Route path="routine" element={<Routine />} />
-        <Route path="account" element={<Account />} />
-        <Route path="*" element={<NotFound />} />
+        <Route path="wishlist" element={<Framed id="wishlist"><Wishlist /></Framed>} />
+        <Route path="routine" element={<Framed id="routine"><Routine /></Framed>} />
+        <Route path="account" element={<Framed id="account"><Account /></Framed>} />
+        <Route path="info/:slug" element={<InfoPage />} />
+        <Route path="preview" element={<DraftPreview />} />
+        <Route path="*" element={<Framed id="missing"><NotFound /></Framed>} />
       </Route>
     </Routes>
   )
