@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { BadgeCheck, Heart, Minus, Moon, Plus, Sun, Truck } from 'lucide-react'
-import { CATEGORY_LABEL, CONCERN_LABEL, SKIN_LABEL, STEP_LABEL, originName } from '../../data/catalog'
+import { CONCERN_LABEL, SKIN_LABEL, STEP_LABEL, originName } from '../../data/catalog'
 import { GOVERNORATES } from '../../data/seed'
 import type { Product, SkinType } from '../../data/types'
 import { ProductVisual } from '../../components/ProductVisual'
@@ -15,6 +15,7 @@ import { ReviewForm } from '../components/ReviewForm'
 import { Arrow, Price, Stars, Stepper } from '../components/bits'
 import { brandSlug, fefoBatch, stepCategoryOk, useActiveProducts, useTitle } from '../lib'
 import NotFound from './NotFound'
+import { useCategories } from '../../lib/useCategories'
 
 const SKINS: SkinType[] = ['oily', 'dry', 'combination', 'sensitive', 'normal']
 
@@ -40,6 +41,7 @@ function Fold({ title, children, open }: { title: string; children: ReactNode; o
 
 export function ProductView({ id, draft }: { id: string; draft?: Product }) {
   const { tx, pick, num, money, date, lang } = useI18n()
+  const { label: catLabel, all: allCats } = useCategories()
   const stored = useProduct(draft ? undefined : id)
   const p = (draft ?? stored)!
   const preview = !!draft
@@ -91,14 +93,14 @@ export function ProductView({ id, draft }: { id: string; draft?: Product }) {
         .filter(
           (x) =>
             x.id !== p.id &&
-            stepCategoryOk(x) &&
+            stepCategoryOk(x, allCats) &&
             Math.abs(x.routineStep - p.routineStep) === 1 &&
             x.skinTypes.some((s) => p.skinTypes.includes(s)) &&
             stockOf(x) > 0,
         )
         .sort((a, b) => a.routineStep - b.routineStep || b.rating - a.rating)
         .slice(0, 4),
-    [products, p],
+    [products, p, allCats],
   )
   const recently = useMemo(
     () =>
@@ -124,7 +126,7 @@ export function ProductView({ id, draft }: { id: string; draft?: Product }) {
         <nav className="sf-crumbs" aria-label={tx('مسار الصفحة', 'Breadcrumb')}>
           <Link to="/">{tx('الرئيسية', 'Home')}</Link>
           <span aria-hidden="true">/</span>
-          <Link to={`/shop/${p.category}`}>{pick(CATEGORY_LABEL[p.category])}</Link>
+          <Link to={`/shop/${p.category}`}>{pick(catLabel(p.category))}</Link>
           <span aria-hidden="true">/</span>
           <span aria-current="page">{name}</span>
         </nav>

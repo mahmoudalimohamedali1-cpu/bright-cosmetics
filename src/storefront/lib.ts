@@ -3,13 +3,12 @@ import { useEffect, useMemo } from 'react'
 import { create } from 'zustand'
 import { useStore, stockOf } from '../store'
 import { resolveStorefront } from '../data/storefront'
-import type { Batch, Category, Origin, Product } from '../data/types'
+import type { Batch, CategoryDef, Origin, Product } from '../data/types'
 
 /* Storefront helpers. Only active products are ever shown to shoppers. */
 
 export const IMPORTED_ORIGINS: Origin[] = ['FR', 'US', 'JP', 'CA', 'DE', 'CN']
 export const ALL_ORIGINS: Origin[] = ['KR', ...IMPORTED_ORIGINS, 'EG']
-export const CATEGORIES: Category[] = ['cleanser', 'toner', 'essence', 'serum', 'eye', 'mask', 'moisturizer', 'sunscreen', 'hair', 'makeup', 'lip']
 
 export function useActiveProducts() {
   const products = useStore((s) => s.products)
@@ -61,9 +60,10 @@ export function useTitle(title: string | undefined) {
   }, [title, lang, seoTitle, pick])
 }
 
-/** Products in a routine step that suit the given category rule. Step 5 and 6 exclude lips/makeup. */
-export function stepCategoryOk(p: Product) {
-  return p.category !== 'lip' && p.category !== 'makeup' && p.category !== 'hair'
+/** Only skincare categories belong in a routine (the owner marks each category; hair, makeup and lips are not). */
+export function stepCategoryOk(p: Product, cats: CategoryDef[]) {
+  const c = cats.find((x) => x.id === p.category)
+  return c ? c.skincare : p.category !== 'lip' && p.category !== 'makeup' && p.category !== 'hair'
 }
 
 export function useCartLines() {

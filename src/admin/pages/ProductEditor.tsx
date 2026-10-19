@@ -7,12 +7,13 @@ import type { Bi } from '../../i18n'
 import { useStore } from '../../store'
 import { Badge, Drawer, Empty, Field, PageHeader, Pane, Seg, useAdmin } from '../ui'
 import { ProductVisual } from '../../components/ProductVisual'
-import { CATEGORY_LABEL, CONCERN_LABEL, SKIN_LABEL, STEP_LABEL, originName } from '../../data/catalog'
+import { CONCERN_LABEL, SKIN_LABEL, STEP_LABEL, originName } from '../../data/catalog'
 import type { Batch, Category, Concern, Origin, Product, ProductStatus, SkinType } from '../../data/types'
 import { daysUntil } from '../../lib/metrics'
 import { uid } from '../../lib/rand'
 import { Chip } from '../parts/core/ui'
 import { today } from '../parts/core/lib'
+import { useCategories } from '../../lib/useCategories'
 
 const ORIGINS: Origin[] = ['KR', 'JP', 'FR', 'US', 'CA', 'DE', 'CN', 'EG']
 const SKINS: SkinType[] = ['oily', 'dry', 'combination', 'sensitive', 'normal']
@@ -67,6 +68,7 @@ export default function ProductEditor() {
   const { id } = useParams()
   const isNew = !id || id === 'new'
   const { tx, pick, money, num, pct, date, lang } = useI18n()
+  const { label: catLabel, all: allCats } = useCategories()
   const { toast, staff, can } = useAdmin()
   // View-only roles see the product as-is: every field disabled, no save or delete.
   const readOnly = !can('products.edit')
@@ -662,9 +664,9 @@ export default function ProductEditor() {
               </div>
               <Field label={tx('الفئة', 'Category')} htmlFor="f-cat">
                 <select id="f-cat" className="select" value={d.category} onChange={(e) => set('category', e.target.value as Category)}>
-                  {(Object.keys(CATEGORY_LABEL) as Category[]).map((c) => (
+                  {[...allCats.map((c) => c.id), ...(allCats.some((c) => c.id === d.category) ? [] : [d.category])].map((c) => (
                     <option key={c} value={c}>
-                      {pick(CATEGORY_LABEL[c])}
+                      {pick(catLabel(c))}
                     </option>
                   ))}
                 </select>

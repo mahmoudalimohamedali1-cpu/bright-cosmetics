@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Moon, RefreshCw, Sun, SunMoon } from 'lucide-react'
-import type { Concern, Product, SkinType } from '../../data/types'
+import type { CategoryDef, Concern, Product, SkinType } from '../../data/types'
 import { CONCERN_LABEL, SKIN_LABEL, STEP_LABEL } from '../../data/catalog'
 import { ProductVisual } from '../../components/ProductVisual'
+import { useCategories } from '../../lib/useCategories'
 import { useI18n } from '../../i18n'
 import { stockOf, useStore } from '../../store'
 import { Arrow, Back, Stars } from '../components/bits'
@@ -23,12 +24,12 @@ function stepsFor(t: Time) {
 }
 
 /** Ranked candidates for one routine step. */
-function candidates(products: Product[], step: number, a: Required<Answers>) {
+function candidates(products: Product[], step: number, a: Required<Answers>, cats: CategoryDef[]) {
   const times = a.time === 'both' ? ['am', 'pm'] : [a.time]
   const pool = products.filter(
     (p) =>
       p.routineStep === step &&
-      stepCategoryOk(p) &&
+      stepCategoryOk(p, cats) &&
       stockOf(p) > 0 &&
       p.skinTypes.includes(a.skin) &&
       p.routineTime.some((t) => times.includes(t)),
@@ -45,6 +46,7 @@ function candidates(products: Product[], step: number, a: Required<Answers>) {
 
 export default function Routine() {
   const { tx, pick, num, money } = useI18n()
+  const { all: allCats } = useCategories()
   useTitle(tx('اعرفي روتينك', 'Routine finder'))
   const products = useActiveProducts()
   const addToCart = useStore((s) => s.addToCart)
@@ -99,13 +101,13 @@ export default function Routine() {
     const full = a as Required<Answers>
     return stepsFor(full.time)
       .map((step) => {
-        const list = candidates(products, step, full)
+        const list = candidates(products, step, full, allCats)
         if (!list.length) return undefined
         const i = (swap[step] ?? 0) % list.length
         return { step, product: list[i], alts: list.length }
       })
       .filter((x): x is { step: number; product: Product; alts: number } => !!x)
-  }, [done, a, products, swap])
+  }, [done, a, products, swap, allCats])
   const total = plan.reduce((s, x) => s + x.product.price, 0)
 
   if (done && q >= questions.length) {

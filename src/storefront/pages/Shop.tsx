@@ -3,13 +3,14 @@ import type { ReactNode } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ChevronDown, SlidersHorizontal, X } from 'lucide-react'
 import type { Category, Concern, Origin, Product, SkinType } from '../../data/types'
-import { CATEGORY_LABEL, CONCERN_LABEL, SKIN_LABEL, STEP_LABEL, originName } from '../../data/catalog'
+import { CONCERN_LABEL, SKIN_LABEL, STEP_LABEL, originName } from '../../data/catalog'
 import { useI18n } from '../../i18n'
 import { stockOf } from '../../store'
 import { Door } from '../components/Door'
 import { ProductPanes } from '../components/ProductCard'
 import { Arrow, Sticker } from '../components/bits'
-import { ALL_ORIGINS, CATEGORIES, IMPORTED_ORIGINS, brandSlug, useActiveProducts, useBrands, useTitle } from '../lib'
+import { ALL_ORIGINS, IMPORTED_ORIGINS, brandSlug, useActiveProducts, useBrands, useTitle } from '../lib'
+import { useCategories } from '../../lib/useCategories'
 
 const SKINS: SkinType[] = ['oily', 'dry', 'combination', 'sensitive', 'normal']
 const CONCERNS: Concern[] = ['acne', 'hydration', 'brightening', 'aging', 'pores', 'redness', 'sun', 'barrier']
@@ -33,7 +34,7 @@ function norm(s: string) {
     .toLowerCase()
 }
 
-function matchesQuery(p: Product, q: string) {
+function matchesQuery(p: Product, q: string, catLabel: (id: string) => { ar: string; en: string }) {
   const hay = norm(
     [
       p.brand,
@@ -41,8 +42,8 @@ function matchesQuery(p: Product, q: string) {
       p.name.en,
       p.short.en,
       p.short.ar,
-      CATEGORY_LABEL[p.category].ar,
-      CATEGORY_LABEL[p.category].en,
+      catLabel(p.category).ar,
+      catLabel(p.category).en,
       p.category,
       ...p.ingredients.flatMap((i) => [i.ar, i.en]),
       ...p.concerns.flatMap((c) => [CONCERN_LABEL[c].ar, CONCERN_LABEL[c].en]),
@@ -56,9 +57,10 @@ function matchesQuery(p: Product, q: string) {
 
 export default function Shop() {
   const { tx, pick, num, money } = useI18n()
+  const { label: catLabel, all: allCats, shown: shownCats } = useCategories()
   const products = useActiveProducts()
   // Only categories the shop actually stocks: a chip that opens an empty page is a dead end.
-  const stocked = useMemo(() => CATEGORIES.filter((c) => products.some((p) => p.category === c)), [products])
+  const stocked = useMemo(() => shownCats.map((c) => c.id), [shownCats])
   const brands = useBrands()
   const { category: routeCat, brand: routeBrand } = useParams()
   const [params] = useSearchParams()
@@ -72,7 +74,7 @@ export default function Shop() {
   const lists = useMemo(() => {
     const get = (k: ListKey) => (params.get(k) ?? '').split(',').filter(Boolean)
     const cat = new Set(get('cat'))
-    if (routeCat && (CATEGORIES as string[]).includes(routeCat)) cat.add(routeCat)
+    if (routeCat && (allCats.some((c) => c.id === routeCat) || products.some((p) => p.category === routeCat))) cat.add(routeCat)
     const brand = new Set(get('brand'))
     if (brandName) brand.add(brandName)
     return {
@@ -111,7 +113,7 @@ export default function Shop() {
 
   const results = useMemo(() => {
     let r = products.filter((p) => {
-      if (q && !matchesQuery(p, q)) return false
+      if (q && !matchesQuery(p, q, catLabel)) return false
       if (lists.cat.length && !lists.cat.includes(p.category)) return false
       if (lists.brand.length && !lists.brand.includes(p.brand)) return false
       if (lists.skin.length && !lists.skin.some((s) => p.skinTypes.includes(s as SkinType))) return false
@@ -152,7 +154,7 @@ export default function Shop() {
     })[id] ?? id
 
   const optLabel = (k: ListKey, v: string) => {
-    if (k === 'cat') return pick(CATEGORY_LABEL[v as Category])
+    if (k === 'cat') return pick(catLabel(v as Category))
     if (k === 'skin') return tx(`بشرة ${SKIN_LABEL[v as SkinType]?.ar}`, `${SKIN_LABEL[v as SkinType]?.en} skin`)
     if (k === 'concern') return pick(CONCERN_LABEL[v as Concern])
     if (k === 'origin') return pick(originName(v as Origin))
@@ -165,7 +167,7 @@ export default function Shop() {
   let title = tx('كل المنتجات', 'All products')
   if (q) title = tx(`نتايج البحث عن «${q}»`, `Results for “${q}”`)
   else if (brandName && lists.brand.length === 1) title = brandName
-  else if (lists.cat.length === 1) title = pick(CATEGORY_LABEL[lists.cat[0] as Category])
+  else if (lists.cat.length === 1) title = pick(catLabel(lists.cat[0] as Category))
   else if (lists.origin.length === 1 && lists.origin[0] === 'KR') title = tx('العناية الكورية', 'Korean skincare')
   else if (isImported) title = tx('العناية المستوردة', 'Imported skincare')
   else if (lists.skin.length === 1) title = tx(`لبشرة ${SKIN_LABEL[lists.skin[0] as SkinType]?.ar}`, `For ${SKIN_LABEL[lists.skin[0] as SkinType]?.en.toLowerCase()} skin`)
@@ -184,8 +186,8 @@ export default function Shop() {
   const rail = (prefix: string) => (
     <div className="sf-rail">
       <FilterGroup legend={tx('القسم', 'Category')}>
-        {CATEGORIES.map((c) => (
-          <Check key={c} checked={lists.cat.includes(c)} onChange={() => toggle('cat', c)} label={pick(CATEGORY_LABEL[c])} n={num(count((p) => p.category === c))} />
+        {stocked.map((c) => (
+          <Check key={c} checked={lists.cat.includes(c)} onChange={() => toggle('cat', c)} label={pick(catLabel(c))} n={num(count((p) => p.category === c))} />
         ))}
       </FilterGroup>
       <FilterGroup legend={tx('نوع البشرة', 'Skin type')}>
@@ -254,7 +256,7 @@ export default function Shop() {
             {stocked.map((c) => (
               <li key={c}>
                 <button type="button" className="sf-pill" aria-pressed={lists.cat.includes(c)} onClick={() => toggle('cat', c)}>
-                  {pick(CATEGORY_LABEL[c])}
+                  {pick(catLabel(c))}
                 </button>
               </li>
             ))}

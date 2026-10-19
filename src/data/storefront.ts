@@ -1,6 +1,5 @@
 import type { Bi } from '../i18n'
 import type {
-  Category,
   Concern,
   HomeBlock,
   Product,
@@ -30,7 +29,6 @@ const b = (ar: string, en: string): Bi => ({ ar, en })
 
 const SKINS = new Set<SkinType>(['oily', 'dry', 'combination', 'sensitive', 'normal'])
 const CONCERNS = new Set<Concern>(['acne', 'hydration', 'brightening', 'aging', 'pores', 'redness', 'sun', 'barrier'])
-const CATS = new Set<Category>(['cleanser', 'toner', 'essence', 'serum', 'moisturizer', 'sunscreen', 'mask', 'makeup', 'lip', 'eye', 'hair'])
 const SOURCES = new Set<RailSource>(['manual', 'best', 'offers', 'new', 'brand', 'category'])
 const KINDS = new Set<StoreNavKind>(['link', 'categories', 'brands'])
 
@@ -507,7 +505,8 @@ function cleanBlock(v: unknown): HomeBlock | null {
   if (type === 'rail') {
     const x = v as Extract<HomeBlock, { type: 'rail' }>
     const source = SOURCES.has(x.source) ? x.source : 'manual'
-    const category = CATS.has(x.category as Category) ? x.category : ''
+    // Any category id (built-in or added by the owner): lowercase latin, digits, hyphens.
+    const category = typeof x.category === 'string' && /^[a-z0-9-]{1,40}$/.test(x.category) ? x.category : ''
     return {
       id, type, enabled, title: bi(x.title, 140), sub: bi(x.sub, 220), cta: bi(x.cta, 40), href: safeHref(clip(x.href, 240)),
       tone: x.tone === 'blush' ? 'blush' : 'plain', source, slugs: slugs(x.slugs), brand: clip(x.brand, 60), category, limit: num(x.limit, 8, 24),

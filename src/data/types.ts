@@ -2,7 +2,8 @@ import type { Bi } from '../i18n'
 
 export type Origin = 'KR' | 'FR' | 'US' | 'JP' | 'CA' | 'DE' | 'EG' | 'CN'
 
-export type Category =
+/** The eleven categories the store started with. */
+export type BuiltInCategory =
   | 'cleanser'
   | 'toner'
   | 'essence'
@@ -14,6 +15,19 @@ export type Category =
   | 'lip'
   | 'eye'
   | 'hair'
+
+/** A category id: a built-in one, or one the owner added in Admin > Storefront > Categories. */
+export type Category = string
+
+export type CategoryDef = {
+  /** URL part and what products store; fixed once created */
+  id: string
+  label: Bi
+  /** Hidden categories stay on their products but leave menus, chips and the footer */
+  enabled: boolean
+  /** Part of the skin routine finder (hair, makeup and lips are not) */
+  skincare: boolean
+}
 
 export type SkinType = 'oily' | 'dry' | 'combination' | 'sensitive' | 'normal'
 export type Concern = 'acne' | 'hydration' | 'brightening' | 'aging' | 'pores' | 'redness' | 'sun' | 'barrier'
@@ -392,4 +406,6 @@ export type Settings = {
   announcement: Bi
   /** Absent on older saves: the storefront falls back to the built-in copy. */
   storefront?: StorefrontContent
+  /** Absent on older saves: the built-in eleven categories apply. */
+  categories?: CategoryDef[]
 }

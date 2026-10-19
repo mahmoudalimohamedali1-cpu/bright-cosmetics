@@ -2,15 +2,15 @@ import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
-import { CATEGORY_LABEL } from '../../data/catalog'
 import { resolveHref } from '../../data/storefront'
 import type { StoreLink } from '../../data/types'
 import { useI18n } from '../../i18n'
 import { useStore } from '../../store'
-import { CATEGORIES, brandSlug, useBrands, useStorefront } from '../lib'
+import { brandSlug, useBrands, useStorefront } from '../lib'
 import { SocialIcons } from './home/WildStrip'
 import { Wordmark } from './home/Glyphs'
 import '../home.css'
+import { useCategories } from '../../lib/useCategories'
 
 /** Size a one-line slogan so it spans its container exactly. */
 function useFitLine(dep: string) {
@@ -50,6 +50,7 @@ function FootLink({ link, children }: { link: StoreLink; children: string }) {
 
 export function Footer() {
   const { tx, pick, money, lang } = useI18n()
+  const { label: catLabel, shown: shownCats } = useCategories()
   const content = useStorefront()
   const zones = useStore((s) => s.zones)
   const settings = useStore((s) => s.settings)
@@ -109,8 +110,8 @@ export function Footer() {
               {col.mode === 'categories' && (
                 <>
                   <li><Link to="/shop">{tx('كل المنتجات', 'All products')}</Link></li>
-                  {CATEGORIES.slice(0, col.limit).map((c) => (
-                    <li key={c}><Link to={`/shop/${c}`}>{pick(CATEGORY_LABEL[c])}</Link></li>
+                  {shownCats.slice(0, col.limit).map(({ id: c }) => (
+                    <li key={c}><Link to={`/shop/${c}`}>{pick(catLabel(c))}</Link></li>
                   ))}
                 </>
               )}

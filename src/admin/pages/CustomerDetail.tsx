@@ -4,18 +4,20 @@ import { Mail, MessageCircle, Phone, X } from 'lucide-react'
 import { useI18n } from '../../i18n'
 import { useStore } from '../../store'
 import { GOVERNORATES } from '../../data/seed'
-import { CATEGORY_LABEL, CONCERN_LABEL, SKIN_LABEL } from '../../data/catalog'
+import { CONCERN_LABEL, SKIN_LABEL } from '../../data/catalog'
 import { isCounted, netRevenue, SEGMENT_LABEL } from '../../lib/metrics'
 import { DAY } from '../../lib/rand'
 import type { Concern, Product, SkinType } from '../../data/types'
 import { Avatar, DemoNote, Empty, FulfillmentBadge, OrderStatusBadge, PageHeader, Pane, PaymentBadge, Switch, Thumb, useAdmin } from '../ui'
 import { LedgerCell, SegmentBadge, Stars, useCustomerStats } from '../parts/growth'
 import { CONSUMABLE, firstName, waLink } from '../parts/growth/util'
+import { useCategories } from '../../lib/useCategories'
 
 export default function CustomerDetail() {
   const { id } = useParams()
   const { hash } = useLocation()
   const { tx, pick, money, num, date, relTime, lang } = useI18n()
+  const { label: catLabel } = useCategories()
   const { toast, staff, can } = useAdmin()
   const readOnly = !can('customers.edit')
   const stats = useCustomerStats()
@@ -194,7 +196,7 @@ export default function CustomerDetail() {
                         {pick(p.name)}
                       </Link>
                       <div className="tiny faint">
-                        {p.brand}، {pick(CATEGORY_LABEL[p.category])}. {tx('مناسب لـ: ', 'Matches: ')}
+                        {p.brand}، {pick(catLabel(p.category))}. {tx('مناسب لـ: ', 'Matches: ')}
                         {why.join('، ')}
                       </div>
                     </div>

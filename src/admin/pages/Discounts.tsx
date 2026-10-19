@@ -3,13 +3,13 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { Download, Pencil, Plus, Trash2 } from 'lucide-react'
 import { useI18n } from '../../i18n'
 import { useStore } from '../../store'
-import { CATEGORY_LABEL } from '../../data/catalog'
 import { isCounted, netRevenue } from '../../lib/metrics'
 import { uid } from '../../lib/rand'
 import type { Category, Discount, DiscountKind } from '../../data/types'
 import { Badge, DemoNote, Drawer, Empty, Field, PageHeader, Switch, Tabs, useAdmin } from '../ui'
 import { LedgerCell, Takeaway } from '../parts/growth'
 import { downloadCSV, genCode, today } from '../parts/growth/util'
+import { useCategories } from '../../lib/useCategories'
 
 type Tab = 'active' | 'scheduled' | 'expired' | 'all'
 
@@ -348,6 +348,7 @@ export default function Discounts() {
 
 function DiscountEditor({ initial, onClose, onSave, onDelete }: { initial: Discount; onClose: () => void; onSave: (d: Discount) => void; onDelete?: () => void }) {
   const { tx, pick, money, pct, date, lang } = useI18n()
+  const { label: catLabel, all: allCats } = useCategories()
   const discounts = useStore((s) => s.discounts)
   const products = useStore((s) => s.products)
   const [d, setD] = useState<Discount>(initial)
@@ -357,7 +358,7 @@ function DiscountEditor({ initial, onClose, onSave, onDelete }: { initial: Disco
   const set = <K extends keyof Discount>(k: K, v: Discount[K]) => setD((x) => ({ ...x, [k]: v }))
 
   const brands = useMemo(() => [...new Set(products.map((p) => p.brand))].sort(), [products])
-  const categories = Object.keys(CATEGORY_LABEL) as Category[]
+  const categories = allCats.map((c) => c.id)
 
   const dayVal = (iso?: string) => {
     if (!iso) return ''
@@ -388,7 +389,7 @@ function DiscountEditor({ initial, onClose, onSave, onDelete }: { initial: Disco
   const targetText = (() => {
     const t = d.target ?? []
     if (d.appliesTo === 'all' || !t.length) return tx('كل المنتجات', 'all products')
-    if (d.appliesTo === 'category') return t.map((c) => pick(CATEGORY_LABEL[c as Category])).join(lang === 'ar' ? '، ' : ', ')
+    if (d.appliesTo === 'category') return t.map((c) => pick(catLabel(c as Category))).join(lang === 'ar' ? '، ' : ', ')
     if (d.appliesTo === 'brand') return t.join(lang === 'ar' ? '، ' : ', ')
     return tx(`${t.length} منتج محدد`, `${t.length} selected products`)
   })()
@@ -536,7 +537,7 @@ function DiscountEditor({ initial, onClose, onSave, onDelete }: { initial: Disco
           <div className="gr-chips" role="group" aria-label={tx('الفئات', 'Categories')}>
             {categories.map((c) => (
               <button key={c} type="button" className="gr-chip" aria-pressed={(d.target ?? []).includes(c)} onClick={() => toggleTarget(c)}>
-                {pick(CATEGORY_LABEL[c])}
+                {pick(catLabel(c))}
               </button>
             ))}
           </div>

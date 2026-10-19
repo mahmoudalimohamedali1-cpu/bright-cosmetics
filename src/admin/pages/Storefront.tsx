@@ -2,18 +2,19 @@ import { useId, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react'
-import { CATEGORY_LABEL, CONCERN_LABEL, SKIN_LABEL } from '../../data/catalog'
+import { CONCERN_LABEL, SKIN_LABEL } from '../../data/catalog'
 import { BLOCK_LABEL, BUILT_IN_PAGES, PANEL_SHAPES, SHAPE_FIELDS, blankBlock, blankPanel, defaultStorefront, pageSlug, sanitizeStorefront } from '../../data/storefront'
 import type { Bi } from '../../i18n'
-import type { BuiltInPage, Category, Concern, HomeBlock, PageFrame, PanelShape, SkinType, StoreColumn, StoreLink, StoreNavItem, StorePage, StorefrontContent } from '../../data/types'
+import type { BuiltInPage, CategoryDef, Concern, HomeBlock, PageFrame, PanelShape, SkinType, StoreColumn, StoreLink, StoreNavItem, StorePage, StorefrontContent } from '../../data/types'
 import { useI18n } from '../../i18n'
 import { uid } from '../../lib/rand'
 import { useStore } from '../../store'
 import { Field, PageHeader, Pane, Seg, Switch, Tabs, useAdmin } from '../ui'
+import { useCategories } from '../../lib/useCategories'
+import { categoryId, resolveCategories, sanitizeCategories } from '../../data/categories'
 
-type Tab = 'identity' | 'nav' | 'home' | 'footer' | 'pages'
+type Tab = 'identity' | 'nav' | 'categories' | 'home' | 'footer' | 'pages'
 
-const CATS = Object.keys(CATEGORY_LABEL) as Category[]
 const SKINS = Object.keys(SKIN_LABEL) as SkinType[]
 const CONCERNS = Object.keys(CONCERN_LABEL) as Concern[]
 
@@ -164,6 +165,7 @@ function Row({
 
 function BlockForm({ block, onChange }: { block: HomeBlock; onChange: (b: HomeBlock) => void }) {
   const { tx, pick } = useI18n()
+  const { label: catLabel, all: allCats } = useCategories()
   const all = useStore((s) => s.products)
   const brands = useMemo(() => [...new Set(all.map((p) => p.brand))].sort(), [all])
   const fid = useId()
@@ -231,8 +233,8 @@ function BlockForm({ block, onChange }: { block: HomeBlock; onChange: (b: HomeBl
             <Field label={tx('القسم', 'Category')} htmlFor={`${fid}-cat`}>
               <select id={`${fid}-cat`} className="select" value={block.category} onChange={(e) => onChange({ ...block, category: e.target.value })}>
                 <option value="">{tx('اختاري', 'Choose')}</option>
-                {CATS.map((c) => (
-                  <option key={c} value={c}>{pick(CATEGORY_LABEL[c])}</option>
+                {allCats.map((x) => x.id).map((c) => (
+                  <option key={c} value={c}>{pick(catLabel(c))}</option>
                 ))}
               </select>
             </Field>
@@ -481,12 +483,16 @@ export default function StorefrontPage() {
   const [sel, setSel] = useState<string | undefined>()
   const [pageId, setPageId] = useState<string | undefined>()
   const [frameId, setFrameId] = useState<BuiltInPage | undefined>()
-  const incomingKey = JSON.stringify(settings.storefront ?? null) + JSON.stringify(settings.announcement)
+  const [cats, setCats] = useState<CategoryDef[]>(() => resolveCategories(settings))
+  // Categories added since the last save: only their id (the URL) can still change.
+  const [newCats, setNewCats] = useState<Set<string>>(() => new Set())
+  const incomingKey = JSON.stringify(settings.storefront ?? null) + JSON.stringify(settings.announcement) + JSON.stringify(settings.categories ?? null)
   const [syncKey, setSyncKey] = useState(incomingKey)
   if (!dirty && syncKey !== incomingKey) {
     setSyncKey(incomingKey)
     setDraft(sanitizeStorefront(settings.storefront ?? defaultStorefront()))
     setAnn(settings.announcement)
+    setCats(resolveCategories(settings))
   }
 
   const edit = (fn: (d: StorefrontContent) => StorefrontContent) => {
@@ -494,7 +500,9 @@ export default function StorefrontPage() {
     setDraft(fn)
   }
   const saved = sanitizeStorefront(settings.storefront ?? defaultStorefront())
-  const unsaved = dirty || JSON.stringify(ann) !== JSON.stringify(settings.announcement) || JSON.stringify(draft) !== JSON.stringify(saved)
+  const savedCats = resolveCategories(settings)
+  const unsaved =
+    dirty || JSON.stringify(ann) !== JSON.stringify(settings.announcement) || JSON.stringify(draft) !== JSON.stringify(saved) || JSON.stringify(cats) !== JSON.stringify(savedCats)
 
   const save = () => {
     if (ann.ar.length > 120 || ann.en.length > 120) {
@@ -502,11 +510,22 @@ export default function StorefrontPage() {
       setTab('identity')
       return
     }
+    const badCat = cats.find((c) => !categoryId(c.id) || (!c.label.ar.trim() && !c.label.en.trim()))
+    const dupCat = cats.find((c, i) => cats.findIndex((x) => x.id === c.id) !== i)
+    if (badCat || dupCat) {
+      toast(dupCat ? tx(`الرابط /shop/${dupCat.id} مستخدم لقسمين`, `Two categories use /shop/${dupCat.id}`) : tx('كل قسم محتاج اسم ورابط', 'Every category needs a name and a URL'))
+      setTab('categories')
+      return
+    }
     const next = sanitizeStorefront(finalizeSlugs(draft))
+    const nextCats = sanitizeCategories(cats)
     updateSettings({
       storefront: next,
       announcement: { ar: ann.ar.trim(), en: ann.en.trim() },
+      categories: nextCats,
     })
+    setCats(nextCats)
+    setNewCats(new Set())
     log(staff, { ar: 'حدّث واجهة المتجر', en: 'Updated the storefront' }, '/admin/storefront')
     setDraft(next)
     setDirty(false)
@@ -527,7 +546,7 @@ export default function StorefrontPage() {
             <Link className="btn btn--ghost btn--sm" to="/" target="_blank">
               {tx('افتحي المتجر', 'View store')}
             </Link>
-            <button type="button" className="btn btn--ghost btn--sm" disabled={!unsaved} onClick={() => { setDirty(false); setDraft(saved); setAnn(settings.announcement) }}>
+            <button type="button" className="btn btn--ghost btn--sm" disabled={!unsaved} onClick={() => { setDirty(false); setDraft(saved); setAnn(settings.announcement); setCats(savedCats); setNewCats(new Set()) }}>
               {tx('ارجعي', 'Discard')}
             </button>
             <button type="button" className="btn btn--primary btn--sm" disabled={!unsaved} onClick={save}>
@@ -550,6 +569,7 @@ export default function StorefrontPage() {
         tabs={[
           { value: 'home', label: tx('الرئيسية', 'Home'), count: draft.blocks.filter((b) => b.enabled).length },
           { value: 'nav', label: tx('القائمة', 'Menu'), count: draft.nav.filter((n) => n.enabled).length },
+          { value: 'categories', label: tx('الأقسام', 'Categories'), count: cats.filter((c) => c.enabled).length },
           { value: 'footer', label: tx('الفوتر', 'Footer') },
           { value: 'pages', label: tx('صفحات', 'Pages'), count: draft.pages.length },
           { value: 'identity', label: tx('الهوية', 'Identity') },
@@ -586,6 +606,19 @@ export default function StorefrontPage() {
           </>
         )}
 
+        {tab === 'categories' && (
+          <CategoriesTab
+            cats={cats}
+            newIds={newCats}
+            onChange={(next) => {
+              setDirty(true)
+              setCats(next)
+            }}
+            onAdded={(id) => setNewCats((s) => new Set(s).add(id))}
+            onRenamed={(from, to) => setNewCats((s) => { const n = new Set(s); n.delete(from); n.add(to); return n })}
+          />
+        )}
+
         {tab === 'nav' && (
           <div className="grid grid-2">
             <Pane title={tx('عناصر القائمة', 'Menu items')} flush>
@@ -594,7 +627,7 @@ export default function StorefrontPage() {
                   <Row
                     key={item.id}
                     title={pick(item.label)}
-                    sub={item.kind === 'link' ? item.href : item.kind}
+                    sub={item.kind === 'link' ? `${item.href}${item.children.length ? tx(` · ${item.children.length} لينك فرعي`, ` · ${item.children.length} sub-links`) : ''}` : item.kind}
                     on={item.enabled}
                     onToggle={(enabled) => edit((d) => ({ ...d, nav: d.nav.map((n) => (n.id === item.id ? { ...n, enabled } : n)) }))}
                     onUp={() => edit((d) => ({ ...d, nav: move(d.nav, i, -1) }))}
@@ -631,7 +664,14 @@ export default function StorefrontPage() {
                     </select>
                   </Field>
                   {navItem.kind === 'link' && (
-                    <HrefField label={tx('اللينك', 'Link')} value={navItem.href} onChange={(href) => edit((d) => ({ ...d, nav: d.nav.map((n) => (n.id === navItem.id ? { ...n, href } : n)) }))} />
+                    <>
+                      <HrefField label={tx('اللينك', 'Link')} value={navItem.href} onChange={(href) => edit((d) => ({ ...d, nav: d.nav.map((n) => (n.id === navItem.id ? { ...n, href } : n)) }))} />
+                      <h3 className="field__label">{tx('قائمة فرعية (اختياري)', 'Submenu (optional)')}</h3>
+                      <p className="field__hint">
+                        {tx('لو ضفتي لينكات هنا، العنصر بيفتح قائمة تحته فيها اللينكات دي، وأولها لينك العنصر نفسه.', 'Links added here open as a dropdown under this item, after a link to the item itself.')}
+                      </p>
+                      <LinksEditor links={navItem.children} onChange={(children) => edit((d) => ({ ...d, nav: d.nav.map((n) => (n.id === navItem.id ? { ...n, children } : n)) }))} />
+                    </>
                   )}
                   {navItem.kind === 'categories' && (
                     <>
@@ -933,6 +973,135 @@ function ColumnForm({ col, onChange }: { col: StoreColumn; onChange: (c: StoreCo
         </Field>
       )}
       {col.mode === 'links' && <LinksEditor links={col.links} onChange={(links) => onChange({ ...col, links })} />}
+    </div>
+  )
+}
+
+function CategoriesTab({
+  cats,
+  newIds,
+  onChange,
+  onAdded,
+  onRenamed,
+}: {
+  cats: CategoryDef[]
+  newIds: Set<string>
+  onChange: (next: CategoryDef[]) => void
+  onAdded: (id: string) => void
+  onRenamed: (from: string, to: string) => void
+}) {
+  const { tx, pick, num } = useI18n()
+  const { toast } = useAdmin()
+  const products = useStore((s) => s.products)
+  const [sel, setSel] = useState<string | undefined>()
+  const [idDraft, setIdDraft] = useState('')
+  const count = (id: string) => products.filter((p) => p.category === id).length
+  const cat = cats.find((c) => c.id === sel)
+  const isNew = !!cat && newIds.has(cat.id)
+  const set = (id: string, patch: Partial<CategoryDef>) => onChange(cats.map((c) => (c.id === id ? { ...c, ...patch } : c)))
+
+  const add = () => {
+    let id = 'new-category'
+    for (let i = 2; cats.some((c) => c.id === id); i++) id = `new-category-${i}`
+    onChange([...cats, { id, label: { ar: 'قسم جديد', en: 'New category' }, enabled: true, skincare: true }])
+    onAdded(id)
+    setSel(id)
+    setIdDraft(id)
+  }
+  const remove = (c: CategoryDef) => {
+    const n = count(c.id)
+    if (n) {
+      toast(tx(`القسم فيه ${num(n)} منتج. انقليهم لقسم تاني الأول، أو اخفي القسم.`, `${n} product(s) are in this category. Move them first, or hide the category.`))
+      return
+    }
+    onChange(cats.filter((x) => x.id !== c.id))
+    if (sel === c.id) setSel(undefined)
+  }
+  const commitId = (raw: string) => {
+    if (!cat) return
+    const next = categoryId(raw)
+    if (!next || next === cat.id) {
+      setIdDraft(cat.id)
+      return
+    }
+    if (cats.some((c) => c.id === next)) {
+      toast(tx(`الرابط /shop/${next} مستخدم لقسم تاني`, `/shop/${next} is already used by another category`))
+      setIdDraft(cat.id)
+      return
+    }
+    onChange(cats.map((c) => (c.id === cat.id ? { ...c, id: next } : c)))
+    onRenamed(cat.id, next)
+    setSel(next)
+    setIdDraft(next)
+  }
+
+  return (
+    <div className="grid grid-2">
+      <Pane title={tx('أقسام المنتجات', 'Product categories')} description={tx('الترتيب هنا هو ترتيبها في القائمة والفوتر وأزرار المتجر. القسم بيظهر للزبونة لما يبقى فيه منتج.', 'This order is the order in the menu, footer and shop chips. A category shows to shoppers once it has a product.')} flush>
+        <ul>
+          {cats.map((c, i) => (
+            <Row
+              key={c.id}
+              title={pick(c.label) || c.id}
+              sub={`/shop/${c.id} · ${tx(`${num(count(c.id))} منتج`, count(c.id) === 1 ? '1 product' : `${count(c.id)} products`)}${c.skincare ? '' : tx(' · خارج الروتين', ' · not in routines')}`}
+              on={c.enabled}
+              onToggle={(enabled) => set(c.id, { enabled })}
+              onUp={() => onChange(move(cats, i, -1))}
+              onDown={() => onChange(move(cats, i, 1))}
+              onDelete={() => remove(c)}
+              selected={sel === c.id}
+              onSelect={() => {
+                setSel(c.id)
+                setIdDraft(c.id)
+              }}
+            />
+          ))}
+        </ul>
+        <div className="pane__foot">
+          <button type="button" className="btn btn--sm" onClick={add}>
+            <Plus size={14} aria-hidden /> {tx('ضيفي قسم', 'Add category')}
+          </button>
+        </div>
+      </Pane>
+      <Pane title={cat ? pick(cat.label) || cat.id : tx('تعديل القسم', 'Edit category')}>
+        {cat ? (
+          <div className="stack">
+            <BiFields label={tx('الاسم', 'Name')} value={cat.label} onChange={(label) => set(cat.id, { label })} />
+            <Field
+              label={tx('الرابط', 'URL')}
+              htmlFor="cat-id"
+              hint={
+                isNew
+                  ? tx('حروف إنجليزي صغيرة وأرقام وشَرطة. بيتقفل بعد الحفظ عشان اللينكات والمنتجات ما تتكسرش.', 'Lowercase latin letters, digits and hyphens. Locked after saving so links and products never break.')
+                  : tx('ثابت: المنتجات واللينكات مربوطة بيه. الاسم تقدري تغيّريه براحتك.', 'Fixed: products and links point to it. The name can change freely.')
+              }
+            >
+              <input
+                id="cat-id"
+                className="input"
+                dir="ltr"
+                value={isNew ? idDraft : cat.id}
+                readOnly={!isNew}
+                autoComplete="off"
+                onChange={(e) => setIdDraft(e.target.value.toLowerCase())}
+                onBlur={(e) => isNew && commitId(e.target.value)}
+              />
+            </Field>
+            <label className="row">
+              <input type="checkbox" checked={cat.skincare} onChange={(e) => set(cat.id, { skincare: e.target.checked })} />
+              {tx('جزء من روتين البشرة (اختبار الروتين بيرشّح منه)', 'Part of the skin routine (the routine quiz can suggest it)')}
+            </label>
+            <p className="field__hint">
+              {count(cat.id)
+                ? tx(`فيه ${num(count(cat.id))} منتج. القسم بيتغير من صفحة كل منتج.`, `${count(cat.id)} product(s) here. A product's category is set on its product page.`)
+                : tx('لسه مفيش منتجات هنا. اختاري القسم ده من صفحة المنتج، وبعد كده هيظهر في المتجر.', 'No products here yet. Pick this category on a product page and it appears in the shop.')}{' '}
+              <Link to={`/admin/products?category=${cat.id}`}>{tx('المنتجات', 'Products')}</Link>
+            </p>
+          </div>
+        ) : (
+          <p className="field__hint">{tx('اختاري قسم من القائمة، أو ضيفي قسم جديد.', 'Pick a category from the list, or add a new one.')}</p>
+        )}
+      </Pane>
     </div>
   )
 }

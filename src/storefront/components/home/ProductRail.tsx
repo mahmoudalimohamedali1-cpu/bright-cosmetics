@@ -3,8 +3,8 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useI18n } from '../../../i18n'
 import type { Category, Product } from '../../../data/types'
-import { CATEGORY_LABEL } from '../../../data/catalog'
 import { ProductCard } from '../ProductCard'
+import { useCategories } from '../../../lib/useCategories'
 
 /* A titled, horizontally scrolling row of product cards with a "see all" link. */
 export function ProductRail({
@@ -60,10 +60,9 @@ export function ProductRail({
 /* Shop by category: tabs over one rail; only categories the store actually stocks. */
 export function CategoryShelf({ products, title, sub }: { products: Product[]; title?: string; sub?: string }) {
   const { tx, pick } = useI18n()
-  const cats = useMemo(() => {
-    const order: Category[] = ['serum', 'cleanser', 'moisturizer', 'toner', 'eye', 'essence', 'mask', 'hair', 'sunscreen', 'makeup', 'lip']
-    return order.filter((c) => products.some((p) => p.category === c))
-  }, [products])
+  const { label: catLabel, shown: shownCats } = useCategories()
+  // The owner's order from Admin > Storefront > Categories, only those with products here.
+  const cats = useMemo(() => shownCats.map((c) => c.id).filter((c) => products.some((p) => p.category === c)), [shownCats, products])
   const [cat, setCat] = useState<Category | undefined>(undefined)
   const active = cat ?? cats[0]
   const list = products.filter((p) => p.category === active)
@@ -81,7 +80,7 @@ export function CategoryShelf({ products, title, sub }: { products: Product[]; t
         <div className="v-tabs" role="tablist" aria-label={tx('الأقسام', 'Categories')}>
           {cats.map((c) => (
             <button key={c} type="button" role="tab" aria-selected={c === active} className="v-tab" onClick={() => setCat(c)}>
-              {pick(CATEGORY_LABEL[c])}
+              {pick(catLabel(c))}
             </button>
           ))}
         </div>

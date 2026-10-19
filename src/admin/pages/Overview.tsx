@@ -8,17 +8,18 @@ import { useStore } from '../../store'
 import { ChartTip, DemoNote, Delta, Pane, PageHeader, Seg, Thumb, useAdmin } from '../ui'
 import { delta, expiringBatches, isCounted, kpis, netRevenue, productSales, rangeFor, stock, daysOfCover, dailySeries } from '../../lib/metrics'
 import { DAY } from '../../lib/rand'
-import { CATEGORY_LABEL } from '../../data/catalog'
 import type { Category } from '../../data/types'
 import { BarList, ChartLegend, Forward } from '../parts/core/ui'
 import { LEAD_DAYS, gov, inView } from '../parts/core/lib'
 import { canOpen } from '../access'
+import { useCategories } from '../../lib/useCategories'
 
 type Period = '1' | '7' | '30' | '90'
 type TipPayload = { name?: string; value?: number; color?: string; dataKey?: string }[]
 
 export default function Overview() {
   const { tx, pick, money, num, pct, date, relTime, dir } = useI18n()
+  const { label: catLabel } = useCategories()
   const { staff, can } = useAdmin()
   // Sales, margin and profit figures are analytics; other roles get their queues and the activity feed.
   const seeSales = can('analytics.view')
@@ -193,7 +194,7 @@ export default function Overview() {
         key: 'cat-up',
         fig: `+${pct(up.d, 0)}`,
         tone: 'ok',
-        text: tx(`مبيعات ${CATEGORY_LABEL[up.c].ar} زادت مقارنة بالـ30 يوم السابقة`, `${CATEGORY_LABEL[up.c].en} sales up vs the previous 30 days`),
+        text: tx(`مبيعات ${catLabel(up.c).ar} زادت مقارنة بالـ30 يوم السابقة`, `${catLabel(up.c).en} sales up vs the previous 30 days`),
         to: `/admin/products?category=${up.c}`,
       })
     const down = moves[moves.length - 1]
@@ -202,7 +203,7 @@ export default function Overview() {
         key: 'cat-down',
         fig: `−${pct(Math.abs(down.d), 0)}`,
         tone: 'bad',
-        text: tx(`مبيعات ${CATEGORY_LABEL[down.c].ar} قلّت مقارنة بالـ30 يوم السابقة`, `${CATEGORY_LABEL[down.c].en} sales down vs the previous 30 days`),
+        text: tx(`مبيعات ${catLabel(down.c).ar} قلّت مقارنة بالـ30 يوم السابقة`, `${catLabel(down.c).en} sales down vs the previous 30 days`),
         to: `/admin/products?category=${down.c}`,
       })
 

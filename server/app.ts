@@ -8,6 +8,7 @@ import { canCancel, canReturn, cancelOrderDoc, normalizePhone, PHONE_RE, restock
 import { changedKeys, isRole, PERMISSION_LABEL, writePermission } from '../src/lib/permissions'
 import { sanitizeStorefront } from '../src/data/storefront'
 import { brandSlug } from '../src/lib/slug'
+import { resolveCategories, sanitizeCategories } from '../src/data/categories'
 import type { Permission } from '../src/lib/permissions'
 import { EVENT_TYPES, funnelStats, liveStats, recordEvent } from './analytics'
 import type { EventType } from './analytics'
@@ -188,7 +189,8 @@ app.get('/robots.txt', (c) => {
 app.get('/sitemap.xml', (c) => {
   const origin = appUrl(c)
   const products = list<Product>('products').filter((p) => p.status === 'active')
-  const cats = [...new Set(products.map((p) => p.category))]
+  const hidden = new Set(resolveCategories(getSettings()).filter((c) => !c.enabled).map((c) => c.id))
+  const cats = [...new Set(products.map((p) => p.category))].filter((c) => !hidden.has(c))
   const brands = [...new Set(products.map((p) => brandSlug(p.brand)))].filter(Boolean)
   const settings = getSettings()
   const pages = settings.storefront ? sanitizeStorefront(settings.storefront).pages.filter((p) => p.published) : []
@@ -525,7 +527,12 @@ function stamp(collection: string, before: AnyDoc | undefined, after: AnyDoc, me
 /** Storefront copy is rendered on every shop page: store only the cleaned shape, never raw input. */
 const cleanSettings = (doc: unknown) => {
   const o = doc as Partial<Settings>
-  return o && typeof o === 'object' && o.storefront !== undefined ? { ...o, storefront: sanitizeStorefront(o.storefront) } : doc
+  if (!o || typeof o !== 'object') return doc
+  return {
+    ...o,
+    ...(o.storefront !== undefined ? { storefront: sanitizeStorefront(o.storefront) } : {}),
+    ...(o.categories !== undefined ? { categories: sanitizeCategories(o.categories) } : {}),
+  }
 }
 
 const auditWrite = (me: Me, collection: string, id: string, before: AnyDoc | undefined, after: AnyDoc | undefined) => {

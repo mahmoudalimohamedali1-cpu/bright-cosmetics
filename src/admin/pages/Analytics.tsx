@@ -5,13 +5,13 @@ import { Download, Table2 } from 'lucide-react'
 import { useI18n } from '../../i18n'
 import { useStore } from '../../store'
 import { GOVERNORATES, ZONES } from '../../data/seed'
-import { CATEGORY_LABEL } from '../../data/catalog'
 import { dailySeries, delta, grossProfit, inRange, isCounted, kpis, netRevenue, rangeFor } from '../../lib/metrics'
 import type { Category, Channel, Order, PaymentMethod } from '../../data/types'
 import { ChartTip, DemoNote, Delta, PageHeader, Pane, Seg, Switch, Thumb, useAdmin } from '../ui'
 import { BarList, LedgerCell, Note, Takeaway } from '../parts/growth'
 import { downloadCSV, heat, today } from '../parts/growth/util'
 import { api } from '../../lib/api'
+import { useCategories } from '../../lib/useCategories'
 
 const CHANNEL: Record<Channel, { ar: string; en: string }> = {
   web: { ar: 'المتجر الإلكتروني', en: 'Online store' },
@@ -54,6 +54,7 @@ function D({ on, c, p, invert, points }: { on: boolean; c: number; p: number; in
 
 export default function Analytics() {
   const { tx, pick, money, num, pct, date, dir } = useI18n()
+  const { label: catLabel } = useCategories()
   const orders = useStore((s) => s.orders)
   const customers = useStore((s) => s.customers)
   const products = useStore((s) => s.products)
@@ -532,14 +533,14 @@ export default function Analytics() {
         <Pane
           title={tx('المبيعات حسب الفئة', 'Sales by category')}
           description={tx('مبيعات السطور قبل خصم الطلب', 'Line sales before order discounts')}
-          actions={<ExportBtn onClick={() => downloadCSV(file('categories'), ['category', 'line_sales_egp', 'share'], lineAgg.cat.map(([c, v]) => [CATEGORY_LABEL[c].en, Math.round(v), (v / (lineAgg.lineTotal || 1)).toFixed(4)]))} />}
+          actions={<ExportBtn onClick={() => downloadCSV(file('categories'), ['category', 'line_sales_egp', 'share'], lineAgg.cat.map(([c, v]) => [catLabel(c).en, Math.round(v), (v / (lineAgg.lineTotal || 1)).toFixed(4)]))} />}
         >
           <Takeaway>
             {lineAgg.cat.length ? (
               <>
-                <strong>{pick(CATEGORY_LABEL[lineAgg.cat[0][0]])}</strong>
+                <strong>{pick(catLabel(lineAgg.cat[0][0]))}</strong>
                 {tx(` أكبر فئة بنسبة ${pct(lineAgg.cat[0][1] / (lineAgg.lineTotal || 1), 0)}`, ` lead with ${pct(lineAgg.cat[0][1] / (lineAgg.lineTotal || 1), 0)}`)}
-                {lineAgg.cat.length > 1 && <>{tx(`، وبعدها ${pick(CATEGORY_LABEL[lineAgg.cat[1][0]])}.`, `, then ${pick(CATEGORY_LABEL[lineAgg.cat[1][0]])}.`)}</>}
+                {lineAgg.cat.length > 1 && <>{tx(`، وبعدها ${pick(catLabel(lineAgg.cat[1][0]))}.`, `, then ${pick(catLabel(lineAgg.cat[1][0]))}.`)}</>}
               </>
             ) : (
               tx('مفيش مبيعات في الفترة دي.', 'No sales in this period.')
@@ -548,7 +549,7 @@ export default function Analytics() {
           <BarList
             items={lineAgg.cat.map(([c, v]) => ({
               key: c,
-              label: pick(CATEGORY_LABEL[c]),
+              label: pick(catLabel(c)),
               value: v,
               to: `/admin/products?category=${c}`,
               display: (

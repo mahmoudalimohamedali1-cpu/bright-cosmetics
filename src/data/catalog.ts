@@ -1,4 +1,4 @@
-import type { Category, Origin, Product, SkinType, Concern } from './types'
+import type { BuiltInCategory, Category, Origin, Product, SkinType, Concern } from './types'
 import { REAL } from './catalog.real'
 import { daysAgoISO, daysFromNowISO, rng } from '../lib/rand'
 
@@ -110,7 +110,7 @@ export function originName(o: Origin) {
   }[o]
 }
 
-export const CATEGORY_LABEL: Record<Category, { ar: string; en: string }> = {
+export const CATEGORY_LABEL: Record<BuiltInCategory, { ar: string; en: string }> = {
   cleanser: { ar: 'غسول ومنظّفات', en: 'Cleansers' },
   toner: { ar: 'تونر وباد', en: 'Toners & pads' },
   essence: { ar: 'إيسنس', en: 'Essences' },

@@ -2,17 +2,17 @@ import { useEffect, useRef, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import { Link, NavLink, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { ChevronDown, Heart, Search, ShoppingBag, User, X } from 'lucide-react'
-import { CATEGORY_LABEL } from '../../data/catalog'
 import { resolveHref } from '../../data/storefront'
 import type { StoreNavItem } from '../../data/types'
 import { useI18n } from '../../i18n'
 import { useStore } from '../../store'
-import { CATEGORIES, brandSlug, useActiveProducts, useBrands, useStorefront } from '../lib'
+import { brandSlug, useActiveProducts, useBrands, useStorefront } from '../lib'
 import { Door } from './Door'
 import { Ticker } from './home/Ticker'
 import { Wordmark } from './home/Glyphs'
 import { useScrollFrame } from './home/scroll'
 import '../home.css'
+import { useCategories } from '../../lib/useCategories'
 
 function ShopLink({ href, className, children }: { href: string; className?: string; children: ReactNode }) {
   if (href.startsWith('/')) return <Link to={href} className={className}>{children}</Link>
@@ -70,6 +70,7 @@ function NavHref({ item, className, children, onClick }: { item: StoreNavItem; c
 
 export function Header() {
   const { tx, pick, toggle, lang, num } = useI18n()
+  const { label: catLabel, shown: shownCats } = useCategories()
   const content = useStorefront()
   const settings = useStore((s) => s.settings)
   const hiddenPages = new Set(content.pages.filter((p) => !p.published).map((p) => `/info/${p.slug}`))
@@ -80,7 +81,8 @@ export function Header() {
   const products = useActiveProducts()
   const brands = useBrands()
   const loc = useLocation()
-  const [panel, setPanel] = useState<'cat' | 'brand' | null>(null)
+  // 'cat', 'brand', or a menu item's id when it has a submenu
+  const [panel, setPanel] = useState<string | null>(null)
   const [mobile, setMobile] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [atTop, setAtTop] = useState(true)
@@ -125,7 +127,7 @@ export function Header() {
   const catCount = (c: string) => products.filter((p) => p.category === c).length
   const langLabel = lang === 'ar' ? 'EN' : 'ع'
   const langAria = lang === 'ar' ? 'Switch to English' : 'التبديل إلى العربية'
-  const togglePanel = (p: 'cat' | 'brand') => {
+  const togglePanel = (p: string) => {
     setSearchOpen(false)
     setPanel(panel === p ? null : p)
   }
@@ -165,7 +167,19 @@ export function Header() {
           <div className="v-header__start">
             <nav className="v-nav v-desk" aria-label={tx('التصفح الرئيسي', 'Main')}>
               {nav.map((item) =>
-                item.kind === 'link' ? (
+                item.kind === 'link' && item.children.length ? (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className="v-nav__a"
+                    aria-expanded={panel === `sub-${item.id}`}
+                    aria-controls={`v-panel-sub-${item.id}`}
+                    onClick={() => togglePanel(`sub-${item.id}`)}
+                  >
+                    {pick(item.label)}
+                    <ChevronDown size={14} aria-hidden="true" />
+                  </button>
+                ) : item.kind === 'link' ? (
                   <NavHref key={item.id} item={item} className="v-nav__a">
                     {pick(item.label)}
                   </NavHref>
@@ -227,10 +241,10 @@ export function Header() {
                   <span className="v-mega__n">{num(products.length)}</span>
                 </Link>
               </li>
-              {CATEGORIES.map((c) => (
+              {shownCats.map(({ id: c }) => (
                 <li key={c}>
                   <Link to={`/shop/${c}`} className="v-mega__a">
-                    <span>{pick(CATEGORY_LABEL[c])}</span>
+                    <span>{pick(catLabel(c))}</span>
                     <span className="v-mega__n">{num(catCount(c))}</span>
                   </Link>
                 </li>
@@ -248,6 +262,28 @@ export function Header() {
             </ul>
           </div>
         </div>
+        {nav
+          .filter((item) => item.kind === 'link' && item.children.length)
+          .map((item) => (
+            <div key={item.id} className="v-drop-panel" id={`v-panel-sub-${item.id}`} hidden={panel !== `sub-${item.id}`}>
+              <div className="v-wrap">
+                <ul className="v-mega">
+                  <li>
+                    <NavHref item={item} className="v-mega__a">
+                      <span>{pick(item.label)}</span>
+                    </NavHref>
+                  </li>
+                  {item.children.map((ch) => (
+                    <li key={ch.id}>
+                      <ShopLink href={resolveHref(ch.href, settings)} className="v-mega__a">
+                        <span>{pick(ch.label)}</span>
+                      </ShopLink>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          ))}
         <div className="v-drop-panel" id="v-panel-brand" hidden={panel !== 'brand'}>
           <div className="v-wrap">
             <ul className="v-mega v-mega--brands">
@@ -273,6 +309,15 @@ export function Header() {
                 item.kind === 'brands' ? null : (
                   <li key={item.id}>
                     <NavHref item={item}>{pick(item.label) || tx('المنتجات', 'Products')}</NavHref>
+                    {item.kind === 'link' && item.children.length > 0 && (
+                      <ul className="v-mmenu__sub">
+                        {item.children.map((ch) => (
+                          <li key={ch.id}>
+                            <ShopLink href={resolveHref(ch.href, settings)}>{pick(ch.label)}</ShopLink>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </li>
                 ),
               )}
@@ -298,8 +343,8 @@ export function Header() {
               <>
                 <h3 className="v-mmenu__h">{tx('الأقسام', 'Categories')}</h3>
                 <ul className="v-mmenu__two">
-                  {CATEGORIES.map((c) => (
-                    <li key={c}><Link to={`/shop/${c}`}>{pick(CATEGORY_LABEL[c])}</Link></li>
+                  {shownCats.map(({ id: c }) => (
+                    <li key={c}><Link to={`/shop/${c}`}>{pick(catLabel(c))}</Link></li>
                   ))}
                 </ul>
               </>

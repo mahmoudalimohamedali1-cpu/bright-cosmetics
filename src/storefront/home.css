@@ -344,6 +344,9 @@
   text-decoration: none;
 }
 .v-mmenu__big a:hover { text-decoration: underline; text-decoration-thickness: 2px; }
+/* A menu item's submenu: smaller, indented under its parent. */
+.v-mmenu__big .v-mmenu__sub { display: grid; gap: 2px; margin: 2px 0 8px; padding-inline-start: 14px; border-inline-start: 2px solid var(--lilac); }
+.v-mmenu__big .v-mmenu__sub a { font-family: var(--font-text); font-weight: 500; font-variation-settings: normal; font-size: 1.05rem; padding-block: 8px; }
 .v-mmenu__row { display: flex; flex-wrap: wrap; gap: 8px; }
 .v-mmenu__row a,
 .v-mmenu__row button {

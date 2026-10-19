@@ -6,11 +6,12 @@ import { useStore } from '../../store'
 import { Badge, Empty, PageHeader, Pane, Tabs, Thumb, useAdmin } from '../ui'
 import { daysOfCover, productSales, stock } from '../../lib/metrics'
 import { DAY } from '../../lib/rand'
-import { CATEGORY_LABEL, originName } from '../../data/catalog'
+import { originName } from '../../data/catalog'
 import type { Category, Origin, ProductStatus } from '../../data/types'
 import { Pager } from '../parts/core/ui'
 import { downloadCSV, stockState, today } from '../parts/core/lib'
 import type { StockState } from '../parts/core/lib'
+import { useCategories } from '../../lib/useCategories'
 
 type Tab = 'all' | ProductStatus
 type Sort = 'name' | 'stock' | 'cover' | 'units' | 'profit' | 'margin' | 'price'
@@ -18,6 +19,7 @@ const PAGE = 50
 
 export default function Products() {
   const { tx, pick, money, num, pct } = useI18n()
+  const { label: catLabel, all: allCats } = useCategories()
   const { toast, staff, can } = useAdmin()
   const canEdit = can('products.edit')
   const navigate = useNavigate()
@@ -198,9 +200,9 @@ export default function Products() {
           </div>
           <select className="select core-select-sm" value={cat} onChange={(e) => setCat(e.target.value as Category | '')} aria-label={tx('الفئة', 'Category')}>
             <option value="">{tx('كل الفئات', 'All categories')}</option>
-            {(Object.keys(CATEGORY_LABEL) as Category[]).map((c) => (
+            {allCats.map((x) => x.id).map((c) => (
               <option key={c} value={c}>
-                {pick(CATEGORY_LABEL[c])}
+                {pick(catLabel(c))}
               </option>
             ))}
           </select>
