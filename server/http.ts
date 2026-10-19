@@ -1,4 +1,5 @@
 import type { Context } from 'hono'
+import { getConnInfo } from '@hono/node-server/conninfo'
 import type { ContentfulStatusCode } from 'hono/utils/http-status'
 
 export type Bi = { ar: string; en: string }
@@ -25,8 +26,21 @@ export async function readJson(c: Context): Promise<unknown> {
   }
 }
 
+/**
+ * The visitor's address, for rate limits. Never the first X-Forwarded-For entry:
+ * the visitor writes that one and could dodge every limit. In production nginx
+ * sets X-Real-IP (from Cloudflare's CF-Connecting-IP, trusted only from
+ * Cloudflare's ranges) and the app listens on 127.0.0.1, so nothing else can
+ * set it. Without a proxy, the socket address is used.
+ */
 export function clientIp(c: Context) {
-  return c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || c.req.header('x-real-ip') || 'local'
+  const real = c.req.header('x-real-ip')?.trim()
+  if (real) return real
+  try {
+    return getConnInfo(c).remote.address || 'local'
+  } catch {
+    return 'local'
+  }
 }
 
 /** Fixed-window in-memory limiter: allow `max` hits per `windowMs` per key. */

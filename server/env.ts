@@ -34,6 +34,8 @@ export const env = {
   // `--port N` wins over env so dev tooling that exports PORT for the web server can't collide.
   port: Number(argValue('--port') ?? v('API_PORT') ?? v('PORT') ?? 8787),
   production,
+  /** Listen address. Production behind nginx: 127.0.0.1, so the app port is not reachable from outside. */
+  host: v('HOST') ?? '0.0.0.0',
   /** What an empty database starts with: `starter` (real store, the production default) or `demo` (sample data). */
   seed: (v('SEED') === 'demo' || v('SEED') === 'starter' ? v('SEED') : production ? 'starter' : 'demo') as 'demo' | 'starter',
   dataDir: resolve(root, v('DATA_DIR') ?? 'server/data'),
