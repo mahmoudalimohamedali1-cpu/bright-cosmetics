@@ -375,9 +375,11 @@ export default function Settings() {
             <Pane title={tx('منطقة الخطر', 'Danger zone')}>
               <div className="stack" style={{ gap: 12 }}>
                 <div>
-                  <div className="strong">{tx('إعادة ضبط البيانات التجريبية', 'Reset demo data')}</div>
+                  <div className="strong">{online ? tx('مسح كل بيانات المتجر', 'Erase all store data') : tx('إعادة ضبط البيانات التجريبية', 'Reset demo data')}</div>
                   <p className="small muted" style={{ marginTop: 4 }}>
-                    {tx('بيرجّع المنتجات والطلبات والعملاء والخصومات والإعدادات لحالتها الأصلية، وبيمسح أي طلبات اتعملت من المتجر. مفيش رجوع.', 'Restores products, orders, customers, discounts and settings to their original state and removes any orders placed in the store. This can’t be undone.')}
+                    {online
+                      ? tx('بيمسح كل الطلبات الحقيقية والعملاء والتقييمات وأكواد الخصم، وبيرجّع المنتجات والمخزون والإعدادات لبداية المتجر. حسابات الفريق بتفضل. مفيش رجوع.', 'Deletes every real order, customer, review and discount code, and returns products, stock and settings to the store’s starting point. Staff sign-ins stay. This can’t be undone.')
+                      : tx('بيرجّع المنتجات والطلبات والعملاء والخصومات والإعدادات لحالتها الأصلية، وبيمسح أي طلبات اتعملت من المتجر. مفيش رجوع.', 'Restores products, orders, customers, discounts and settings to their original state and removes any orders placed in the store. This can’t be undone.')}
                   </p>
                 </div>
                 <Field label={tx('للتأكيد، كتابة RESET', 'To confirm, type RESET')} htmlFor="st-reset">
@@ -400,10 +402,10 @@ export default function Settings() {
                       } else resetDemo()
                       setConfirmReset('')
                       setTouched(false)
-                      toast(tx('تمت إعادة ضبط البيانات التجريبية', 'Demo data reset'))
+                      toast(online ? tx('اتمسحت بيانات المتجر', 'Store data erased') : tx('تمت إعادة ضبط البيانات التجريبية', 'Demo data reset'))
                     }}
                   >
-                    {tx('إعادة ضبط البيانات', 'Reset demo data')}
+                    {online ? tx('مسح كل البيانات', 'Erase all data') : tx('إعادة ضبط البيانات', 'Reset demo data')}
                   </button>
                 </div>
               </div>

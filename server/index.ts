@@ -22,7 +22,7 @@ const { seed } = await import('./db')
 const { app } = await import('./app')
 const { bootstrapOwner } = await import('./auth')
 
-if (seed()) console.log('[db] seeded a fresh database from buildSeed()')
+if (seed()) console.log(`[db] started a fresh database (${env.seed === 'starter' ? 'store catalogue, no sample orders' : 'demo data'})`)
 
 if (env.production) {
   const dist = resolve(env.root, 'dist')

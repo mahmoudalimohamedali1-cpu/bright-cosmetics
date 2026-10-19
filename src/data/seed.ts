@@ -318,3 +318,26 @@ export function buildSeed(): Db {
 
   return { products, customers, orders, reviews, discounts, abandoned, shipments, zones: ZONES, staff, activity, settings }
 }
+
+/**
+ * A real store's first day: the catalogue, shipping zones and settings, one
+ * owner, and nothing that pretends to have happened (no orders, customers,
+ * reviews, codes, carts or supplier shipments). Stock quantities stay as a
+ * starting point; the owner sets the real counts in Admin > Stock & expiry.
+ */
+export function buildStarter(): Db {
+  const d = buildSeed()
+  const owner = d.staff.find((s) => s.role === 'owner')
+  return {
+    ...d,
+    products: d.products.map((p) => ({ ...p, batches: p.batches.map((b) => ({ ...b, shipmentId: '' })) })),
+    customers: [],
+    orders: [],
+    reviews: [],
+    discounts: [],
+    abandoned: [],
+    shipments: [],
+    activity: [],
+    staff: owner ? [{ ...owner, name: 'Owner', lastActive: new Date().toISOString() }] : [],
+  }
+}

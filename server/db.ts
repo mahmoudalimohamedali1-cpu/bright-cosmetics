@@ -1,7 +1,7 @@
 import { mkdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
-import { buildSeed } from '../src/data/seed'
+import { buildSeed, buildStarter } from '../src/data/seed'
 import type { Db } from '../src/data/seed'
 import type { Settings } from '../src/data/types'
 import { env } from './env'
@@ -114,7 +114,7 @@ export function tx<T>(fn: () => T): T {
 export function seed(force = false) {
   const n = Number((q.count.get() as { n: number }).n)
   if (n > 0 && !force) return false
-  const data: Db = buildSeed()
+  const data: Db = env.seed === 'starter' ? buildStarter() : buildSeed()
   tx(() => {
     q.wipe.run()
     const now = Date.now()
