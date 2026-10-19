@@ -48,6 +48,6 @@ else if (!env.adminPassword) {
   if (!allAuth().length) console.warn('[admin] no staff accounts and ADMIN_PASSWORD is not set: admin sign-in is disabled until it is')
 }
 
-serve({ fetch: app.fetch, port: env.port, hostname: env.host }, (info) => {
-  console.log(`[api] Bright ${env.production ? 'production' : 'dev'} server on http://${env.host}:${info.port}`)
+serve({ fetch: app.fetch, port: env.port, ...(env.host ? { hostname: env.host } : {}) }, (info) => {
+  console.log(`[api] Bright ${env.production ? 'production' : 'dev'} server on http://${env.host ?? 'localhost'}:${info.port}`)
 })
