@@ -341,7 +341,10 @@ export function Guard({ any, children }: { any: Permission[]; children: ReactNod
   return any.some(can) ? <>{children}</> : <NotAllowed />
 }
 
+/** Only in demo mode (no server): on the live store the figures are real. */
 export function DemoNote() {
   const { tx } = useI18n()
+  const { online } = useAdmin()
+  if (online) return null
   return <span className="demo-note">{tx('بيانات تجريبية للعرض', 'Demo data')}</span>
 }

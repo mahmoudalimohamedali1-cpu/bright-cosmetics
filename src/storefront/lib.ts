@@ -38,14 +38,7 @@ export function daysUntil(iso: string) {
   return Math.round((new Date(iso).getTime() - Date.now()) / 86400000)
 }
 
-export function brandSlug(b: string) {
-  return b
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-}
+export { brandSlug } from '../lib/slug'
 
 export function inStock(p: Product) {
   return stockOf(p) > 0

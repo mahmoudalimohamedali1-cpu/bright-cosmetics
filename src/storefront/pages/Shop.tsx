@@ -57,6 +57,8 @@ function matchesQuery(p: Product, q: string) {
 export default function Shop() {
   const { tx, pick, num, money } = useI18n()
   const products = useActiveProducts()
+  // Only categories the shop actually stocks: a chip that opens an empty page is a dead end.
+  const stocked = useMemo(() => CATEGORIES.filter((c) => products.some((p) => p.category === c)), [products])
   const brands = useBrands()
   const { category: routeCat, brand: routeBrand } = useParams()
   const [params] = useSearchParams()
@@ -249,7 +251,7 @@ export default function Shop() {
                 {tx('الكل', 'All')}
               </button>
             </li>
-            {CATEGORIES.map((c) => (
+            {stocked.map((c) => (
               <li key={c}>
                 <button type="button" className="sf-pill" aria-pressed={lists.cat.includes(c)} onClick={() => toggle('cat', c)}>
                   {pick(CATEGORY_LABEL[c])}

@@ -74,13 +74,16 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       num: (n, opts) => (opts ? new Intl.NumberFormat(loc, opts).format(n) : nf.format(n)),
       pct: (n, digits = 1) =>
         new Intl.NumberFormat(loc, { style: 'percent', maximumFractionDigits: digits }).format(n),
-      date: (d, opts) =>
-        new Intl.DateTimeFormat(loc, opts ?? { day: 'numeric', month: 'short', year: 'numeric' }).format(
-          new Date(d),
-        ),
+      // A missing or bad date shows a dash: Intl throws on Invalid Date, which would blank the whole page.
+      date: (d, opts) => {
+        const t = new Date(d)
+        return Number.isNaN(t.getTime()) ? '—' : new Intl.DateTimeFormat(loc, opts ?? { day: 'numeric', month: 'short', year: 'numeric' }).format(t)
+      },
       relTime: (d) => {
         const rtf = new Intl.RelativeTimeFormat(loc, { numeric: 'auto' })
-        const diff = (new Date(d).getTime() - Date.now()) / 1000
+        const at = new Date(d).getTime()
+        if (Number.isNaN(at)) return '—'
+        const diff = (at - Date.now()) / 1000
         const abs = Math.abs(diff)
         if (abs < 60) return rtf.format(Math.round(diff), 'second')
         if (abs < 3600) return rtf.format(Math.round(diff / 60), 'minute')

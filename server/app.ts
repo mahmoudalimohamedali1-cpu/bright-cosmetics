@@ -7,6 +7,7 @@ import type { Customer, Discount, Order, OrderEvent, Product, Review, Settings, 
 import { canCancel, canReturn, cancelOrderDoc, normalizePhone, PHONE_RE, restockLines, returnOrderDoc } from '../src/lib/commerce'
 import { changedKeys, isRole, PERMISSION_LABEL, writePermission } from '../src/lib/permissions'
 import { sanitizeStorefront } from '../src/data/storefront'
+import { brandSlug } from '../src/lib/slug'
 import type { Permission } from '../src/lib/permissions'
 import { EVENT_TYPES, funnelStats, liveStats, recordEvent } from './analytics'
 import type { EventType } from './analytics'
@@ -170,6 +171,43 @@ app.get('/api/orders-history', (c) => {
     .slice(0, 50)
     .map(publicOrder)
   return c.json({ orders })
+})
+
+/* ───────────── Search engines ───────────── */
+
+// Private or per-visitor pages stay out of search results.
+const NO_INDEX = ['/admin', '/api/', '/checkout', '/account', '/wishlist', '/order/', '/preview', '/search']
+
+app.get('/robots.txt', (c) => {
+  const origin = appUrl(c)
+  const lines = ['User-agent: *', 'Allow: /', ...NO_INDEX.map((p) => `Disallow: ${p}`), '', `Sitemap: ${origin}/sitemap.xml`, '']
+  c.header('cache-control', 'public, max-age=3600')
+  return c.text(lines.join('\n'))
+})
+
+app.get('/sitemap.xml', (c) => {
+  const origin = appUrl(c)
+  const products = list<Product>('products').filter((p) => p.status === 'active')
+  const cats = [...new Set(products.map((p) => p.category))]
+  const brands = [...new Set(products.map((p) => brandSlug(p.brand)))].filter(Boolean)
+  const settings = getSettings()
+  const pages = settings.storefront ? sanitizeStorefront(settings.storefront).pages.filter((p) => p.published) : []
+  const urls: { loc: string; priority: string; changefreq: string }[] = [
+    { loc: '/', priority: '1.0', changefreq: 'daily' },
+    { loc: '/shop', priority: '0.9', changefreq: 'daily' },
+    ...cats.map((cat) => ({ loc: `/shop/${cat}`, priority: '0.8', changefreq: 'weekly' })),
+    ...brands.map((b) => ({ loc: `/brand/${b}`, priority: '0.7', changefreq: 'weekly' })),
+    ...products.map((p) => ({ loc: `/p/${p.slug}`, priority: '0.8', changefreq: 'weekly' })),
+    { loc: '/routine', priority: '0.6', changefreq: 'monthly' },
+    ...pages.map((p) => ({ loc: `/info/${p.slug}`, priority: '0.5', changefreq: 'monthly' })),
+  ]
+  const esc = (x: string) => x.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  const xml =
+    '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+    urls.map((u) => `  <url><loc>${esc(origin + u.loc)}</loc><changefreq>${u.changefreq}</changefreq><priority>${u.priority}</priority></url>`).join('\n') +
+    '\n</urlset>\n'
+  c.header('cache-control', 'public, max-age=3600')
+  return c.body(xml, 200, { 'content-type': 'application/xml; charset=utf-8' })
 })
 
 /* ───────────── Reviews from shoppers ───────────── */

@@ -300,10 +300,12 @@ export default function Analytics() {
       {compare && !canCompare && (
         <div style={{ marginBottom: 12 }}>
           <Note>
-            {tx(
-              `البيانات بتبدأ ${date(firstOrderAt)}، فمفيش فترة سابقة كاملة بنفس الطول للمقارنة. المقارنة متوقفة للفترة دي.`,
-              `Data starts ${date(firstOrderAt)}, so there is no full previous period of the same length. Comparison is off for this range.`,
-            )}
+            {Number.isFinite(firstOrderAt)
+              ? tx(
+                  `البيانات بتبدأ ${date(firstOrderAt)}، فمفيش فترة سابقة كاملة بنفس الطول للمقارنة. المقارنة متوقفة للفترة دي.`,
+                  `Data starts ${date(firstOrderAt)}, so there is no full previous period of the same length. Comparison is off for this range.`,
+                )
+              : tx('لسه مفيش طلبات، فمفيش حاجة تتقارن. الأرقام هتظهر هنا مع أول طلب.', 'No orders yet, so there is nothing to compare. Figures appear here with the first order.')}
           </Note>
         </div>
       )}

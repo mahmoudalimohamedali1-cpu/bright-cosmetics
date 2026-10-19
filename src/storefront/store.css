@@ -617,17 +617,17 @@
   gap: var(--s-3) var(--s-5);
   padding-block: var(--s-2) var(--s-5);
 }
+/* Desktop: every category chip visible, wrapping to a second line when needed (a hidden-scrollbar row cut chips off mid-word). */
 .sf-quickcats {
   display: flex;
-  flex: 1 1 420px;
+  flex-wrap: wrap;
+  flex: 1 1 100%;
   gap: var(--s-2);
   min-width: 0;
   max-inline-size: 100%;
   margin: 0;
   padding: 3px;
   list-style: none;
-  overflow-x: auto;
-  scrollbar-width: none;
 }
 .sf-quickcats::-webkit-scrollbar { display: none; }
 .sf-filterbar__end { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3); margin-inline-start: auto; }
@@ -646,7 +646,14 @@
 @media (pointer: coarse) { .sf .sf-sort select { min-height: 44px; } }
 .sf-activechips { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); margin: 0 0 var(--s-5); padding: 0; list-style: none; }
 @media (max-width: 759px) {
-  .sf-quickcats { flex-basis: 100%; margin-inline: calc(-1 * var(--gutter)); padding-inline: var(--gutter); max-inline-size: none; inline-size: calc(100% + 2 * var(--gutter)); }
+  /* Phones: one swipeable row; the fading edge says there is more. */
+  .sf-quickcats {
+    flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; scroll-padding-inline: var(--gutter);
+    flex-basis: 100%; margin-inline: calc(-1 * var(--gutter)); padding-inline: var(--gutter); max-inline-size: none; inline-size: calc(100% + 2 * var(--gutter));
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent);
+  }
+  [dir='rtl'] .sf-quickcats { -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 48px), transparent); mask-image: linear-gradient(to left, #000 calc(100% - 48px), transparent); }
+  .sf-quickcats > li { flex: none; }
   .sf-filterbar__end { inline-size: 100%; justify-content: space-between; margin-inline-start: 0; }
   .sf-count { margin-inline-end: auto; }
 }
