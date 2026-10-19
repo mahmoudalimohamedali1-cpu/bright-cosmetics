@@ -33,8 +33,15 @@ fi
 id bright >/dev/null 2>&1 || useradd --system --home "$APP" --shell /usr/sbin/nologin bright
 mkdir -p "$DATA"
 
-if [ -d "$APP/.git" ]; then git -C "$APP" fetch -q && git -C "$APP" reset -q --hard origin/main
-else git clone -q "$REPO" "$APP"; fi
+# The app folder belongs to the service user; let root's git work in it, and stop on any failure.
+GIT="git -c safe.directory=$APP -C $APP"
+if [ -d "$APP/.git" ]; then
+  $GIT fetch -q origin main
+  $GIT reset -q --hard origin/main
+else
+  git clone -q "$REPO" "$APP"
+fi
+echo "Code: $($GIT log --oneline -1)"
 cd "$APP"
 npm ci --include=dev --no-audit --no-fund
 npm run build
