@@ -163,6 +163,20 @@ if [ -n "$DOMAIN" ] && [ "$HTTPS" = no ]; then
   fi
 fi
 
+# Daily database backup at 03:00 (server time), 14 days kept, in $DATA/backups.
+apt-get install -y sqlite3 >/dev/null
+cat > /usr/local/bin/bright-backup <<BACKUP
+#!/bin/sh
+set -e
+mkdir -p $DATA/backups
+F=$DATA/backups/daily-\$(date +%Y%m%d).db
+sqlite3 $DATA/nuri.db ".backup '\$F'"
+gzip -f "\$F"
+find $DATA/backups -name 'daily-*.db.gz' -mtime +14 -delete
+BACKUP
+chmod 755 /usr/local/bin/bright-backup
+echo "0 3 * * * root /usr/local/bin/bright-backup" > /etc/cron.d/bright-backup
+
 # Firewall: SSH and the website only.
 ufw allow OpenSSH >/dev/null
 ufw allow 'Nginx Full' >/dev/null
