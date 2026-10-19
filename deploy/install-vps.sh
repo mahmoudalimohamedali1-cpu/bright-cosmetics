@@ -19,8 +19,8 @@ WEBROOT=/var/www/certbot
 [ "$(id -u)" = 0 ] || { echo "Run as root (sudo)."; exit 1; }
 
 export DEBIAN_FRONTEND=noninteractive
-apt-get update -y
-apt-get install -y curl git nginx ca-certificates ufw certbot
+apt-get -o DPkg::Lock::Timeout=600 update -y
+apt-get -o DPkg::Lock::Timeout=600 install -y curl git nginx ca-certificates ufw certbot
 
 # Small servers (1 GB) run out of memory during the build without swap.
 if ! swapon --show | grep -q . ; then
@@ -30,7 +30,7 @@ fi
 
 if ! command -v node >/dev/null || [ "$(node -p 'process.versions.node.split(".")[0]')" -lt 24 ]; then
   curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
-  apt-get install -y nodejs
+  apt-get -o DPkg::Lock::Timeout=600 install -y nodejs
 fi
 
 id bright >/dev/null 2>&1 || useradd --system --home "$APP" --shell /usr/sbin/nologin bright
@@ -164,7 +164,7 @@ if [ -n "$DOMAIN" ] && [ "$HTTPS" = no ]; then
 fi
 
 # Daily database backup at 03:00 (server time), 14 days kept, in $DATA/backups.
-apt-get install -y sqlite3 >/dev/null
+apt-get -o DPkg::Lock::Timeout=600 install -y sqlite3 >/dev/null
 cat > /usr/local/bin/bright-backup <<BACKUP
 #!/bin/sh
 set -e
