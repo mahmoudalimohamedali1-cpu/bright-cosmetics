@@ -446,9 +446,9 @@ export default function OrderDetail() {
                           <td style={{ whiteSpace: 'nowrap' }}>
                             {b ? (
                               <>
-                                <span className="num small">{b.lot}</span>
+                                <span className="num small">{b.lot || '—'}</span>
                                 <div className="tiny" style={{ color: du !== undefined && du <= settings.expiryWarnDays ? 'var(--warn)' : 'var(--fg-3)' }}>
-                                  {tx(`صلاحية ${date(b.expiry)}`, `Exp ${date(b.expiry)}`)}
+                                  {b.expiry ? tx(`صلاحية ${date(b.expiry)}`, `Exp ${date(b.expiry)}`) : tx('من غير تاريخ', 'No date')}
                                 </div>
                               </>
                             ) : (

@@ -67,14 +67,16 @@ const NETWORK: Bi = { ar: 'مفيش اتصال بالسيرفر. جرّبي تا
 
 export async function api<T>(path: string, opts: { method?: string; body?: unknown; admin?: boolean; signal?: AbortSignal } = {}): Promise<T> {
   const headers: Record<string, string> = { accept: 'application/json' }
-  if (opts.body !== undefined) headers['content-type'] = 'application/json'
+  // A file upload (FormData) sets its own multipart content type.
+  const form = typeof FormData !== 'undefined' && opts.body instanceof FormData
+  if (opts.body !== undefined && !form) headers['content-type'] = 'application/json'
   if (opts.admin) {
     const t = adminToken.get()
     if (t) headers.authorization = `Bearer ${t}`
   }
   let r: Response
   try {
-    r = await fetch(path, { method: opts.method ?? (opts.body !== undefined ? 'POST' : 'GET'), headers, body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined, signal: opts.signal })
+    r = await fetch(path, { method: opts.method ?? (opts.body !== undefined ? 'POST' : 'GET'), headers, body: opts.body === undefined ? undefined : form ? (opts.body as FormData) : JSON.stringify(opts.body), signal: opts.signal })
   } catch {
     throw new ApiError(0, 'network', NETWORK)
   }

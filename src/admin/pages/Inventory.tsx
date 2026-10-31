@@ -10,6 +10,7 @@ import { originName } from '../../data/catalog'
 import type { Batch, Product } from '../../data/types'
 import { Forward } from '../parts/core/ui'
 import { LEAD_DAYS, SHIPMENT_STATUS, TARGET_DAYS, downloadCSV, incomingUnits, landedLines, today } from '../parts/core/lib'
+import { byExpiry } from '../../lib/lots'
 
 type Tab = 'stock' | 'expiry' | 'shipments'
 type StockFilter = 'all' | 'reorder' | 'low' | 'out'
@@ -97,7 +98,7 @@ export default function Inventory() {
     const limit = Date.now() + settings.expiryWarnDays * DAY
     return products
       .flatMap((p) => p.batches.filter((b) => b.qty > 0 && (expAll === 'all' || new Date(b.expiry).getTime() < limit)).map((b) => ({ p, b, du: daysUntil(b.expiry) })))
-      .sort((a, b) => a.b.expiry.localeCompare(b.b.expiry))
+      .sort((a, b) => byExpiry(a.b, b.b))
   }, [products, expAll, settings.expiryWarnDays])
 
   const applyAdjust = () => {
@@ -279,7 +280,7 @@ export default function Inventory() {
                               className="btn btn--sm"
                               disabled={!r.p.batches.length}
                               aria-label={tx(`تعديل مخزون ${pick(r.p.name)}`, `Adjust stock for ${pick(r.p.name)}`)}
-                              onClick={() => setAdj({ p: r.p, batchId: [...r.p.batches].sort((a, b) => a.expiry.localeCompare(b.expiry))[0]?.id ?? '', delta: '', reason: 'count' })}
+                              onClick={() => setAdj({ p: r.p, batchId: [...r.p.batches].sort(byExpiry)[0]?.id ?? '', delta: '', reason: 'count' })}
                             >
                               <SlidersHorizontal size={14} aria-hidden />
                               {tx('تعديل', 'Adjust')}
@@ -337,10 +338,12 @@ export default function Inventory() {
                               </Link>
                             </div>
                           </td>
-                          <td className="num">{b.lot}</td>
-                          <td style={{ whiteSpace: 'nowrap' }}>{date(b.expiry)}</td>
+                          <td className="num">{b.lot || <span className="faint">—</span>}</td>
+                          <td style={{ whiteSpace: 'nowrap' }}>{b.expiry ? date(b.expiry) : <span className="faint">{tx('من غير تاريخ', 'No date')}</span>}</td>
                           <td>
-                            {du < 0 ? (
+                            {!b.expiry ? (
+                              <span className="faint">—</span>
+                            ) : du < 0 ? (
                               <Badge tone="bad">{tx('منتهية، تتشال من البيع', 'Expired, pull from sale')}</Badge>
                             ) : (
                               <Badge tone={du <= 30 ? 'bad' : du <= settings.expiryWarnDays ? 'warn' : 'ok'}>{tx(`${num(du)} يوم`, `${du} days`)}</Badge>
@@ -523,10 +526,10 @@ export default function Inventory() {
             <Field label={tx('التشغيلة', 'Lot')} htmlFor="adj-lot">
               <select id="adj-lot" className="select" value={adj.batchId} onChange={(e) => setAdj({ ...adj, batchId: e.target.value, err: undefined })}>
                 {[...adj.p.batches]
-                  .sort((a, b) => a.expiry.localeCompare(b.expiry))
+                  .sort(byExpiry)
                   .map((b) => (
                     <option key={b.id} value={b.id}>
-                      {b.lot}, {tx(`${b.qty} قطعة، صلاحية ${date(b.expiry)}`, `${b.qty} units, exp ${date(b.expiry)}`)}
+                      {b.lot || tx('بدون رقم', 'No lot no.')}, {tx(`${b.qty} قطعة${b.expiry ? `، صلاحية ${date(b.expiry)}` : ''}`, `${b.qty} units${b.expiry ? `, exp ${date(b.expiry)}` : ''}`)}
                     </option>
                   ))}
               </select>

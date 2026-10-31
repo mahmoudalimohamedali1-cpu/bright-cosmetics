@@ -49,19 +49,21 @@ export function Provenance({ p, tone = 'paper', compact }: { p: Product; tone?: 
       ) as ReactNode,
       when: undefined as string | undefined,
     },
-    {
+    // Only when the lot is tied to a recorded shipment (manual stock has none).
+    sh && {
       icon: <Ship size={18} aria-hidden="true" />,
       title: tx('شحنة الاستيراد', 'Import shipment'),
-      line: tx(`شحنة ${lot.shipmentId.toUpperCase()}`, `Shipment ${lot.shipmentId.toUpperCase()}`),
+      line: tx(`شحنة ${sh.id.toUpperCase()}`, `Shipment ${sh.id.toUpperCase()}`),
       when: dispatched ? tx(`اتشحنت ${date(dispatched)}`, `Dispatched ${date(dispatched)}`) : undefined,
     },
     {
       icon: <Store size={18} aria-hidden="true" />,
       title: tx('على رف برايت', 'On the Bright shelf'),
-      line: tx(`تشغيلة ${lot.lot}`, `Lot ${lot.lot}`),
+      line: lot.lot ? tx(`تشغيلة ${lot.lot}`, `Lot ${lot.lot}`) : tx('متوفر في المخزن', 'In stock'),
       when: tx(`وصلت ${date(lot.receivedAt)}`, `Received ${date(lot.receivedAt)}`),
     },
-    {
+    // Only when the lot has an expiry date.
+    lot.expiry && {
       icon: <PackageCheck size={18} aria-hidden="true" />,
       title: tx('العبوة اللي هتوصلك', 'The unit you receive'),
       line: tx(`صالحة لحد ${date(lot.expiry, { day: 'numeric', month: 'long', year: 'numeric' })}`, `Good until ${date(lot.expiry, { day: 'numeric', month: 'long', year: 'numeric' })}`),
@@ -70,7 +72,7 @@ export function Provenance({ p, tone = 'paper', compact }: { p: Product; tone?: 
           ? tx(`باقي ${num(months)} شهر على الانتهاء`, `${num(months)} months before expiry`)
           : tx(`باقي ${num(left)} يوم على الانتهاء`, `${num(left)} days before expiry`),
     },
-  ]
+  ].filter((s): s is Exclude<typeof s, '' | undefined | null | false> => !!s)
 
   return (
     <div className={`sf-trail sf-trail--${tone}${compact ? ' sf-trail--compact' : ''}`}>
@@ -86,16 +88,16 @@ export function Provenance({ p, tone = 'paper', compact }: { p: Product; tone?: 
           </li>
         ))}
       </ol>
-      {!compact && (
+      {!compact && lot.expiry && (
         <p className="sf-trail__note">
           {tx(
             'بنشحن دايمًا من التشغيلة الأقرب في الصلاحية الأول، وده التاريخ اللي هتلاقيه مطبوع على العبوة.',
             'We always ship the earliest-expiring lot first, and this is the date printed on the unit you get.',
           )}
-          {next &&
+          {next?.expiry &&
             tx(
-              ` لو طلبتي أكتر من ${num(lot.qty)}، الباقي من تشغيلة ${next.lot} صالحة لحد ${date(next.expiry, { month: 'long', year: 'numeric' })}.`,
-              ` If you order more than ${num(lot.qty)}, the rest comes from lot ${next.lot}, good until ${date(next.expiry, { month: 'long', year: 'numeric' })}.`,
+              ` لو طلبتي أكتر من ${num(lot.qty)}، الباقي ${next.lot ? `من تشغيلة ${next.lot} ` : ''}صالح لحد ${date(next.expiry, { month: 'long', year: 'numeric' })}.`,
+              ` If you order more than ${num(lot.qty)}, the rest${next.lot ? ` comes from lot ${next.lot},` : ' is'} good until ${date(next.expiry, { month: 'long', year: 'numeric' })}.`,
             )}
         </p>
       )}

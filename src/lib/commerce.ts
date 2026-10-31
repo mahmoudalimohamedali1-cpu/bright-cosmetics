@@ -14,6 +14,7 @@ import type {
 } from '../data/types'
 import { uid } from './rand'
 import type { Bi } from '../i18n'
+import { byExpiry } from './lots'
 
 /*
   Pure order maths shared by the browser store (offline / demo mode) and the
@@ -71,7 +72,7 @@ export function evaluateCode(code: string | undefined, subtotal: number, discoun
 
 /** Remove qty from batches, earliest expiry first (FEFO). Returns every lot it took from, and the first one. */
 export function consumeFEFO(p: Product, qty: number): { product: Product; batchId?: string; picks: { batchId: string; qty: number }[] } {
-  const batches = [...p.batches].sort((a, b) => a.expiry.localeCompare(b.expiry)).map((b) => ({ ...b }))
+  const batches = [...p.batches].sort(byExpiry).map((b) => ({ ...b }))
   let left = qty
   const picks: { batchId: string; qty: number }[] = []
   for (const b of batches) {
@@ -101,7 +102,7 @@ export function restockLines(products: Product[], lines: OrderLine[]): { product
       continue
     }
     const batches = p.batches.map((b) => ({ ...b }))
-    const fallback = () => [...batches].sort((a, b) => a.expiry.localeCompare(b.expiry))[0]
+    const fallback = () => [...batches].sort(byExpiry)[0]
     const picks = l.picks?.length ? l.picks : [{ batchId: l.batchId ?? '', qty: l.qty }]
     for (const pk of picks) {
       const b = batches.find((x) => x.id === pk.batchId) ?? fallback()

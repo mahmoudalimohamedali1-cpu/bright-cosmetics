@@ -143,11 +143,11 @@ export default function OrderConfirmation() {
                     <span className="sf-card__brand"><bdi>{p.brand}</bdi></span>
                     <Link to={`/p/${p.slug}`}>{pick(p.name)}</Link>
                     <span className="sr-only">{tx(`، الكمية ${num(l.qty)}`, `, quantity ${num(l.qty)}`)}</span>
-                    {b && (
+                    {b && (b.lot || b.expiry) && (
                       <span className="sf-small sf-muted">
-                        {tx('تشغيلة', 'Lot')} <span className="sf-mono">{b.lot}</span>
-                        {tx('، صالحة لحد ', ', good until ')}
-                        {date(b.expiry, { month: 'long', year: 'numeric' })}
+                        {b.lot && <>{tx('تشغيلة', 'Lot')} <span className="sf-mono">{b.lot}</span></>}
+                        {b.lot && b.expiry && tx('، ', ', ')}
+                        {b.expiry && <>{tx('صالحة لحد ', 'good until ')}{date(b.expiry, { month: 'long', year: 'numeric' })}</>}
                       </span>
                     )}
                   </span>

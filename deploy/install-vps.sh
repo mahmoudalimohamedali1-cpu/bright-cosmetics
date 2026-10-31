@@ -163,7 +163,7 @@ if [ -n "$DOMAIN" ] && [ "$HTTPS" = no ]; then
   fi
 fi
 
-# Daily database backup at 03:00 (server time), 14 days kept, in $DATA/backups.
+# Daily backup at 03:00 (server time) in $DATA/backups: the database (14 days kept) and a copy of every product photo.
 apt-get -o DPkg::Lock::Timeout=600 install -y sqlite3 >/dev/null
 cat > /usr/local/bin/bright-backup <<BACKUP
 #!/bin/sh
@@ -173,6 +173,8 @@ F=$DATA/backups/daily-\$(date +%Y%m%d).db
 sqlite3 $DATA/nuri.db ".backup '\$F'"
 gzip -f "\$F"
 find $DATA/backups -name 'daily-*.db.gz' -mtime +14 -delete
+# Product photos never change once uploaded (random names): keep a copy of each.
+[ -d $DATA/uploads ] && cp -rn $DATA/uploads $DATA/backups/ || true
 BACKUP
 chmod 755 /usr/local/bin/bright-backup
 echo "0 3 * * * root /usr/local/bin/bright-backup" > /etc/cron.d/bright-backup

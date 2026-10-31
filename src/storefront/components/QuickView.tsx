@@ -59,11 +59,10 @@ function QuickBody({ id }: { id: string }) {
             </li>
           ))}
         </ul>
-        {lot && (
+        {lot && (lot.lot || lot.expiry) && (
           <p className="sf-lotline">
-            {tx('العبوة اللي هتوصلك من تشغيلة', 'Your unit comes from lot')} <span className="sf-mono">{lot.lot}</span>
-            {tx('، صالحة لحد ', ', good until ')}
-            {date(lot.expiry, { month: 'long', year: 'numeric' })}
+            {lot.lot ? <>{tx('العبوة اللي هتوصلك من تشغيلة', 'Your unit comes from lot')} <span className="sf-mono">{lot.lot}</span></> : tx('العبوة اللي هتوصلك', 'Your unit is')}
+            {lot.expiry ? <>{tx(lot.lot ? '، صالحة لحد ' : ' صالحة لحد ', lot.lot ? ', good until ' : ' good until ')}{date(lot.expiry, { month: 'long', year: 'numeric' })}</> : null}
           </p>
         )}
         {room > 0 ? (

@@ -6,7 +6,7 @@ import { gov, PAYMENT_LABEL } from './lib'
    may each read a different language. Western digits, EGP in both. */
 
 const egp = (n: number) => `EGP ${new Intl.NumberFormat('en-GB', { maximumFractionDigits: 0 }).format(Math.round(n))}`
-const d = (iso: string) => new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(iso))
+const d = (iso: string) => (iso && !Number.isNaN(new Date(iso).getTime()) ? new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(iso)) : '—')
 
 function useLookups() {
   const products = useStore((s) => s.products)
@@ -72,7 +72,7 @@ export function PackingSlips({ orders }: { orders: Order[] }) {
                         {p?.brand} {p?.name.en}
                         <div dir="rtl">{p?.name.ar}</div>
                       </td>
-                      <td>{b ? `${b.lot} (exp ${d(b.expiry)})` : '—'}</td>
+                      <td>{b ? `${b.lot || '—'}${b.expiry ? ` (exp ${d(b.expiry)})` : ''}` : '—'}</td>
                       <td className="t-num">{l.qty}</td>
                     </tr>
                   )
@@ -153,7 +153,7 @@ export function Invoice({ order: o }: { order: Order }) {
                     {p?.brand} {p?.name.en}
                     <div dir="rtl">{p?.name.ar}</div>
                   </td>
-                  <td>{b ? `${b.lot}, exp ${d(b.expiry)}` : '—'}</td>
+                  <td>{b ? [b.lot, b.expiry && `exp ${d(b.expiry)}`].filter(Boolean).join(', ') || '—' : '—'}</td>
                   <td className="t-num">{l.qty}</td>
                   <td className="t-num">{egp(l.price)}</td>
                   <td className="t-num">{egp(l.price * l.qty)}</td>

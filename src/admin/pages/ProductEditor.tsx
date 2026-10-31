@@ -13,7 +13,9 @@ import { daysUntil } from '../../lib/metrics'
 import { uid } from '../../lib/rand'
 import { Chip } from '../parts/core/ui'
 import { today } from '../parts/core/lib'
+import { ProductPhotos } from '../parts/core/ProductPhotos'
 import { useCategories } from '../../lib/useCategories'
+import { byExpiry } from '../../lib/lots'
 
 const ORIGINS: Origin[] = ['KR', 'JP', 'FR', 'US', 'CA', 'DE', 'CN', 'EG']
 const SKINS: SkinType[] = ['oily', 'dry', 'combination', 'sensitive', 'normal']
@@ -234,18 +236,17 @@ export default function ProductEditor() {
 
   const addNewBatch = () => {
     const e: Errors = {}
-    if (!nb.lot.trim()) e.lot = tx('رقم التشغيلة مطلوب، مكتوب على العبوة', 'Lot number is required, it is printed on the pack')
+    // Only the quantity is required; lot number and expiry are optional (undated stock ships after dated stock).
     if (!(Number(nb.qty) > 0)) e.qty = tx('الكمية لازم تكون أكبر من صفر', 'Quantity must be above 0')
-    if (!nb.expiry) e.expiry = tx('تاريخ الصلاحية مطلوب', 'Expiry date is required')
-    else if (nb.expiry <= today()) e.expiry = tx('التاريخ ده عدّى. تشغيلة منتهية مينفعش تتضاف للبيع', 'That date has passed. Expired lots cannot be added for sale')
+    if (nb.expiry && nb.expiry <= today()) e.expiry = tx('التاريخ ده عدّى. تشغيلة منتهية مينفعش تتضاف للبيع', 'That date has passed. Expired lots cannot be added for sale')
     setNbErr(e)
     if (Object.keys(e).length) return
     const b: Batch = { id: uid(`${d.id}-b`), lot: nb.lot.trim(), qty: Number(nb.qty), expiry: nb.expiry, receivedAt: new Date().toISOString(), shipmentId: nb.shipmentId || 'manual' }
     if (isNew) set('batches', [...d.batches, b])
     else {
       addBatch(d.id, b)
-      log(staff, { ar: `أضاف تشغيلة ${b.lot} (${b.qty}) لـ${d.name.ar}`, en: `Added lot ${b.lot} (${b.qty}) to ${d.name.en}` }, `/admin/products/${d.id}`)
-      toast(tx('اتضافت التشغيلة', 'Lot added'))
+      log(staff, { ar: `أضاف ${b.qty} قطعة${b.lot ? ` (تشغيلة ${b.lot})` : ''} لـ${d.name.ar}`, en: `Added ${b.qty} units${b.lot ? ` (lot ${b.lot})` : ''} to ${d.name.en}` }, `/admin/products/${d.id}`)
+      toast(tx('اتضافت الكمية', 'Stock added'))
     }
     setNb({ lot: '', qty: '', expiry: '', shipmentId: '' })
   }
@@ -420,6 +421,19 @@ export default function ProductEditor() {
           )}
 
           {pane(
+            tx('صور المنتج', 'Product photos'),
+            <ProductPhotos
+              photos={[d.image, ...(d.gallery ?? [])].filter((x): x is string => !!x)}
+              disabled={readOnly}
+              onChange={(list) => {
+                set('image', list[0])
+                set('gallery', list.slice(1))
+              }}
+            />,
+            tx('الصورة الأولى بتظهر في كارت المنتج وصفحته، والباقي في معرض صفحة المنتج.', 'The first photo shows on the product card and page; the rest form the product page gallery.'),
+          )}
+
+          {pane(
             tx('المكونات', 'Ingredients'),
             <div className="stack" style={{ gap: 8 }}>
               <div className="core-ing">
@@ -520,12 +534,12 @@ export default function ProductEditor() {
                   </thead>
                   <tbody>
                     {[...batches]
-                      .sort((a, b) => a.expiry.localeCompare(b.expiry))
+                      .sort(byExpiry)
                       .map((b) => {
                         const du = daysUntil(b.expiry)
                         return (
                           <tr key={b.id}>
-                            <td className="num">{b.lot}</td>
+                            <td className="num">{b.lot || <span className="faint">—</span>}</td>
                             <td className="t-num">
                               <span className="core-adjust">
                                 <button className="btn btn--ghost btn--sm btn--icon" onClick={() => bump(b, -1)} disabled={b.qty <= 0} aria-label={tx('نقص واحد', 'Decrease by one')}>
@@ -538,10 +552,16 @@ export default function ProductEditor() {
                               </span>
                             </td>
                             <td style={{ whiteSpace: 'nowrap' }}>
-                              {date(b.expiry)}
-                              <div className="tiny" style={{ color: du < 0 ? 'var(--bad)' : du <= settings.expiryWarnDays ? 'var(--warn)' : 'var(--fg-3)' }}>
-                                {du < 0 ? tx('منتهية', 'Expired') : tx(`باقي ${num(du)} يوم`, `${du} days left`)}
-                              </div>
+                              {b.expiry ? (
+                                <>
+                                  {date(b.expiry)}
+                                  <div className="tiny" style={{ color: du < 0 ? 'var(--bad)' : du <= settings.expiryWarnDays ? 'var(--warn)' : 'var(--fg-3)' }}>
+                                    {du < 0 ? tx('منتهية', 'Expired') : tx(`باقي ${num(du)} يوم`, `${du} days left`)}
+                                  </div>
+                                </>
+                              ) : (
+                                <span className="faint">{tx('من غير تاريخ', 'No date')}</span>
+                              )}
                             </td>
                             <td className="muted small">{date(b.receivedAt)}</td>
                             <td className="muted small">{b.shipmentId === 'manual' ? tx('يدوي', 'Manual') : b.shipmentId.toUpperCase()}</td>
@@ -551,7 +571,7 @@ export default function ProductEditor() {
                     {!batches.length && (
                       <tr>
                         <td colSpan={5} className="muted small">
-                          {tx('مفيش تشغيلات لسه. إضافة أول تشغيلة من تحت.', 'No lots yet. Add the first one below.')}
+                          {tx('مفيش مخزون لسه. اكتبي الكمية تحت (رقم التشغيلة والصلاحية اختياري) واضغطي "إضافة كمية".', 'No stock yet. Enter a quantity below (lot number and expiry are optional) and press "Add stock".')}
                         </td>
                       </tr>
                     )}
@@ -560,13 +580,13 @@ export default function ProductEditor() {
               </div>
               <div className="small muted num">{tx(`إجمالي المخزون ${num(onHand)} قطعة`, `${num(onHand)} units on hand`)}</div>
               <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', alignItems: 'end' }}>
-                <Field label={tx('رقم التشغيلة', 'Lot number')} htmlFor="nb-lot" error={nbErr.lot}>
+                <Field label={tx('رقم التشغيلة (اختياري)', 'Lot number (optional)')} htmlFor="nb-lot" error={nbErr.lot}>
                   <input id="nb-lot" className="input" dir="ltr" value={nb.lot} aria-invalid={!!nbErr.lot} onChange={(e) => setNb({ ...nb, lot: e.target.value })} />
                 </Field>
                 <Field label={tx('الكمية', 'Quantity')} htmlFor="nb-qty" error={nbErr.qty}>
                   <input id="nb-qty" className="input num" type="number" min={1} value={nb.qty} aria-invalid={!!nbErr.qty} onChange={(e) => setNb({ ...nb, qty: e.target.value })} />
                 </Field>
-                <Field label={tx('الصلاحية', 'Expiry')} htmlFor="nb-exp" error={nbErr.expiry}>
+                <Field label={tx('الصلاحية (اختياري)', 'Expiry (optional)')} htmlFor="nb-exp" error={nbErr.expiry}>
                   <input id="nb-exp" className="input" type="date" value={nb.expiry} aria-invalid={!!nbErr.expiry} onChange={(e) => setNb({ ...nb, expiry: e.target.value })} />
                 </Field>
                 <Field label={tx('من شحنة', 'From shipment')} htmlFor="nb-sh">
@@ -581,7 +601,7 @@ export default function ProductEditor() {
                 </Field>
                 <button className="btn" onClick={addNewBatch}>
                   <Plus size={16} aria-hidden />
-                  {tx('إضافة تشغيلة', 'Add lot')}
+                  {tx('إضافة كمية', 'Add stock')}
                 </button>
               </div>
             </div>,

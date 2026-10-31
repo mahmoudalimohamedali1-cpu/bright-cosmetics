@@ -6,6 +6,6 @@ export default defineConfig({
   plugins: [react()],
   server: {
     // The API (server/) runs on 8787 in dev; see `npm run dev`.
-    proxy: { '/api': 'http://localhost:8787' },
+    proxy: { '/api': 'http://localhost:8787', '/uploads': 'http://localhost:8787' },
   },
 })

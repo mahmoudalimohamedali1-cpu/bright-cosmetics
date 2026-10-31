@@ -4,6 +4,7 @@ import { create } from 'zustand'
 import { useStore, stockOf } from '../store'
 import { resolveStorefront } from '../data/storefront'
 import type { Batch, CategoryDef, Origin, Product } from '../data/types'
+import { byExpiry } from '../lib/lots'
 
 /* Storefront helpers. Only active products are ever shown to shoppers. */
 
@@ -26,11 +27,11 @@ export function useBrands() {
 
 /** The lot a shopper receives today: earliest expiry that still has stock (FEFO). */
 export function fefoBatch(p: Product): Batch | undefined {
-  return [...p.batches].filter((b) => b.qty > 0).sort((a, b) => a.expiry.localeCompare(b.expiry))[0]
+  return [...p.batches].filter((b) => b.qty > 0).sort(byExpiry)[0]
 }
 
 export function fefoBatches(p: Product): Batch[] {
-  return [...p.batches].filter((b) => b.qty > 0).sort((a, b) => a.expiry.localeCompare(b.expiry))
+  return [...p.batches].filter((b) => b.qty > 0).sort(byExpiry)
 }
 
 export function daysUntil(iso: string) {

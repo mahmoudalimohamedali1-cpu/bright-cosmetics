@@ -1,4 +1,6 @@
 import { randomBytes } from 'node:crypto'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { resolve } from 'node:path'
 import { Hono } from 'hono'
 import type { Context } from 'hono'
 import { bodyLimit } from 'hono/body-limit'
@@ -521,6 +523,7 @@ function stamp(collection: string, before: AnyDoc | undefined, after: AnyDoc, me
     return { ...after, events: (after.events as OrderEvent[]).map((e, i) => (i >= from && e && typeof e === 'object' ? { ...e, by: me.name } : e)) }
   }
   if (collection === 'activity' && !before) return { ...after, who: me.name }
+  if (collection === 'products') return cleanPhotos(after)
   return after
 }
 
@@ -679,6 +682,58 @@ app.get('/api/admin/integrations', need('integrations.use', 'orders.edit'), (c) 
 )
 
 // Booking a courier and sending the order-confirmation message are part of working an order.
+/* ───────────── Product photos ───────────── */
+
+const UPLOADS = resolve(env.dataDir, 'uploads')
+const UPLOAD_NAME = /^[a-f0-9]{24}\.(webp|png|jpg)$/
+const MAX_PHOTO = 6 * 1024 * 1024
+
+/** What the bytes are, not what the name says. */
+function imageKind(b: Uint8Array): 'webp' | 'png' | 'jpg' | undefined {
+  if (b.length > 12 && b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 && b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50) return 'webp'
+  if (b.length > 8 && b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) return 'png'
+  if (b.length > 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return 'jpg'
+  return undefined
+}
+
+app.post('/api/admin/uploads', need('products.edit'), async (c) => {
+  const me = c.get('me')
+  const form = await c.req.parseBody().catch(() => undefined)
+  const file = form?.file
+  if (!(file instanceof File)) return fail(c, 400, 'no_file', { ar: 'مفيش صورة في الطلب.', en: 'No image in the request.' })
+  if (file.size > MAX_PHOTO) return fail(c, 413, 'too_large', { ar: 'الصورة كبيرة. أقصى حجم 6 ميجا.', en: 'The image is too large. 6 MB max.' })
+  const bytes = new Uint8Array(await file.arrayBuffer())
+  const kind = imageKind(bytes)
+  if (!kind) return fail(c, 415, 'not_image', { ar: 'الملف ده مش صورة JPG أو PNG أو WebP.', en: 'This file is not a JPG, PNG or WebP image.' })
+  const name = `${randomBytes(12).toString('hex')}.${kind}`
+  await mkdir(UPLOADS, { recursive: true })
+  await writeFile(resolve(UPLOADS, name), bytes)
+  audit(me, 'uploads', name, 'create', `${Math.round(bytes.length / 1024)} KB`)
+  return c.json({ url: `/uploads/${name}` }, 201)
+})
+
+const PHOTO_TYPE = { webp: 'image/webp', png: 'image/png', jpg: 'image/jpeg' } as const
+
+app.get('/uploads/:name', async (c) => {
+  const name = c.req.param('name')
+  if (!UPLOAD_NAME.test(name)) return c.notFound()
+  try {
+    const buf = await readFile(resolve(UPLOADS, name))
+    // Names are random and never reused, so the file can be cached for good.
+    return c.body(buf, 200, { 'content-type': PHOTO_TYPE[name.split('.').pop() as keyof typeof PHOTO_TYPE], 'cache-control': 'public, max-age=31536000, immutable' })
+  } catch {
+    return c.notFound()
+  }
+})
+
+/** A product's photos may only point at the store's own image folders. */
+const PHOTO_PATH = /^\/(products|uploads)\/[A-Za-z0-9._-]{1,120}$/
+const cleanPhotos = (doc: AnyDoc): AnyDoc => {
+  const image = typeof doc.image === 'string' && PHOTO_PATH.test(doc.image) ? doc.image : undefined
+  const gallery = Array.isArray(doc.gallery) ? doc.gallery.filter((g): g is string => typeof g === 'string' && PHOTO_PATH.test(g)).slice(0, 12) : undefined
+  return { ...doc, image, gallery }
+}
+
 app.post('/api/admin/couriers/bosta/:orderId', need('orders.edit'), async (c) => {
   if (!configured.bosta()) return notConfigured(c, 'Bosta', BOSTA_VARS)
   const me = c.get('me')

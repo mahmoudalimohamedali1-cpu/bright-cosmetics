@@ -1,5 +1,6 @@
 import type { Customer, Order, Product } from '../data/types'
 import { DAY } from './rand'
+import { byExpiry } from './lots'
 
 /* Pure analytics helpers shared by every admin screen. */
 
@@ -139,10 +140,11 @@ export function expiringBatches(products: Product[], withinDays: number) {
   const limit = Date.now() + withinDays * DAY
   return products
     .flatMap((p) => p.batches.filter((b) => b.qty > 0 && new Date(b.expiry).getTime() < limit).map((b) => ({ product: p, batch: b })))
-    .sort((a, b) => a.batch.expiry.localeCompare(b.batch.expiry))
+    .sort((a, b) => byExpiry(a.batch, b.batch))
 }
 
-export const daysUntil = (iso: string) => Math.ceil((new Date(iso).getTime() - Date.now()) / DAY)
+/** Days left; a lot with no expiry date never runs out (Infinity), so it never warns. */
+export const daysUntil = (iso: string) => (iso ? Math.ceil((new Date(iso).getTime() - Date.now()) / DAY) : Infinity)
 
 /* RFM segmentation — scores 1..5 by quintile */
 export type Segment = 'champions' | 'loyal' | 'promising' | 'new' | 'at_risk' | 'hibernating' | 'cant_lose'
