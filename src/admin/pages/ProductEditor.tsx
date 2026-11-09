@@ -17,7 +17,7 @@ import { ProductPhotos } from '../parts/core/ProductPhotos'
 import { useCategories } from '../../lib/useCategories'
 import { byExpiry } from '../../lib/lots'
 
-const ORIGINS: Origin[] = ['KR', 'JP', 'FR', 'US', 'CA', 'DE', 'CN', 'EG']
+const ORIGINS: Origin[] = ['KR', 'JP', 'FR', 'US', 'CA', 'DE', 'CN', 'PL', 'CH', 'GR', 'EG']
 const SKINS: SkinType[] = ['oily', 'dry', 'combination', 'sensitive', 'normal']
 const CONCERNS: Concern[] = ['acne', 'hydration', 'brightening', 'aging', 'pores', 'redness', 'sun', 'barrier']
 
@@ -181,7 +181,8 @@ export default function ProductEditor() {
     if (!d.sku.trim()) e.sku = tx('SKU مطلوب عشان المخزون والتصدير، مثلًا NR-COS-030.', 'SKU is needed for stock and exports, for example NR-COS-030.')
     else if (usedBy) e.sku = tx(`الـSKU ده مستخدم في "${usedBy.name.ar}". المطلوب كود مختلف.`, `This SKU is already used by “${usedBy.name.en}”. Use a different one.`)
     if (d.lowStockAt < 0) e.lowStockAt = tx('حد التنبيه لازم يكون صفر أو أكتر.', 'The alert level must be 0 or more.')
-    if (!d.skinTypes.length) e.skinTypes = tx('اختيار نوع بشرة واحد على الأقل، عشان أداة الروتين تقدر ترشّحه.', 'Pick at least one skin type so the routine finder can recommend it.')
+    // Only skincare categories feed the routine finder; hair, body and lash products need no skin type.
+    if (!d.skinTypes.length && (allCats.find((c) => c.id === d.category)?.skincare ?? true)) e.skinTypes = tx('اختيار نوع بشرة واحد على الأقل، عشان أداة الروتين تقدر ترشّحه.', 'Pick at least one skin type so the routine finder can recommend it.')
     if (d.status === 'active' && !d.short.ar.trim() && !d.short.en.trim())
       e['short.ar'] = tx('المنتج النشط محتاج وصف مختصر يظهر في الكارت.', 'Active products need a short description for the product card.')
     return e

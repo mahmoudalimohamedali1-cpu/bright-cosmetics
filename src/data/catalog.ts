@@ -19,6 +19,7 @@ const CAT_DESC: Record<Category, [string, string]> = {
   makeup: ['Press lightly from the centre of the face outward. Build in thin layers.', 'اضغطي بخفة من نص الوش لبرّه، وابني التغطية بطبقات رفيعة.'],
   eye: ['Tap a rice-grain amount around the eye area with your ring finger, morning and night.', 'طبطبي كمية قد حبة الرز حوالين العين بصباعك البنصر، الصبح وبالليل.'],
   hair: ['Use on wet hair, massage into scalp and lengths, leave a few minutes, then rinse well.', 'استخدميه على شعر مبلول، دلّكي فروة الراس والأطراف، سيبيه دقايق واشطفي كويس.'],
+  body: ['Massage into clean, dry skin until absorbed, ideally after a shower.', 'دلّكيه على جسم نضيف وناشف لحد ما يتشرب، والأفضل بعد الشاور.'],
   lip: ['Apply a generous layer before bed or whenever lips feel dry.', 'حطّي طبقة كويسة قبل النوم أو كل ما شفايفك تنشف.'],
 }
 
@@ -90,7 +91,7 @@ export function buildCatalog(): Product[] {
       rating: 0,
       reviewCount: 0,
       tags: [...(best ? ['bestseller'] : []), ...(s.priceConfirmed ? [] : ['price-to-confirm'])],
-      status: 'active',
+      status: s.status ?? 'active',
       createdAt: daysAgoISO(30 + Math.floor(r() * 300)),
       featured: best,
     }
@@ -107,6 +108,9 @@ export function originName(o: Origin) {
     DE: { en: 'Germany', ar: 'ألمانيا' },
     EG: { en: 'Egypt', ar: 'مصر' },
     CN: { en: 'China', ar: 'الصين' },
+    PL: { en: 'Poland', ar: 'بولندا' },
+    CH: { en: 'Switzerland', ar: 'سويسرا' },
+    GR: { en: 'Greece', ar: 'اليونان' },
   }[o]
 }
 
@@ -122,6 +126,7 @@ export const CATEGORY_LABEL: Record<BuiltInCategory, { ar: string; en: string }>
   lip: { ar: 'شفايف', en: 'Lips' },
   eye: { ar: 'العناية بالعين', en: 'Eye care' },
   hair: { ar: 'العناية بالشعر', en: 'Hair care' },
+  body: { ar: 'العناية بالجسم', en: 'Body care' },
 }
 
 export const SKIN_LABEL: Record<SkinType, { ar: string; en: string }> = {

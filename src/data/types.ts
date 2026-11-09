@@ -1,6 +1,6 @@
 import type { Bi } from '../i18n'
 
-export type Origin = 'KR' | 'FR' | 'US' | 'JP' | 'CA' | 'DE' | 'EG' | 'CN'
+export type Origin = 'KR' | 'FR' | 'US' | 'JP' | 'CA' | 'DE' | 'EG' | 'CN' | 'PL' | 'CH' | 'GR'
 
 /** The eleven categories the store started with. */
 export type BuiltInCategory =
@@ -15,6 +15,7 @@ export type BuiltInCategory =
   | 'lip'
   | 'eye'
   | 'hair'
+  | 'body'
 
 /** A category id: a built-in one, or one the owner added in Admin > Storefront > Categories. */
 export type Category = string

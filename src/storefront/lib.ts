@@ -8,7 +8,7 @@ import { byExpiry } from '../lib/lots'
 
 /* Storefront helpers. Only active products are ever shown to shoppers. */
 
-export const IMPORTED_ORIGINS: Origin[] = ['FR', 'US', 'JP', 'CA', 'DE', 'CN']
+export const IMPORTED_ORIGINS: Origin[] = ['FR', 'US', 'JP', 'CA', 'DE', 'CN', 'PL', 'CH', 'GR']
 export const ALL_ORIGINS: Origin[] = ['KR', ...IMPORTED_ORIGINS, 'EG']
 
 export function useActiveProducts() {

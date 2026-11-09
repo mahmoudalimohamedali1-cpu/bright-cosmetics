@@ -19,6 +19,7 @@ const BUILT_IN: { id: string; skincare: boolean }[] = [
   { id: 'moisturizer', skincare: true },
   { id: 'sunscreen', skincare: true },
   { id: 'hair', skincare: false },
+  { id: 'body', skincare: false },
   { id: 'makeup', skincare: false },
   { id: 'lip', skincare: false },
 ]

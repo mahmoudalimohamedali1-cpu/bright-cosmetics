@@ -177,7 +177,10 @@ export function ProductView({ id, draft }: { id: string; draft?: Product }) {
             </a>
             <p className="sf-pdp__short">{pick(p.short)}</p>
 
+            {/* Hair, body and lash products have no skin types or concerns: show only what applies. */}
+            {(p.skinTypes.length > 0 || p.concerns.length > 0) && (
             <dl className="sf-fit">
+              {p.skinTypes.length > 0 && (
               <div>
                 <dt>{tx('يناسب بشرة', 'Suits skin')}</dt>
                 <dd>
@@ -191,6 +194,8 @@ export function ProductView({ id, draft }: { id: string; draft?: Product }) {
                   </ul>
                 </dd>
               </div>
+              )}
+              {p.concerns.length > 0 && (
               <div>
                 <dt>{tx('بيساعد في', 'Helps with')}</dt>
                 <dd>
@@ -205,7 +210,9 @@ export function ProductView({ id, draft }: { id: string; draft?: Product }) {
                   </ul>
                 </dd>
               </div>
+              )}
             </dl>
+            )}
 
             <div className="sf-buybox">
               <div className="sf-buybox__price">
