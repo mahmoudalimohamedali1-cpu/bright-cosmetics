@@ -9,7 +9,7 @@ import { stockOf } from '../../store'
 import { Door } from '../components/Door'
 import { ProductPanes } from '../components/ProductCard'
 import { Arrow, Sticker } from '../components/bits'
-import { ALL_ORIGINS, IMPORTED_ORIGINS, brandSlug, useActiveProducts, useBrands, useTitle } from '../lib'
+import { ALL_ORIGINS, IMPORTED_ORIGINS, brandSlug, stepCategoryOk, useActiveProducts, useBrands, useTitle } from '../lib'
 import { useCategories } from '../../lib/useCategories'
 
 const SKINS: SkinType[] = ['oily', 'dry', 'combination', 'sensitive', 'normal']
@@ -119,7 +119,7 @@ export default function Shop() {
       if (lists.skin.length && !lists.skin.some((s) => p.skinTypes.includes(s as SkinType))) return false
       if (lists.concern.length && !lists.concern.some((c) => p.concerns.includes(c as Concern))) return false
       if (lists.origin.length && !lists.origin.includes(p.origin)) return false
-      if (lists.step.length && !(lists.step.includes(String(p.routineStep)) && p.category !== 'lip' && p.category !== 'makeup' && p.category !== 'hair')) return false
+      if (lists.step.length && !(lists.step.includes(String(p.routineStep)) && stepCategoryOk(p, allCats))) return false
       if (price && (p.price < price.min || p.price >= price.max)) return false
       if (stockOnly && stockOf(p) === 0) return false
       return true
@@ -135,7 +135,7 @@ export default function Shop() {
     r = [...r].sort(by[sort])
     // Sold-out items sink to the end in every sort.
     return [...r.filter((p) => stockOf(p) > 0), ...r.filter((p) => stockOf(p) === 0)]
-  }, [products, q, lists, price, stockOnly, sort])
+  }, [products, q, lists, price, stockOnly, sort, allCats])
 
   const sortLabel: Record<SortKey, string> = {
     featured: tx('المختار', 'Featured'),

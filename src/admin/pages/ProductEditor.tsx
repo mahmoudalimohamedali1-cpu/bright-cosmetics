@@ -15,7 +15,7 @@ import { Chip } from '../parts/core/ui'
 import { today } from '../parts/core/lib'
 import { ProductPhotos } from '../parts/core/ProductPhotos'
 import { useCategories } from '../../lib/useCategories'
-import { categoryId } from '../../data/categories'
+import { categoryId, isSkincareCategory } from '../../data/categories'
 import { byExpiry } from '../../lib/lots'
 
 const ORIGINS: Origin[] = ['KR', 'JP', 'FR', 'US', 'CA', 'DE', 'CN', 'PL', 'CH', 'GR', 'EG']
@@ -157,6 +157,7 @@ export default function ProductEditor() {
   }
 
   const d = draft
+  const isSkincare = isSkincareCategory(allCats, d.category)
   const set = <K extends keyof Product>(k: K, v: Product[K]) => {
     setDraft((p) => (p ? { ...p, [k]: v } : p))
     if (errors[k as string]) setErrors((e) => ({ ...e, [k]: undefined }))
@@ -186,7 +187,7 @@ export default function ProductEditor() {
     else if (usedBy) e.sku = tx(`الـSKU ده مستخدم في "${usedBy.name.ar}". المطلوب كود مختلف.`, `This SKU is already used by “${usedBy.name.en}”. Use a different one.`)
     if (d.lowStockAt < 0) e.lowStockAt = tx('حد التنبيه لازم يكون صفر أو أكتر.', 'The alert level must be 0 or more.')
     // Only skincare categories feed the routine finder; hair, body and lash products need no skin type.
-    if (!d.skinTypes.length && (allCats.find((c) => c.id === d.category)?.skincare ?? true)) e.skinTypes = tx('اختيار نوع بشرة واحد على الأقل، عشان أداة الروتين تقدر ترشّحه.', 'Pick at least one skin type so the routine finder can recommend it.')
+    if (!d.skinTypes.length && isSkincare) e.skinTypes = tx('اختيار نوع بشرة واحد على الأقل، عشان أداة الروتين تقدر ترشّحه.', 'Pick at least one skin type so the routine finder can recommend it.')
     if (d.status === 'active' && !d.short.ar.trim() && !d.short.en.trim())
       e['short.ar'] = tx('المنتج النشط محتاج وصف مختصر يظهر في الكارت.', 'Active products need a short description for the product card.')
     return e
@@ -763,15 +764,24 @@ export default function ProductEditor() {
                   </div>
                 </div>
               )}
-              <Field label={tx('خطوة الروتين', 'Routine step')} htmlFor="f-step">
-                <select id="f-step" className="select" value={d.routineStep} onChange={(e) => set('routineStep', Number(e.target.value) as Product['routineStep'])}>
-                  {[1, 2, 3, 4, 5, 6].map((s) => (
-                    <option key={s} value={s}>
-                      {num(s)}. {pick(STEP_LABEL[s])}
-                    </option>
-                  ))}
-                </select>
-              </Field>
+              {isSkincare ? (
+                <Field label={tx('خطوة الروتين', 'Routine step')} htmlFor="f-step">
+                  <select id="f-step" className="select" value={d.routineStep} onChange={(e) => set('routineStep', Number(e.target.value) as Product['routineStep'])}>
+                    {[1, 2, 3, 4, 5, 6].map((s) => (
+                      <option key={s} value={s}>
+                        {num(s)}. {pick(STEP_LABEL[s])}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              ) : (
+                <div className="field">
+                  <span className="field__label">{tx('خطوة الروتين', 'Routine step')}</span>
+                  <span className="field__hint">
+                    {tx('مش مطلوبة: القسم ده مش جزء من روتين البشرة، فالمنتج مش هيظهر في أداة الروتين ومش هيتكتب عليه رقم خطوة.', 'Not needed: this category is not part of the skin routine, so the product stays out of the routine finder and shows no step number.')}
+                  </span>
+                </div>
+              )}
               <div className="field">
                 <span className="field__label">{tx('وقت الاستخدام', 'When to use')}</span>
                 <div className="core-chips">

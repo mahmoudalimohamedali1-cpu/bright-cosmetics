@@ -1,4 +1,5 @@
 import { useI18n } from '../i18n'
+import { isSkincareCategory } from '../data/categories'
 import { useEffect, useMemo } from 'react'
 import { create } from 'zustand'
 import { useStore, stockOf } from '../store'
@@ -63,8 +64,7 @@ export function useTitle(title: string | undefined) {
 
 /** Only skincare categories belong in a routine (the owner marks each category; hair, makeup and lips are not). */
 export function stepCategoryOk(p: Product, cats: CategoryDef[]) {
-  const c = cats.find((x) => x.id === p.category)
-  return c ? c.skincare : p.category !== 'lip' && p.category !== 'makeup' && p.category !== 'hair'
+  return isSkincareCategory(cats, p.category)
 }
 
 export function useCartLines() {

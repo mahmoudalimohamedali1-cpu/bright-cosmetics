@@ -72,6 +72,12 @@ export function categoryLabel(list: CategoryDef[], id: string): Bi {
   return builtIn ?? { ar: id, en: id }
 }
 
+/** Skincare categories feed the routine finder and carry a routine step and skin types; hair, body, makeup and the like do not. */
+export function isSkincareCategory(list: CategoryDef[], id: string): boolean {
+  const c = list.find((x) => x.id === id)
+  return c ? c.skincare : id !== 'lip' && id !== 'makeup' && id !== 'hair' && id !== 'body'
+}
+
 /** What shoppers see in menus, chips and the footer: enabled, in the owner's order, with at least one product on sale. */
 export function shownCategories(list: CategoryDef[], products: Product[]): CategoryDef[] {
   return list.filter((c) => c.enabled && products.some((p) => p.category === c.id))

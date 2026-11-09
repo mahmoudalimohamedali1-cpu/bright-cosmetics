@@ -92,6 +92,7 @@ export function ProductView({ id, draft }: { id: string; draft?: Product }) {
       products
         .filter(
           (x) =>
+            stepCategoryOk(p, allCats) &&
             x.id !== p.id &&
             stepCategoryOk(x, allCats) &&
             Math.abs(x.routineStep - p.routineStep) === 1 &&
@@ -301,9 +302,11 @@ export function ProductView({ id, draft }: { id: string; draft?: Product }) {
               <Fold title={tx('طريقة الاستخدام', 'How to use')}>
                 <p>{pick(p.howToUse)}</p>
                 <div className="sf-routinefit">
-                  <span className="sf-routinefit__step">
-                    {tx(`الخطوة ${num(p.routineStep)} من ٦: ${STEP_LABEL[p.routineStep].ar}`, `Step ${num(p.routineStep)} of 6: ${STEP_LABEL[p.routineStep].en}`)}
-                  </span>
+                  {stepCategoryOk(p, allCats) && (
+                    <span className="sf-routinefit__step">
+                      {tx(`الخطوة ${num(p.routineStep)} من ٦: ${STEP_LABEL[p.routineStep].ar}`, `Step ${num(p.routineStep)} of 6: ${STEP_LABEL[p.routineStep].en}`)}
+                    </span>
+                  )}
                   {p.routineTime.includes('am') && (
                     <span className="sf-chip">
                       <Sun size={14} aria-hidden="true" />

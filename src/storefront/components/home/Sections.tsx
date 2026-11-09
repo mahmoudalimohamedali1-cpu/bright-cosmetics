@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import type { Concern, HomeBlock, Product, SkinType } from '../../../data/types'
+import type { CategoryDef, Concern, HomeBlock, Product, SkinType } from '../../../data/types'
 import { bestProducts, heroProducts, pickProducts } from '../../../data/storefront'
 import { useI18n } from '../../../i18n'
 import { Hero } from '../Hero'
@@ -15,15 +15,16 @@ import { BrandStrip } from './BrandStrip'
 import { ProductGroup } from './ProductGroup'
 import { CategoryShelf, ProductRail } from './ProductRail'
 import { ShapedSection } from './Shapes'
-import { useActiveProducts } from '../../lib'
+import { stepCategoryOk, useActiveProducts } from '../../lib'
+import { useCategories } from '../../../lib/useCategories'
 
 function bySlug(products: Product[], slugs: string[]) {
   return slugs.map((s) => products.find((p) => p.slug === s)).filter((p): p is Product => !!p && !!p.image)
 }
 
-function routineItems(products: Product[], skin: string, concern: string) {
+function routineItems(products: Product[], skin: string, concern: string, cats: CategoryDef[]) {
   const fit = (p: Product) =>
-    (!skin || p.skinTypes.includes(skin as SkinType)) && (!concern || p.concerns.includes(concern as Concern))
+    stepCategoryOk(p, cats) && (!skin || p.skinTypes.includes(skin as SkinType)) && (!concern || p.concerns.includes(concern as Concern))
   const fits = products.filter((p) => p.image && fit(p))
   const byStep = [1, 3, 5].map((s) => fits.find((p) => p.routineStep === s)).filter((p): p is Product => !!p)
   return byStep.length >= 3 ? byStep : fits.slice(0, 3)
@@ -38,6 +39,7 @@ function spinProduct(products: Product[], slug: string) {
 export function Sections({ blocks, hold }: { blocks: HomeBlock[]; hold: number }) {
   const { tx, pick } = useI18n()
   const products = useActiveProducts()
+  const { all: allCats } = useCategories()
   const best = useMemo(() => bestProducts(products, [], 8), [products])
 
   return (
@@ -168,7 +170,7 @@ export function Sections({ blocks, hold }: { blocks: HomeBlock[]; hold: number }
                   )}
                   <ul className="v-routines__grid">
                     {block.cards.map((r) => {
-                      const items = routineItems(products, r.skin, r.concern)
+                      const items = routineItems(products, r.skin, r.concern, allCats)
                       const badge = pick(r.badge)
                       if (!pick(r.title)) return null
                       return (
