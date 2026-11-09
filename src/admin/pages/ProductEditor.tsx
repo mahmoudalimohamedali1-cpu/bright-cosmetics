@@ -15,6 +15,7 @@ import { Chip } from '../parts/core/ui'
 import { today } from '../parts/core/lib'
 import { ProductPhotos } from '../parts/core/ProductPhotos'
 import { useCategories } from '../../lib/useCategories'
+import { categoryId } from '../../data/categories'
 import { byExpiry } from '../../lib/lots'
 
 const ORIGINS: Origin[] = ['KR', 'JP', 'FR', 'US', 'CA', 'DE', 'CN', 'PL', 'CH', 'GR', 'EG']
@@ -88,6 +89,9 @@ export default function ProductEditor() {
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [nb, setNb] = useState({ lot: '', qty: '', expiry: '', shipmentId: '' })
   const [nbErr, setNbErr] = useState<Errors>({})
+  // Inline "new category" form under the category select (owner and settings editors only).
+  const [newCat, setNewCat] = useState<{ ar: string; en: string; skincare: boolean } | null>(null)
+  const [newCatErr, setNewCatErr] = useState('')
   const bypass = useRef(false)
 
   // Reset when navigating between products
@@ -220,6 +224,34 @@ export default function ProductEditor() {
       navigate(`/admin/products/${clean.id}`, { replace: true })
       bypass.current = false
     }
+  }
+
+  const canAddCat = can('settings.edit') && !readOnly
+
+  const addCategory = () => {
+    if (!newCat) return
+    const ar = newCat.ar.trim().slice(0, 60)
+    const en = newCat.en.trim().slice(0, 60)
+    if (!ar && !en) return setNewCatErr(tx('اكتب اسم القسم بالعربي أو بالإنجليزي.', 'Type the category name in Arabic or English.'))
+    const sameName = allCats.find((c) => (ar && c.label.ar.trim() === ar) || (en && c.label.en.trim().toLowerCase() === en.toLowerCase()))
+    if (sameName) {
+      set('category', sameName.id)
+      setNewCat(null)
+      setNewCatErr('')
+      toast(tx('القسم ده موجود بالفعل، واتختار للمنتج', 'That category already exists, so it was picked'))
+      return
+    }
+    // The id is the URL (/shop/<id>): from the English name, or a short generated one for Arabic-only names.
+    const root = categoryId(en) || `cat-${uid('c').slice(-5).toLowerCase().replace(/[^a-z0-9]/g, '')}`
+    let id = root
+    for (let i = 2; allCats.some((c) => c.id === id); i++) id = `${root}-${i}`
+    const def = { id, label: { ar: ar || en, en: en || ar }, enabled: true, skincare: newCat.skincare }
+    useStore.getState().updateSettings({ categories: [...allCats, def] })
+    log(staff, { ar: `أضاف قسم ${def.label.ar}`, en: `Added the ${def.label.en} category` }, '/admin/storefront')
+    set('category', id)
+    setNewCat(null)
+    setNewCatErr('')
+    toast(tx('اتضاف القسم. هيظهر في المتجر أول ما يبقى فيه منتج نشط', 'Category added. It shows in the shop once it has an active product'))
   }
 
   const discard = () => {
@@ -684,14 +716,53 @@ export default function ProductEditor() {
                 </Field>
               </div>
               <Field label={tx('الفئة', 'Category')} htmlFor="f-cat">
-                <select id="f-cat" className="select" value={d.category} onChange={(e) => set('category', e.target.value as Category)}>
+                <select
+                  id="f-cat"
+                  className="select"
+                  value={newCat ? '__new' : d.category}
+                  onChange={(e) => {
+                    if (e.target.value === '__new') {
+                      setNewCat({ ar: '', en: '', skincare: false })
+                      setNewCatErr('')
+                      requestAnimationFrame(() => document.getElementById('f-newcat-ar')?.focus())
+                    } else {
+                      setNewCat(null)
+                      set('category', e.target.value as Category)
+                    }
+                  }}
+                >
                   {[...allCats.map((c) => c.id), ...(allCats.some((c) => c.id === d.category) ? [] : [d.category])].map((c) => (
                     <option key={c} value={c}>
                       {pick(catLabel(c))}
                     </option>
                   ))}
+                  {canAddCat && <option value="__new">{tx('+ قسم جديد…', '+ New category…')}</option>}
                 </select>
               </Field>
+              {newCat && (
+                <div className="pe-newcat" role="group" aria-label={tx('قسم جديد', 'New category')}>
+                  <div className="grid grid-2" style={{ gap: 12 }}>
+                    <Field label={tx('اسم القسم بالعربي', 'Name in Arabic')} htmlFor="f-newcat-ar">
+                      <input id="f-newcat-ar" className="input" dir="rtl" placeholder="العطور" value={newCat.ar} onChange={(e) => setNewCat({ ...newCat, ar: e.target.value })} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCategory())} />
+                    </Field>
+                    <Field label={tx('اسم القسم بالإنجليزي', 'Name in English')} htmlFor="f-newcat-en" error={newCatErr || undefined}>
+                      <input id="f-newcat-en" className="input" dir="ltr" placeholder="Perfumes" value={newCat.en} onChange={(e) => setNewCat({ ...newCat, en: e.target.value })} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCategory())} />
+                    </Field>
+                  </div>
+                  <label className="pe-newcat__check">
+                    <input type="checkbox" checked={newCat.skincare} onChange={(e) => setNewCat({ ...newCat, skincare: e.target.checked })} />
+                    {tx('قسم عناية بالبشرة (يدخل في أداة الروتين ويطلب نوع البشرة)', 'Skincare category (part of the routine finder, needs a skin type)')}
+                  </label>
+                  <div className="pe-newcat__actions">
+                    <button type="button" className="btn btn--primary btn--sm" onClick={addCategory}>
+                      <Plus size={14} aria-hidden /> {tx('أضف القسم', 'Add category')}
+                    </button>
+                    <button type="button" className="btn btn--ghost btn--sm" onClick={() => (setNewCat(null), setNewCatErr(''))}>
+                      {tx('إلغاء', 'Cancel')}
+                    </button>
+                  </div>
+                </div>
+              )}
               <Field label={tx('خطوة الروتين', 'Routine step')} htmlFor="f-step">
                 <select id="f-step" className="select" value={d.routineStep} onChange={(e) => set('routineStep', Number(e.target.value) as Product['routineStep'])}>
                   {[1, 2, 3, 4, 5, 6].map((s) => (

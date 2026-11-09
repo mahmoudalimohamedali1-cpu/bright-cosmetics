@@ -276,3 +276,24 @@
 .core-photos__badge { position: absolute; inset-block-start: 8px; inset-inline-start: 8px; padding: 1px 8px; border-radius: 999px; background: var(--lilac-700); color: #fff; font-size: 11px; font-weight: 600; }
 .core-photos__tools { display: flex; justify-content: center; gap: 2px; }
 .core-photos__add { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+
+/* Product editor: inline "new category" form under the category select */
+.pe-newcat {
+  display: grid;
+  gap: 10px;
+  margin-top: -4px;
+  padding: 12px;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  background: var(--hover);
+}
+.pe-newcat__check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  cursor: pointer;
+}
+.pe-newcat__check input { margin-top: 3px; }
+.pe-newcat__actions { display: flex; gap: 8px; flex-wrap: wrap; }
