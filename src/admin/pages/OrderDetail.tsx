@@ -101,12 +101,12 @@ export default function OrderDetail() {
   const cname = customer ? pick(customer.name) : tx('العميل', 'Customer')
   const waText = [
     `أهلًا ${customer?.name.ar ?? ''}، معاك فريق برايت.`,
-    `بنأكد طلب رقم #${o.number} بإجمالي ${o.total} ج.م ${o.payment === 'cod' ? 'والدفع عند الاستلام' : 'مدفوع مسبقًا'}.`,
+    `بنأكد طلب رقم #${o.number} بإجمالي ${o.total} ج.م ${o.payment === 'cod' ? 'والدفع عند الاستلام' : o.paymentStatus === 'paid' ? 'مدفوع مسبقًا' : 'والدفع الأونلاين لسه ما وصلناش'}.`,
     `العنوان: ${o.address}، ${g?.name.ar ?? ''}.`,
     'برجاء الرد بكلمة "تمام" للتأكيد.',
     '',
     `Hi ${customer?.name.en ?? ''}, this is Bright.`,
-    `Confirming order #${o.number}, total EGP ${o.total}${o.payment === 'cod' ? ', cash on delivery' : ', prepaid'}.`,
+    `Confirming order #${o.number}, total EGP ${o.total}${o.payment === 'cod' ? ', cash on delivery' : o.paymentStatus === 'paid' ? ', prepaid' : ', online payment not received yet'}.`,
     `Address: ${o.address}, ${g?.name.en ?? ''}.`,
     'Reply OK to confirm.',
   ].join('\n')
@@ -285,7 +285,9 @@ export default function OrderDetail() {
         hint:
           o.payment === 'cod'
             ? tx(`تسجيل التسليم بيسجّل تحصيل ${money(o.total)} من ${o.courier ?? 'شركة الشحن'}.`, `Marking delivered records ${money(o.total)} collected via ${o.courier ?? 'the courier'}.`)
-            : tx('الطلب مدفوع مسبقًا.', 'This order is prepaid.'),
+            : o.paymentStatus === 'paid'
+              ? tx('الطلب مدفوع مسبقًا.', 'This order is prepaid.')
+              : tx('تنبيه: الدفع الأونلاين لسه ما وصلش.', 'Warning: the online payment has not arrived.'),
         button: canEdit ? (
           <button className="btn btn--live" onClick={() => act(() => updateFulfillment(o.id, 'delivered', staff), 'اتسلّم الطلب للعميل', 'Marked delivered')}>
             <Check size={16} aria-hidden />
@@ -312,7 +314,7 @@ export default function OrderDetail() {
   if (prevCancels) factors.push({ ok: false, text: tx(`${num(prevCancels)} طلب سابق اتلغى`, `${prevCancels} earlier order(s) cancelled`) })
   if (g?.zone === 'remote') factors.push({ ok: false, text: tx('منطقة بعيدة: توصيل أطول ورفض استلام أعلى', 'Remote area: longer delivery and more refusals') })
   if (o.risk === 'high' && factors.length === 0) factors.push({ ok: false, text: tx('اتعلّم عليه من قاعدة فحص الطلبات', 'Flagged by the order screening rule') })
-  if (o.payment !== 'cod') factors.push({ ok: true, text: tx('مدفوع مسبقًا', 'Paid upfront') })
+  if (o.payment !== 'cod') factors.push(o.paymentStatus === 'paid' ? { ok: true, text: tx('مدفوع مسبقًا', 'Paid upfront') } : { ok: false, text: tx('دفع أونلاين لسه ما وصلش', 'Online payment not received yet') })
   if (delivered) factors.push({ ok: true, text: tx(`${num(delivered)} طلب سابق اتسلّم بنجاح`, `${delivered} earlier order(s) delivered`) })
 
   const Prev = dir === 'rtl' ? ChevronRight : ChevronLeft

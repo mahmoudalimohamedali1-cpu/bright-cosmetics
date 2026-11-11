@@ -29,6 +29,7 @@ import {
 import { useI18n } from '../i18n'
 import { useStore } from '../store'
 import { AdminContext, Guard, ToastHost, useToasts } from './ui'
+import { ApiError } from '../lib/api'
 import { expiringBatches, stock } from '../lib/metrics'
 import { loadAdmin, pullChanges, startAdminSync, useRemote } from '../lib/sync'
 import { badgeTitle, clearTitleBadge, newOrderAlertsOn, playChime, primeSound, systemNotify } from './orderAlert'
@@ -101,13 +102,15 @@ function AdminShell({ online, signOut, me }: { online: boolean; signOut: () => v
       onError: (m) => toast(tx(`${m.ar} مااتحفظش على السيرفر.`, `${m.en} Not saved to the server.`)),
       onConflict: () => toast(tx('في سجل اتغيّر من مكان تاني، فاتحمّلت آخر نسخة منه.', 'A record changed elsewhere, so its latest version was loaded.')),
       onForbidden: (m) => toast(tx(`${m.ar} التعديل رجع لآخر نسخة محفوظة.`, `${m.en} The change was reverted to the saved version.`)),
+      onRetrying: () => toast(tx('الاتصال بالسيرفر وقع. التعديلات متسجّلة هنا وهتتحفظ لوحدها أول ما يرجع، فمتقفلش الصفحة.', 'Lost the connection to the server. Your changes are kept here and save on their own once it is back, so keep this page open.'), 10_000),
+      onRecovered: () => toast(tx('الاتصال رجع واتحفظت كل التعديلات.', 'Back online. All changes are saved.')),
     })
     let last = Date.now()
     const onVis = () => {
       if (document.visibilityState === 'visible') clearTitleBadge()
       if (document.visibilityState !== 'visible' || Date.now() - last < 30_000 || !sync.idle()) return
       last = Date.now()
-      loadAdmin().catch(() => {})
+      loadAdmin(sync.idle).catch(() => {})
     }
     document.addEventListener('visibilitychange', onVis)
     window.addEventListener('focus', clearTitleBadge)
@@ -121,8 +124,14 @@ function AdminShell({ online, signOut, me }: { online: boolean; signOut: () => v
       try {
         const fresh = (await pullChanges(sync.idle)).filter((o) => Date.now() - new Date(o.createdAt).getTime() < 30 * 60_000)
         if (fresh.length) alertRef.current(fresh)
-      } catch {
-        /* offline for a moment: the next tick tries again */
+      } catch (e) {
+        // Signed out on the server (password changed, account disabled): say so instead of silently missing orders.
+        if (e instanceof ApiError && e.status === 401) {
+          clearInterval(timer)
+          toast(tx('انتهت جلسة الدخول. سجّل دخول تاني عشان الطلبات الجديدة تظهر.', 'Your sign-in ended. Sign in again to keep seeing new orders.'), 15_000)
+          signOut()
+        }
+        /* otherwise offline for a moment: the next tick tries again */
       } finally {
         busy = false
       }

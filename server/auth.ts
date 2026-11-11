@@ -143,6 +143,8 @@ const qs = {
   delStaff: db.prepare('DELETE FROM admin_sessions WHERE staff_id = ?'),
   delStaffExcept: db.prepare('DELETE FROM admin_sessions WHERE staff_id = ? AND token <> ?'),
   expire: db.prepare('DELETE FROM admin_sessions WHERE created_at < ?'),
+  // Sliding expiry: `created_at` is moved forward while the session is in use.
+  renew: db.prepare('UPDATE admin_sessions SET created_at = ? WHERE token = ?'),
 }
 
 export function startSession(staffId: string) {
@@ -165,6 +167,8 @@ export function sessionStaff(token: string | undefined): Me | undefined {
   if (!auth || auth.disabled) return undefined
   const doc = get<Staff>('staff', s.staff_id)?.doc
   if (!doc || !isRole(doc.role)) return undefined
+  // A dashboard left open keeps its sign-in; it ends after SESSION_MS without use.
+  if (Date.now() - Number(s.created_at) > 3600_000) qs.renew.run(Date.now(), token)
   return { id: doc.id, name: doc.name, email: auth.email, role: doc.role, permissions: permissionsOf(doc.role) }
 }
 

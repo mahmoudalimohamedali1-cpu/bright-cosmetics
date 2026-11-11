@@ -19,7 +19,7 @@ import type {
 import { uid } from '../lib/rand'
 import { buildOrder, canCancel, canReturn, cancelOrderDoc, restockLines, returnOrderDoc } from '../lib/commerce'
 import type { CheckoutInput } from '../lib/commerce'
-import { api, apiAvailable } from '../lib/api'
+import { api, apiAvailable, DEMO_BUILD } from '../lib/api'
 import { track } from '../lib/track'
 
 /*
@@ -283,7 +283,12 @@ export const useStore = create<State>()(
 
       updateZone: (z) => set((s) => ({ zones: s.zones.map((x) => (x.id === z.id ? z : x)) })),
       updateSettings: (patch) => set((s) => ({ settings: { ...s.settings, ...patch } })),
-      log: (who, what, link) => set((s) => ({ activity: [{ id: uid('a'), at: now(), who, what, link }, ...s.activity].slice(0, 200) })),
+      // Trimming is for the browser-only demo: with a server, sync would read the dropped entries as deletions.
+      log: (who, what, link) =>
+        set((s) => {
+          const next = [{ id: uid('a'), at: now(), who, what, link }, ...s.activity]
+          return { activity: DEMO_BUILD ? next.slice(0, 200) : next }
+        }),
       resetDemo: () => set({ ...buildSeed(), cart: [], wishlist: [], recentlyViewed: [], me: undefined }),
     }),
     {

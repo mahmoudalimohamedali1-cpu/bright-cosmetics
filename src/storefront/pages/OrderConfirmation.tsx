@@ -21,9 +21,19 @@ export default function OrderConfirmation() {
   const myPhone = useStore((s) => s.customers.find((c) => c.id === s.me)?.phone)
   // Back from a payment page, or a fresh browser: ask the server for the latest status.
   const stale = !order || order.paymentStatus === 'pending'
+  // An online payment's confirmation can land a little after the shopper is back: keep checking for a minute.
+  const awaitingPayment = !!order && order.payment !== 'cod' && order.paymentStatus === 'pending'
   useEffect(() => {
-    if (online && stale && id && myPhone) void refreshOrder(id, myPhone)
-  }, [online, stale, id, myPhone])
+    if (!online || !stale || !id || !myPhone) return
+    void refreshOrder(id, myPhone)
+    if (!awaitingPayment) return
+    let tries = 0
+    const t = setInterval(() => {
+      if (++tries > 12) clearInterval(t)
+      else void refreshOrder(id, myPhone)
+    }, 5000)
+    return () => clearInterval(t)
+  }, [online, stale, id, myPhone, awaitingPayment])
   useTitle(order ? tx(`طلب رقم ${order.number}`, `Order ${order.number}`) : tx('الطلب', 'Order'))
 
   if (!order) {

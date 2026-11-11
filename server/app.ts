@@ -6,7 +6,7 @@ import type { Context } from 'hono'
 import { bodyLimit } from 'hono/body-limit'
 import { createMiddleware } from 'hono/factory'
 import type { Customer, Discount, Order, OrderEvent, Product, Review, Settings, Shipment, ShippingZone, Staff } from '../src/data/types'
-import { canCancel, canReturn, cancelOrderDoc, normalizePhone, PHONE_RE, restockLines, returnOrderDoc } from '../src/lib/commerce'
+import { canCancel, canReturn, cancelOrderDoc, codeUsable, normalizePhone, PHONE_RE, restockLines, returnOrderDoc } from '../src/lib/commerce'
 import { changedKeys, isRole, PERMISSION_LABEL, writePermission } from '../src/lib/permissions'
 import { sanitizeStorefront } from '../src/data/storefront'
 import { brandSlug } from '../src/lib/slug'
@@ -134,7 +134,7 @@ app.post('/api/public/code', async (c) => {
   if (!codeLimit(clientIp(c))) return fail(c, 429, 'rate_limited', { ar: 'محاولات كتير. استني شوية.', en: 'Too many attempts. Please wait a bit.' })
   const b = (await readJson(c)) as { code?: unknown } | undefined
   const code = typeof b?.code === 'string' ? b.code.trim().toUpperCase().slice(0, 40) : ''
-  const d = code ? list<Discount>('discounts').find((x) => x.code.toUpperCase() === code && x.active && !x.automatic) : undefined
+  const d = code ? list<Discount>('discounts').find((x) => x.code.toUpperCase() === code && codeUsable(x)) : undefined
   return c.json({ discount: d ? publicDiscount(d) : null })
 })
 
@@ -145,7 +145,7 @@ app.post('/api/orders', async (c) => {
   if (!body || typeof body !== 'object') return fail(c, 400, 'bad_request', { ar: 'البيانات مش مكتملة.', en: 'The request body is missing or not JSON.' })
   const r = createOrder(body)
   if (!r.ok) return fail(c, r.error.code === 'out_of_stock' || r.error.code === 'unavailable' ? 409 : 400, r.error.code, r.error.message, r.error.field ? { field: r.error.field } : undefined)
-  return c.json(publicOrder(r.order), 201)
+  return c.json(publicOrder(r.order), r.repeat ? 200 : 201)
 })
 
 const lookupLimit = limiter(60, 10 * 60_000)
@@ -327,11 +327,23 @@ app.post('/api/payments/paymob/webhook', async (c) => {
   const id = orderIdFrom(t)
   if (!id) return c.json({ ok: true, ignored: 'no_reference' })
   if (t.success === true && t.pending === false) {
+    let outcome: 'paid' | 'paid_cancelled' | 'mismatch' | undefined
     const updated = updateOrder(id, (o) => {
-      if (o.paymentStatus === 'paid' || Math.round(o.total * 100) !== Number(t.amount_cents)) return o
-      return { ...o, paymentStatus: 'paid', events: [...o.events, orderEvent('paid', 'Paymob', `Transaction ${t.id}`)] }
+      const tag = `Transaction ${t.id}`
+      if (o.paymentStatus === 'paid' || o.events.some((e) => e.note?.includes(tag))) return o // a repeat delivery
+      if (Math.round(o.total * 100) !== Number(t.amount_cents)) {
+        outcome = 'mismatch'
+        return { ...o, events: [...o.events, orderEvent('note', 'Paymob', `${tag}: paid EGP ${Number(t.amount_cents) / 100}, order total is EGP ${o.total}. Check before shipping.`)] }
+      }
+      outcome = o.status === 'cancelled' ? 'paid_cancelled' : 'paid'
+      const events = [...o.events, orderEvent('paid', 'Paymob', tag)]
+      if (outcome === 'paid_cancelled') events.push(orderEvent('note', 'Paymob', 'Paid after the order was cancelled: refund the customer.'))
+      return { ...o, paymentStatus: 'paid', events }
     })
-    if (updated?.paymentStatus === 'paid') logActivity('Paymob', { ar: `اتدفع طلب #${updated.number} أونلاين`, en: `Order #${updated.number} paid online` }, `/admin/orders/${id}`)
+    const link = `/admin/orders/${id}`
+    if (updated && outcome === 'paid') logActivity('Paymob', { ar: `اتدفع طلب #${updated.number} أونلاين`, en: `Order #${updated.number} paid online` }, link)
+    if (updated && outcome === 'paid_cancelled') logActivity('Paymob', { ar: `⚠ طلب #${updated.number} اتدفع بعد ما اتلغى: لازم ترجّع الفلوس للعميل`, en: `⚠ Order #${updated.number} was paid after it was cancelled: refund the customer` }, link)
+    if (updated && outcome === 'mismatch') logActivity('Paymob', { ar: `⚠ مبلغ دفع طلب #${updated.number} مختلف عن إجمالي الطلب: راجعه قبل الشحن`, en: `⚠ Paymob amount for order #${updated.number} does not match its total: check before shipping` }, link)
   } else if (t.success === false && t.pending === false) {
     updateOrder(id, (o) => (o.paymentStatus === 'pending' ? { ...o, events: [...o.events, orderEvent('note', 'Paymob', `Payment failed (transaction ${t.id})`)] } : o))
   }
@@ -753,25 +765,47 @@ app.post('/api/admin/couriers/bosta/:orderId', need('orders.edit'), async (c) =>
   if (!o) return fail(c, 404, 'not_found', { ar: 'الطلب مش موجود.', en: 'Order not found.' })
   if (o.status === 'cancelled') return fail(c, 409, 'cancelled', { ar: 'الطلب ده ملغي.', en: 'This order is cancelled.' })
   if (o.tracking && o.courier === 'Bosta') return fail(c, 409, 'already_shipped', { ar: 'الطلب ده عنده شحنة بوسطة بالفعل.', en: 'This order already has a Bosta delivery.' })
+  if (o.payment !== 'cod' && o.paymentStatus !== 'paid')
+    return fail(c, 409, 'unpaid', { ar: 'الطلب ده دفع أونلاين ولسه الفلوس ما وصلتش. متشحنش قبل ما يتدفع (أو غيّر طريقة الدفع لعند الاستلام).', en: 'This is an online-payment order and the money has not arrived. Do not ship it before it is paid.' })
   const customer = get<Customer>('customers', o.customerId)?.doc
   if (!customer) return fail(c, 409, 'no_customer', { ar: 'بيانات العميل ناقصة.', en: 'Customer record missing.' })
+  // Two clicks (or two staff) at once would book two deliveries.
+  if (booking.has(id)) return fail(c, 409, 'booking', { ar: 'الشحنة بتتعمل دلوقتي بالفعل.', en: 'A delivery is already being booked for this order.' })
+  booking.add(id)
   try {
     const r = await createDelivery(o, customer)
-    const updated = updateOrder(id, (x) => ({
-      ...x,
-      courier: 'Bosta',
-      tracking: r.tracking,
-      fulfillment: 'shipped',
-      status: x.status === 'open' ? 'confirmed' : x.status,
-      events: [...x.events, orderEvent('shipped', by, `Bosta ${r.tracking}`)],
-    }))
-    logActivity(by, { ar: `اتعمل شحنة بوسطة لطلب #${o.number}`, en: `Created Bosta delivery for order #${o.number}` }, `/admin/orders/${id}`)
+    let lateCancel = false
+    const updated = updateOrder(id, (x) => {
+      // Cancelled while Bosta was answering: keep it cancelled and say a delivery exists to cancel.
+      if (x.status === 'cancelled') {
+        lateCancel = true
+        return { ...x, events: [...x.events, orderEvent('note', by, `Bosta ${r.tracking} was created after the order was cancelled: cancel it in Bosta.`)] }
+      }
+      return {
+        ...x,
+        courier: 'Bosta',
+        tracking: r.tracking,
+        fulfillment: 'shipped',
+        status: x.status === 'open' ? 'confirmed' : x.status,
+        events: [...x.events, orderEvent('shipped', by, `Bosta ${r.tracking}`)],
+      }
+    })
+    logActivity(
+      by,
+      lateCancel
+        ? { ar: `⚠ اتعملت شحنة بوسطة ${r.tracking} لطلب #${o.number} بعد ما اتلغى: الغيها من بوسطة`, en: `⚠ Bosta delivery ${r.tracking} was created for order #${o.number} after it was cancelled: cancel it in Bosta` }
+        : { ar: `اتعمل شحنة بوسطة لطلب #${o.number}`, en: `Created Bosta delivery for order #${o.number}` },
+      `/admin/orders/${id}`,
+    )
     audit(me, 'orders', id, 'courier', `Bosta ${r.tracking}`)
     return c.json({ order: updated, rev: get('orders', id)!.rev })
   } catch (e) {
     return providerFail(c, 'Bosta', e)
+  } finally {
+    booking.delete(id)
   }
 })
+const booking = new Set<string>()
 
 /*
   Cancel and return change the order and the stock in one transaction, so a

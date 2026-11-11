@@ -166,6 +166,8 @@ export type Order = {
   id: string
   number: number
   customerId: string
+  /** The checkout attempt that created it (see CheckoutInput.requestId) */
+  requestId?: string
   createdAt: string
   lines: OrderLine[]
   subtotal: number

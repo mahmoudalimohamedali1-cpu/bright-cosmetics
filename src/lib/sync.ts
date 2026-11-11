@@ -128,8 +128,10 @@ let revs: Revs = {}
 /** Server time of the last change pull; 0 makes the server look back a few minutes. */
 let since = 0
 
-export async function loadAdmin() {
+/** `idle`, when given, is checked again after the download: an edit made meanwhile is never replaced. */
+export async function loadAdmin(idle?: () => boolean) {
   const b = await api<Bootstrap>('/api/admin/bootstrap', { admin: true })
+  if (idle && !idle()) return
   revs = b.revs
   since = 0
   applyRemote({ ...b.data })
@@ -150,7 +152,7 @@ export async function pullChanges(idle: () => boolean): Promise<Order[]> {
   if (!idle()) return []
   if (r.reload) {
     const before = new Set(useStore.getState().orders.map((o) => o.id))
-    await loadAdmin()
+    await loadAdmin(idle)
     since = r.now
     return useStore.getState().orders.filter((o) => !before.has(o.id))
   }
@@ -200,11 +202,20 @@ function revertDenied(denied: Denied[]) {
   applyRemote(patch)
 }
 
-export function startAdminSync(opts: { onError: (msg: { ar: string; en: string }) => void; onConflict: () => void; onForbidden: (msg: { ar: string; en: string }) => void }) {
+export function startAdminSync(opts: {
+  onError: (msg: { ar: string; en: string }) => void
+  onConflict: () => void
+  onForbidden: (msg: { ar: string; en: string }) => void
+  /** The server could not be reached: the changes stay queued and are retried */
+  onRetrying: () => void
+  /** Saved again after a run of failed tries */
+  onRecovered: () => void
+}) {
   let prev = snap()
   const pending = new Map<string, Op>()
   let timer: ReturnType<typeof setTimeout> | undefined
   let inflight = false
+  let retryMs = 0
 
   const flush = async () => {
     timer = undefined
@@ -222,6 +233,9 @@ export function startAdminSync(opts: { onError: (msg: { ar: string; en: string }
         const patch: Record<string, unknown> = {}
         for (const cf of r.conflicts) {
           revs[cf.collection] = { ...revs[cf.collection], [cf.id]: cf.rev }
+          // An edit queued while this request was out was made on the old copy: sending it with the new
+          // revision would overwrite theirs (e.g. stock a shopper just bought). Theirs wins.
+          pending.delete(`${cf.collection}/${cf.id}`)
           if (cf.collection === 'settings') {
             if (cf.doc) patch.settings = cf.doc
             continue
@@ -234,6 +248,8 @@ export function startAdminSync(opts: { onError: (msg: { ar: string; en: string }
         prev = snap()
         opts.onConflict()
       }
+      if (retryMs) opts.onRecovered()
+      retryMs = 0
       useRemote.setState({ saving: 'saved' })
     } catch (e) {
       const denied = e instanceof ApiError && e.status === 403 && Array.isArray(e.detail.denied) ? (e.detail.denied as Denied[]) : undefined
@@ -248,18 +264,27 @@ export function startAdminSync(opts: { onError: (msg: { ar: string; en: string }
         }
         useRemote.setState({ saving: pending.size ? 'saving' : 'error' })
         opts.onForbidden(e.bi)
+      } else if (!(e instanceof ApiError) || e.status === 0 || e.status === 429 || e.status >= 500) {
+        // The network or the server hiccuped: keep every change (unless a newer edit replaced it) and try again.
+        for (const o of ops) {
+          const key = `${o.collection}/${o.id}`
+          if (!pending.has(key)) pending.set(key, { op: o.op, collection: o.collection, id: o.id, doc: o.doc })
+        }
+        if (!retryMs) opts.onRetrying()
+        retryMs = Math.min(Math.max(retryMs * 2, 3000), 60_000)
+        useRemote.setState({ saving: 'error' })
       } else {
         useRemote.setState({ saving: 'error' })
         opts.onError(e instanceof ApiError ? e.bi : { ar: 'التعديل ما اتحفظش.', en: 'The change was not saved.' })
       }
     } finally {
       inflight = false
-      if (pending.size) schedule()
+      if (pending.size) schedule(retryMs || 300)
     }
   }
-  const schedule = () => {
+  const schedule = (ms = 300) => {
     if (timer) clearTimeout(timer)
-    timer = setTimeout(flush, 300)
+    timer = setTimeout(flush, ms)
   }
 
   const unsub = useStore.subscribe(() => {

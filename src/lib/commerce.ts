@@ -31,6 +31,8 @@ export type CheckoutInput = {
   payment: PaymentMethod
   code?: string
   note?: string
+  /** One per checkout attempt: a resend after a lost reply returns the same order instead of a second one */
+  requestId?: string
 }
 
 export const PAYMENT_METHODS: PaymentMethod[] = ['cod', 'card', 'wallet', 'instapay']
@@ -59,15 +61,47 @@ export type CodeResult =
   | { discount: number; freeShipping: boolean; valid: false }
   | { discount: number; freeShipping: boolean; valid: true; d: Discount }
 
-/** Discount amount for a subtotal, given an entered code. */
-export function evaluateCode(code: string | undefined, subtotal: number, discounts: Discount[]): CodeResult {
-  if (!code) return { discount: 0, freeShipping: false, valid: false }
-  const d = discounts.find((x) => x.code.toUpperCase() === code.trim().toUpperCase() && x.active && !x.automatic)
-  if (!d || subtotal < d.minSubtotal) return { discount: 0, freeShipping: false, valid: false }
-  if (d.kind === 'percent') return { discount: Math.round((subtotal * d.value) / 100), freeShipping: false, valid: true, d }
-  if (d.kind === 'fixed') return { discount: Math.min(subtotal, d.value), freeShipping: false, valid: true, d }
+/** A code can be used right now: on, not automatic, inside its dates and under its usage limit. */
+export function codeUsable(d: Discount, at = Date.now()): boolean {
+  if (!d.active || d.automatic) return false
+  if (new Date(d.startsAt).getTime() > at) return false
+  if (d.endsAt && new Date(d.endsAt).getTime() < at) return false
+  if (d.usageLimit != null && d.used >= d.usageLimit) return false
+  return true
+}
+
+export type CodeScope = { lines: CartLine[]; products: Product[] }
+
+/** The part of the cart a discount covers: everything, or only its categories, brands or products. */
+function coveredSubtotal(d: Discount, subtotal: number, scope?: CodeScope): number {
+  const t = d.target ?? []
+  if (d.appliesTo === 'all' || !t.length || !scope) return subtotal
+  let sum = 0
+  for (const l of scope.lines) {
+    const p = scope.products.find((x) => x.id === l.productId)
+    if (!p) continue
+    const hit = d.appliesTo === 'category' ? t.includes(p.category) : d.appliesTo === 'brand' ? t.includes(p.brand) : t.includes(p.id)
+    if (hit) sum += p.price * l.qty
+  }
+  return sum
+}
+
+/**
+ * Discount for an entered code. With `scope` (the cart and products) a
+ * category, brand or product code only discounts the items it covers, and a
+ * code that covers nothing in the cart is not valid.
+ */
+export function evaluateCode(code: string | undefined, subtotal: number, discounts: Discount[], scope?: CodeScope, at = Date.now()): CodeResult {
+  const none = { discount: 0, freeShipping: false, valid: false } as const
+  if (!code) return none
+  const d = discounts.find((x) => x.code.toUpperCase() === code.trim().toUpperCase() && codeUsable(x, at))
+  if (!d || subtotal < d.minSubtotal) return none
+  const base = coveredSubtotal(d, subtotal, scope)
   if (d.kind === 'free_shipping') return { discount: 0, freeShipping: true, valid: true, d }
-  return { discount: 0, freeShipping: false, valid: false }
+  if (base <= 0) return none
+  if (d.kind === 'percent') return { discount: Math.round((base * d.value) / 100), freeShipping: false, valid: true, d }
+  if (d.kind === 'fixed') return { discount: Math.min(base, d.value), freeShipping: false, valid: true, d }
+  return none
 }
 
 /** Remove qty from batches, earliest expiry first (FEFO). Returns every lot it took from, and the first one. */
@@ -168,7 +202,7 @@ export function buildOrder(ctx: OrderContext, input: CheckoutInput, cart: CartLi
   })
   const subtotal = lines.reduce((sum, l) => sum + l.price * l.qty, 0)
   const zone = zoneFor(input.governorateId, ctx.zones)
-  const code = evaluateCode(input.code, subtotal, ctx.discounts)
+  const code = evaluateCode(input.code, subtotal, ctx.discounts, { lines, products: ctx.products })
   const shipping = code.freeShipping || subtotal >= zone.freeOver ? 0 : zone.rate
   const codFee = input.payment === 'cod' ? zone.codFee : 0
   const number = ctx.nextNumber
@@ -279,9 +313,13 @@ export function validateOrder(
       }
   }
 
+  const subtotal = cart.reduce((s, l) => s + ctx.products.find((p) => p.id === l.productId)!.price * l.qty, 0)
+  const ev = evaluateCode(code, subtotal, ctx.discounts, { lines: cart, products: ctx.products })
+  // Never charge a different total from the one the shopper saw: a code that stopped applying is an error, not a silent full price.
+  if (code && !ev.valid)
+    return { ok: false, error: err('bad_code', 'كود الخصم ده مبقاش ينفع على السلة دي (خلص أو انتهى أو مش على المنتجات دي). شيليه وكمّلي.', 'This discount code no longer applies to this bag (used up, expired, or not for these items). Remove it and try again.', 'code') }
+
   if (payment === 'cod') {
-    const subtotal = cart.reduce((s, l) => s + ctx.products.find((p) => p.id === l.productId)!.price * l.qty, 0)
-    const ev = evaluateCode(code, subtotal, ctx.discounts)
     const shipping = ev.freeShipping || subtotal >= zone.freeOver ? 0 : zone.rate
     const total = subtotal - ev.discount + shipping + zone.codFee
     if (!ctx.settings.codEnabled || total > ctx.settings.codMax)

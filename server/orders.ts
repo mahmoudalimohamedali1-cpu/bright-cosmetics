@@ -4,11 +4,19 @@ import type { Activity, Customer, Discount, Order, OrderEvent, Product, Shipping
 import { db, get, getSettings, list, put, tx } from './db'
 
 const maxNumber = db.prepare("SELECT MAX(CAST(json_extract(data, '$.number') AS INTEGER)) AS n FROM docs WHERE collection = 'orders'")
+const byRequest = db.prepare("SELECT data FROM docs WHERE collection = 'orders' AND json_extract(data, '$.requestId') = ? LIMIT 1")
 const byPhone = db.prepare("SELECT data FROM docs WHERE collection = 'customers' AND json_extract(data, '$.phone') = ? LIMIT 1")
 
 /** Validate, price and store an order in one transaction. The client's prices are never trusted. */
-export function createOrder(body: unknown): { ok: true; order: Order } | { ok: false; error: OrderError } {
+export function createOrder(body: unknown): { ok: true; order: Order; repeat?: boolean } | { ok: false; error: OrderError } {
+  const raw = (body as { requestId?: unknown } | null)?.requestId
+  const requestId = typeof raw === 'string' && /^[\w-]{8,64}$/.test(raw) ? raw : undefined
   return tx(() => {
+    // The same checkout sent again (its first reply was lost on the way): hand back that order, never a second one.
+    if (requestId) {
+      const dup = byRequest.get(requestId) as { data: string } | undefined
+      if (dup) return { ok: true as const, order: JSON.parse(dup.data) as Order, repeat: true }
+    }
     const products = list<Product>('products')
     const zones = list<ShippingZone>('zones')
     const discounts = list<Discount>('discounts')
@@ -24,9 +32,10 @@ export function createOrder(body: unknown): { ok: true; order: Order } | { ok: f
     if (built.newCustomer) put('customers', built.customer.id, built.customer)
     for (const p of built.products) put('products', p.id, p)
     if (built.discount) put('discounts', built.discount.id, built.discount)
-    put('orders', built.order.id, built.order)
+    const order: Order = requestId ? { ...built.order, requestId } : built.order
+    put('orders', order.id, order)
     put('activity', built.activity.id, built.activity)
-    return { ok: true as const, order: built.order }
+    return { ok: true as const, order }
   })
 }
 
@@ -44,7 +53,8 @@ export function updateOrder(id: string, fn: (o: Order) => Order): Order | undefi
     const cur = get<Order>('orders', id)
     if (!cur) return undefined
     const next = fn(cur.doc)
-    put('orders', id, next)
+    // Unchanged (e.g. a webhook delivered twice): no write, no new revision.
+    if (next !== cur.doc) put('orders', id, next)
     return next
   })
 }

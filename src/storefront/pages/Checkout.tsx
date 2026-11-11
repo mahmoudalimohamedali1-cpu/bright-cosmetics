@@ -12,6 +12,7 @@ import { Arrow } from '../components/bits'
 import { api, ApiError } from '../../lib/api'
 import { fetchCode, loadPublic, useRemote } from '../../lib/sync'
 import { track } from '../../lib/track'
+import { uid } from '../../lib/rand'
 
 type Errors = Partial<Record<'name' | 'phone' | 'gov' | 'address' | 'email', string>>
 
@@ -22,6 +23,8 @@ export default function Checkout() {
   const { lines, subtotal, count } = useCartLines()
   const zones = useStore((s) => s.zones)
   const discounts = useStore((s) => s.discounts)
+  const cart = useStore((s) => s.cart)
+  const products = useStore((s) => s.products)
   const settings = useStore((s) => s.settings)
   const submitOrder = useStore((s) => s.submitOrder)
   const online = useRemote((r) => r.online === true)
@@ -41,13 +44,15 @@ export default function Checkout() {
   const [placing, setPlacing] = useState(false)
   const [serverErr, setServerErr] = useState<string | undefined>()
   const formRef = useRef<HTMLFormElement>(null)
+  // Same id for every resend of this checkout, so a retry after a lost reply never makes a second order.
+  const [requestId] = useState(() => `chk-${uid('r')}-${Date.now().toString(36)}`)
 
   useEffect(() => {
     track('checkout_start')
   }, [])
 
   const zone = zoneFor(gov || 'cai', zones)
-  const evald = evaluateCode(code, subtotal, discounts)
+  const evald = evaluateCode(code, subtotal, discounts, { lines: cart, products })
   const freeShip = evald.freeShipping || subtotal >= zone.freeOver
   const shipping = gov ? (freeShip ? 0 : zone.rate) : undefined
   const codAllowed = settings.codEnabled && subtotal - evald.discount + (shipping ?? 0) + zone.codFee <= settings.codMax
@@ -92,7 +97,7 @@ export default function Checkout() {
     // With an API, codes are not shipped to the browser: fetch this one's rules on demand.
     if (online) await fetchCode(c)
     const discounts = useStore.getState().discounts
-    const r = evaluateCode(c, subtotal, discounts)
+    const r = evaluateCode(c, subtotal, discounts, { lines: cart, products: useStore.getState().products })
     if (r.valid) {
       setCode(c.toUpperCase())
       setCodeMsg(undefined)
@@ -131,6 +136,7 @@ export default function Checkout() {
         address: address.trim(),
         payment: method,
         code,
+        requestId,
       })
       track('purchase', { value: order.total })
       // Stock changed on the server: refresh the catalogue quietly.
@@ -147,6 +153,7 @@ export default function Checkout() {
       navigate(`/order/${order.id}`, { replace: true })
     } catch (err) {
       setPlacing(false)
+      if (err instanceof ApiError && err.code === 'bad_code') setCode(undefined)
       setServerErr(err instanceof ApiError ? pick(err.bi) : tx('الطلب ما اتسجّلش. جرّبي تاني.', 'The order was not placed. Please try again.'))
     }
   }
