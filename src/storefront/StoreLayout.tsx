@@ -5,6 +5,7 @@ import { useI18n } from '../i18n'
 import { useStore } from '../store'
 import { useUi } from './lib'
 import { loadPublic } from '../lib/sync'
+import { DEMO_BUILD } from '../lib/api'
 import { track } from '../lib/track'
 import { CartDrawer } from './components/CartDrawer'
 import { Footer } from './components/Footer'
@@ -39,8 +40,19 @@ export default function StoreLayout() {
     meta.setAttribute('content', d)
   }, [settings, pick])
   // With an API, the catalogue, zones, settings and reviews come from the server.
+  // A weak connection can drop the first try: keep retrying (3s, 6s, … up to 30s) until it lands.
   useEffect(() => {
-    void loadPublic()
+    let timer: ReturnType<typeof setTimeout> | undefined
+    let stopped = false
+    const attempt = async (delay: number) => {
+      if (await loadPublic(delay > 3000)) return
+      if (!stopped && !DEMO_BUILD) timer = setTimeout(() => void attempt(Math.min(delay * 2, 30_000)), delay)
+    }
+    void attempt(3000)
+    return () => {
+      stopped = true
+      if (timer) clearTimeout(timer)
+    }
   }, [])
   // Set direction before first paint so a stored English preference never flashes RTL.
   useLayoutEffect(() => {

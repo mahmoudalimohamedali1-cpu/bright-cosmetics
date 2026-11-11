@@ -125,10 +125,50 @@ type BatchResult = { revs: Revs; conflicts: { collection: Collection | 'settings
 
 let revs: Revs = {}
 
+/** Server time of the last change pull; 0 makes the server look back a few minutes. */
+let since = 0
+
 export async function loadAdmin() {
   const b = await api<Bootstrap>('/api/admin/bootstrap', { admin: true })
   revs = b.revs
+  since = 0
   applyRemote({ ...b.data })
+}
+
+type Changes = { now: number; reload?: boolean; docs: { collection: Collection; id: string; doc: { id: string }; rev: number }[] }
+
+/**
+ * Bring in what changed on the server since the last pull (a shopper's new
+ * order, the stock it took, a new customer). Call it only while nothing local
+ * is waiting to be saved, so an unsaved edit is never replaced. Returns the
+ * orders this dashboard had never seen.
+ */
+export async function pullChanges(idle: () => boolean): Promise<Order[]> {
+  if (!idle()) return []
+  const r = await api<Changes>(`/api/admin/changes${since ? `?since=${since}` : ''}`, { admin: true })
+  // An edit started while the request was out: drop this pull, the next one covers it.
+  if (!idle()) return []
+  if (r.reload) {
+    const before = new Set(useStore.getState().orders.map((o) => o.id))
+    await loadAdmin()
+    since = r.now
+    return useStore.getState().orders.filter((o) => !before.has(o.id))
+  }
+  since = r.now
+  const s = useStore.getState() as unknown as Record<string, unknown>
+  const patch: Record<string, { id: string }[]> = {}
+  const fresh: Order[] = []
+  for (const d of r.docs) {
+    if (!(COLLECTIONS as readonly string[]).includes(d.collection)) continue
+    if ((revs[d.collection]?.[d.id] ?? 0) >= d.rev) continue
+    revs[d.collection] = { ...revs[d.collection], [d.id]: d.rev }
+    const list = patch[d.collection] ?? (s[d.collection] as { id: string }[])
+    const known = list.some((x) => x.id === d.id)
+    if (!known && d.collection === 'orders') fresh.push(d.doc as Order)
+    patch[d.collection] = known ? list.map((x) => (x.id === d.id ? d.doc : x)) : [d.doc, ...list]
+  }
+  if (Object.keys(patch).length) applyRemote(patch)
+  return fresh
 }
 
 type Snapshot = Pick<Db, Collection | 'settings'>

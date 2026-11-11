@@ -37,7 +37,7 @@ import {
   touch,
 } from './auth'
 import type { Me } from './auth'
-import { bootstrap, db, get, getSettings, isCollection, list, put, remove, revsOf, seed, tx } from './db'
+import { bootstrap, changedSince, db, get, getSettings, isCollection, list, put, remove, revsOf, seed, tx } from './db'
 import type { DocCollection } from './db'
 import { configured, env } from './env'
 import { clientIp, fail, limiter, notConfigured, ProviderError, readJson } from './http'
@@ -511,6 +511,16 @@ app.get('/api/admin/audit', need('audit.view'), (c) => {
 /* ───────────── Admin data ───────────── */
 
 app.get('/api/admin/bootstrap', (c) => c.json(bootstrap()))
+
+/** What changed since the dashboard last looked (new orders, stock, customers…). The overlap is deliberate: the client skips revisions it already has. */
+app.get('/api/admin/changes', (c) => {
+  const now = Date.now()
+  const since = Number(c.req.query('since'))
+  const from = Number.isFinite(since) && since > 0 ? Math.max(since - 5_000, now - 24 * 3600_000) : now - 5 * 60_000
+  const docs = changedSince(from)
+  // Too much changed (an import, a reset): the client reloads everything instead.
+  return c.json(docs.length >= 500 ? { now, reload: true, docs: [] } : { now, docs })
+})
 
 const validDoc = (doc: unknown, id: string) => !!doc && typeof doc === 'object' && !Array.isArray(doc) && (doc as { id?: unknown }).id === id
 

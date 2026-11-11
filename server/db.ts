@@ -58,6 +58,7 @@ const q = {
   insert: db.prepare('INSERT INTO docs (collection, id, data, rev, updated_at) VALUES (?, ?, ?, 1, ?)'),
   update: db.prepare('UPDATE docs SET data = ?, rev = rev + 1, updated_at = ? WHERE collection = ? AND id = ?'),
   del: db.prepare('DELETE FROM docs WHERE collection = ? AND id = ?'),
+  since: db.prepare("SELECT collection, id, data, rev FROM docs WHERE updated_at > ? AND collection != 'settings' ORDER BY updated_at LIMIT 500"),
   count: db.prepare('SELECT COUNT(*) AS n FROM docs'),
   wipe: db.prepare('DELETE FROM docs'),
 }
@@ -88,6 +89,16 @@ export function put(c: DocCollection, id: string, doc: unknown): number {
   }
   q.insert.run(c, id, data, now)
   return 1
+}
+
+/** Documents written after `since` (ms), oldest first: what the open dashboard polls for. */
+export function changedSince(since: number) {
+  return (q.since.all(since) as { collection: Collection; id: string; data: string; rev: number }[]).map((r) => ({
+    collection: r.collection,
+    id: r.id,
+    doc: JSON.parse(r.data) as unknown,
+    rev: Number(r.rev),
+  }))
 }
 
 export function remove(c: DocCollection, id: string) {

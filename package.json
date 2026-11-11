@@ -12,7 +12,7 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "verify": "node scripts/verify.mjs",
-    "build:pages": "tsc -b && vite build --base=/bright-cosmetics/ && node -e \"require('fs').copyFileSync('dist/index.html','dist/404.html')\""
+    "build:pages": "tsc -b && vite build --mode demo --base=/bright-cosmetics/ && node -e \"require('fs').copyFileSync('dist/index.html','dist/404.html')\""
   },
   "dependencies": {
     "@hono/node-server": "^2.1.4",

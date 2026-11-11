@@ -30,8 +30,10 @@ import { useI18n } from '../i18n'
 import { useStore } from '../store'
 import { AdminContext, Guard, ToastHost, useToasts } from './ui'
 import { expiringBatches, stock } from '../lib/metrics'
-import { loadAdmin, startAdminSync, useRemote } from '../lib/sync'
+import { loadAdmin, pullChanges, startAdminSync, useRemote } from '../lib/sync'
+import { badgeTitle, clearTitleBadge, newOrderAlertsOn, playChime, primeSound, systemNotify } from './orderAlert'
 import type { AdminMe } from '../lib/sync'
+import type { Order } from '../data/types'
 import type { Permission } from '../lib/permissions'
 import { canOpen, PAGE_PERMS } from './access'
 import { AdminGate } from './AdminGate'
@@ -64,7 +66,8 @@ export default function AdminApp() {
 }
 
 function AdminShell({ online, signOut, me }: { online: boolean; signOut: () => void; me: AdminMe }) {
-  const { tx, toggle, lang, dir } = useI18n()
+  const { tx, toggle, lang, dir, money } = useI18n()
+  const navigate = useNavigate()
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     try {
       return localStorage.getItem(THEME_KEY) === 'dark' ? 'dark' : 'light'
@@ -78,6 +81,19 @@ function AdminShell({ online, signOut, me }: { online: boolean; signOut: () => v
   const location = useLocation()
   const saving = useRemote((r) => r.saving)
 
+  // Latest translations and navigation for the long-lived polling effect below.
+  const alertRef = useRef<(orders: Order[]) => void>(() => {})
+  alertRef.current = (fresh) => {
+    if (!newOrderAlertsOn()) return
+    playChime()
+    badgeTitle(fresh.length)
+    const o = fresh[fresh.length - 1]
+    const who = o ? `#${o.number} · ${money(o.total)}` : ''
+    const msg = fresh.length === 1 ? tx(`طلب جديد ${who}`, `New order ${who}`) : tx(`${fresh.length} طلبات جديدة`, `${fresh.length} new orders`)
+    toast(msg, 12_000)
+    systemNotify(tx('برايت: طلب جديد', 'Bright: new order'), msg, () => navigate(fresh.length === 1 && o ? `/admin/orders/${o.id}` : '/admin/orders'))
+  }
+
   // Online: every store change is written to the server; refetch when the tab comes back.
   useEffect(() => {
     if (!online) return
@@ -88,13 +104,36 @@ function AdminShell({ online, signOut, me }: { online: boolean; signOut: () => v
     })
     let last = Date.now()
     const onVis = () => {
+      if (document.visibilityState === 'visible') clearTitleBadge()
       if (document.visibilityState !== 'visible' || Date.now() - last < 30_000 || !sync.idle()) return
       last = Date.now()
       loadAdmin().catch(() => {})
     }
     document.addEventListener('visibilitychange', onVis)
+    window.addEventListener('focus', clearTitleBadge)
+    const unprime = primeSound()
+
+    // New orders land while the dashboard stays open: pull changes every 15 seconds.
+    let busy = false
+    const poll = async () => {
+      if (busy) return
+      busy = true
+      try {
+        const fresh = (await pullChanges(sync.idle)).filter((o) => Date.now() - new Date(o.createdAt).getTime() < 30 * 60_000)
+        if (fresh.length) alertRef.current(fresh)
+      } catch {
+        /* offline for a moment: the next tick tries again */
+      } finally {
+        busy = false
+      }
+    }
+    void poll()
+    const timer = setInterval(() => void poll(), 15_000)
     return () => {
+      clearInterval(timer)
       document.removeEventListener('visibilitychange', onVis)
+      window.removeEventListener('focus', clearTitleBadge)
+      unprime()
       sync.stop()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

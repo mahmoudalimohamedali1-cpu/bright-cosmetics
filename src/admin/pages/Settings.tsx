@@ -14,6 +14,7 @@ import { loadAdmin } from '../../lib/sync'
 import { ROLE_LABEL } from '../../lib/permissions'
 import type { Permission } from '../../lib/permissions'
 import { AuditPane, PermissionMatrix, StaffPane } from '../parts/staff'
+import { canAskNotify, playChime } from '../orderAlert'
 
 type Section = 'store' | 'lang' | 'tax' | 'pay' | 'integrations' | 'inv' | 'staff' | 'audit' | 'notify' | 'danger'
 
@@ -365,6 +366,20 @@ export default function Settings() {
                   <Switch checked={notify[k]} onChange={(v) => setN(k, v)} label={label} />
                 </div>
               ))}
+              <div className="row" style={{ marginTop: 12, gap: 8, flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  className="btn btn--ghost btn--sm"
+                  onClick={async () => {
+                    playChime()
+                    if (canAskNotify()) await Notification.requestPermission().catch(() => 'denied')
+                    const granted = typeof Notification !== 'undefined' && Notification.permission === 'granted'
+                    toast(granted ? tx('الصوت شغّال، وتنبيهات الويندوز مفعّلة حتى لو التاب في الخلفية.', 'Sound works, and desktop alerts are on even when the tab is in the background.') : tx('الصوت شغّال. تنبيهات الويندوز مقفولة من المتصفح، فخلّي التاب مفتوح.', 'Sound works. Desktop alerts are blocked by the browser, so keep the tab open.'), 6000)
+                  }}
+                >
+                  {tx('جرّب تنبيه الطلب الجديد', 'Test the new-order alert')}
+                </button>
+              </div>
               <div style={{ marginTop: 12 }}>
                 <Note>{tx('إرسال التنبيهات بالبريد أو واتساب محتاج ربط خدمة رسائل، وده غير متصل.', 'Sending alerts by email or WhatsApp needs a messaging service, which is not connected.')}</Note>
               </div>

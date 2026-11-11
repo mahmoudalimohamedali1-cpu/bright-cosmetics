@@ -26,7 +26,17 @@ export class ApiError extends Error {
 
 let probe: Promise<boolean> | undefined
 
+/**
+ * Only the static demo build (`npm run build:pages`, `--mode demo`) may run
+ * without a server. Every other build ships with its API, so it never guesses:
+ * a slow first request on a phone used to flip a live visit into demo mode,
+ * where checkout saved the order in the shopper's browser only and the admin
+ * opened on sample data.
+ */
+export const DEMO_BUILD = import.meta.env.MODE === 'demo'
+
 export function apiAvailable(): Promise<boolean> {
+  if (!DEMO_BUILD) return (probe ??= Promise.resolve(true))
   probe ??= (async () => {
     if (typeof fetch === 'undefined') return false
     const ctl = new AbortController()

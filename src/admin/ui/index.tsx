@@ -14,7 +14,7 @@ type Toast = { id: number; text: string }
 type AdminCtx = {
   theme: 'light' | 'dark'
   setTheme: (t: 'light' | 'dark') => void
-  toast: (text: string) => void
+  toast: (text: string, ms?: number) => void
   /** Display name of the signed-in staff member, used for attribution */
   staff: string
   /** The signed-in staff member (the seed owner in demo mode) */
@@ -48,10 +48,10 @@ export function ToastHost({ toasts }: { toasts: Toast[] }) {
 
 export function useToasts() {
   const [toasts, setToasts] = useState<Toast[]>([])
-  const toast = useCallback((text: string) => {
+  const toast = useCallback((text: string, ms = 3200) => {
     const id = Date.now() + Math.random()
     setToasts((t) => [...t, { id, text }])
-    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3200)
+    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), ms)
   }, [])
   return { toasts, toast }
 }
