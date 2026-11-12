@@ -197,6 +197,7 @@ export function Header() {
                   </button>
                 ),
               )}
+              <Link to="/track" className="v-nav__a">{tx('تتبّعي طلبك', 'Track your order')}</Link>
             </nav>
             <div className="v-mob v-header__mobstart">
               <button type="button" className="v-menu" onClick={() => setMobile(true)} aria-label={tx('افتحي القائمة', 'Open menu')}>
@@ -329,6 +330,9 @@ export function Header() {
                     <ShopLink href={resolveHref(ch.href, settings)}>{pick(ch.label)}</ShopLink>
                   </li>
                 ))}
+              <li>
+                <Link to="/track">{tx('تتبّعي طلبك', 'Track your order')}</Link>
+              </li>
             </ul>
             <ul className="v-mmenu__row">
               <li><Link to="/account">{tx('حسابي وطلباتي', 'My account and orders')}</Link></li>

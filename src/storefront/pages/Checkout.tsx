@@ -34,9 +34,11 @@ export default function Checkout() {
 
   const [name, setName] = useState(me ? me.name.ar || me.name.en : '')
   const [phone, setPhone] = useState(me?.phone ?? '')
-  const [gov, setGov] = useState(me?.governorateId ?? '')
-  const [district, setDistrict] = useState('')
-  const [address, setAddress] = useState('')
+  // A returning shopper (no account: this browser remembers her) starts from her last order's address.
+  const lastOrder = useStore((s) => (s.me ? s.orders.filter((o) => o.customerId === s.me).sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0] : undefined))
+  const [gov, setGov] = useState(lastOrder?.governorateId ?? me?.governorateId ?? '')
+  const [district, setDistrict] = useState(lastOrder?.districtId ?? '')
+  const [address, setAddress] = useState(lastOrder?.address ?? '')
   const [email, setEmail] = useState(me?.email ?? '')
   const [payment, setPayment] = useState<PaymentMethod>('cod')
   const [codeInput, setCodeInput] = useState('')

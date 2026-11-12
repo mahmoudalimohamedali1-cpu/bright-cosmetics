@@ -81,12 +81,8 @@ export default function OrderConfirmation() {
         : tx(`الدفع لسه ما اتأكدش. هنكلّمك على ${customer?.phone ?? ''} نرتّب الدفع ونأكد الطلب.`, `Payment is not confirmed yet. We contact you at ${customer?.phone ?? ''} to arrange payment and confirm the order.`),
     },
     {
-      title: tx('التجهيز', 'Packing'),
-      body: tx('بنجهّز كل منتج من أقرب تشغيلة في الصلاحية، ورقم التشغيلة مكتوب تحت قدام كل منتج.', 'Each item is picked from its earliest-expiring lot; the lot numbers are listed with your items.'),
-    },
-    {
       title: tx('التسليم لشركة الشحن', 'Courier handoff'),
-      body: tx('أول ما الطلب يتشحن هيوصلك رقم تتبّع، وتقدري تتابعيه من صفحة حسابي.', 'Once it ships you get a tracking number, and you can follow it from your account page.'),
+      body: tx('أول ما الطلب يتشحن هيوصلك رقم تتبّع، وتقدري تتابعيه في أي وقت من "تتبّعي طلبك" فوق في الموقع.', 'Once it ships you get a tracking number, and you can follow it any time from "Track your order" at the top of the site.'),
     },
     {
       title: tx('الاستلام', 'Delivery'),
@@ -142,7 +138,6 @@ export default function OrderConfirmation() {
           <ul className="sf-summary__lines">
             {order.lines.map((l) => {
               const p = products.find((x) => x.id === l.productId)
-              const b = p?.batches.find((x) => x.id === l.batchId)
               if (!p) return null
               return (
                 <li key={l.productId} className="sf-summary__line">
@@ -154,13 +149,6 @@ export default function OrderConfirmation() {
                     <span className="sf-card__brand"><bdi>{p.brand}</bdi></span>
                     <Link to={`/p/${p.slug}`}>{pick(p.name)}</Link>
                     <span className="sr-only">{tx(`، الكمية ${num(l.qty)}`, `, quantity ${num(l.qty)}`)}</span>
-                    {b && (b.lot || b.expiry) && (
-                      <span className="sf-small sf-muted">
-                        {b.lot && <>{tx('تشغيلة', 'Lot')} <span className="sf-mono">{b.lot}</span></>}
-                        {b.lot && b.expiry && tx('، ', ', ')}
-                        {b.expiry && <>{tx('صالحة لحد ', 'good until ')}{date(b.expiry, { month: 'long', year: 'numeric' })}</>}
-                      </span>
-                    )}
                   </span>
                   <span className="tabular">{money(l.price * l.qty)}</span>
                 </li>

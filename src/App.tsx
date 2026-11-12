@@ -40,6 +40,7 @@ export default function App() {
         <Route path="wishlist" element={<Framed id="wishlist"><Wishlist /></Framed>} />
         <Route path="routine" element={<Framed id="routine"><Routine /></Framed>} />
         <Route path="account" element={<Framed id="account"><Account /></Framed>} />
+        <Route path="track" element={<Framed id="account"><Account /></Framed>} />
         <Route path="info/:slug" element={<InfoPage />} />
         <Route path="preview" element={<DraftPreview />} />
         <Route path="*" element={<Framed id="missing"><NotFound /></Framed>} />
