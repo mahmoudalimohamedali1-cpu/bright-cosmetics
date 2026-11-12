@@ -1,3 +1,4 @@
+import { districtLabel } from '../../../data/districts'
 import { useStore } from '../../../store'
 import type { Order } from '../../../data/types'
 import { gov, PAYMENT_LABEL } from './lib'
@@ -43,13 +44,13 @@ export function PackingSlips({ orders }: { orders: Order[] }) {
                 <strong>Ship to</strong>
                 <div>{c?.name.en}</div>
                 <div>{c?.phone}</div>
-                <div>{g?.name.en}</div>
+                <div>{[districtLabel(o.governorateId, o.districtId, 'en'), g?.name.en].filter(Boolean).join(', ')}</div>
               </div>
               <div dir="rtl">
                 <strong>الشحن إلى</strong>
                 <div>{c?.name.ar}</div>
                 <div>{o.address}</div>
-                <div>{g?.name.ar}</div>
+                <div>{[districtLabel(o.governorateId, o.districtId, 'ar'), g?.name.ar].filter(Boolean).join('، ')}</div>
               </div>
             </div>
             <table>
@@ -129,7 +130,7 @@ export function Invoice({ order: o }: { order: Order }) {
             <strong>العميل</strong>
             <div>{c?.name.ar}</div>
             <div>{o.address}</div>
-            <div>{g?.name.ar}</div>
+            <div>{[districtLabel(o.governorateId, o.districtId, 'ar'), g?.name.ar].filter(Boolean).join('، ')}</div>
             <div>{PAYMENT_LABEL[o.payment].ar}</div>
           </div>
         </div>

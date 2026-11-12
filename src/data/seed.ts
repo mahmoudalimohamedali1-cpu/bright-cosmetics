@@ -52,11 +52,11 @@ export const GOVERNORATES: Governorate[] = [
 ]
 
 export const ZONES: ShippingZone[] = [
-  { id: 'cairo', name: { ar: 'القاهرة الكبرى', en: 'Greater Cairo' }, rate: 55, freeOver: 1500, etaDays: [1, 2], codFee: 15, enabled: true },
-  { id: 'delta', name: { ar: 'الإسكندرية والدلتا', en: 'Alexandria & Delta' }, rate: 70, freeOver: 1800, etaDays: [2, 3], codFee: 15, enabled: true },
-  { id: 'canal', name: { ar: 'مدن القناة', en: 'Canal cities' }, rate: 70, freeOver: 1800, etaDays: [2, 3], codFee: 15, enabled: true },
-  { id: 'upper', name: { ar: 'الصعيد', en: 'Upper Egypt' }, rate: 85, freeOver: 2200, etaDays: [3, 5], codFee: 20, enabled: true },
-  { id: 'remote', name: { ar: 'المناطق البعيدة', en: 'Remote areas' }, rate: 110, freeOver: 3000, etaDays: [4, 7], codFee: 25, enabled: true },
+  { id: 'cairo', name: { ar: 'القاهرة الكبرى', en: 'Greater Cairo' }, rate: 55, freeOver: 1500, etaDays: [1, 2], codFee: 0, enabled: true },
+  { id: 'delta', name: { ar: 'الإسكندرية والدلتا', en: 'Alexandria & Delta' }, rate: 70, freeOver: 1800, etaDays: [2, 3], codFee: 0, enabled: true },
+  { id: 'canal', name: { ar: 'مدن القناة', en: 'Canal cities' }, rate: 70, freeOver: 1800, etaDays: [2, 3], codFee: 0, enabled: true },
+  { id: 'upper', name: { ar: 'الصعيد', en: 'Upper Egypt' }, rate: 85, freeOver: 2200, etaDays: [3, 5], codFee: 0, enabled: true },
+  { id: 'remote', name: { ar: 'المناطق البعيدة', en: 'Remote areas' }, rate: 110, freeOver: 3000, etaDays: [4, 7], codFee: 0, enabled: true },
 ]
 
 const FIRST: [string, string][] = [

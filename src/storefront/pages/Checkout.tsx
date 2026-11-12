@@ -3,6 +3,7 @@ import type { FormEvent, ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Banknote, CreditCard, Wallet } from 'lucide-react'
 import { GOVERNORATES } from '../../data/seed'
+import { districtsOf, OTHER_DISTRICT, OTHER_DISTRICT_NAME } from '../../data/districts'
 import type { PaymentMethod } from '../../data/types'
 import { ProductVisual } from '../../components/ProductVisual'
 import { useI18n } from '../../i18n'
@@ -14,10 +15,10 @@ import { fetchCode, loadPublic, useRemote } from '../../lib/sync'
 import { track } from '../../lib/track'
 import { uid } from '../../lib/rand'
 
-type Errors = Partial<Record<'name' | 'phone' | 'gov' | 'address' | 'email', string>>
+type Errors = Partial<Record<'name' | 'phone' | 'gov' | 'district' | 'address' | 'email', string>>
 
 export default function Checkout() {
-  const { tx, pick, money, num } = useI18n()
+  const { tx, pick, money, num, lang } = useI18n()
   useTitle(tx('إتمام الطلب', 'Checkout'))
   const navigate = useNavigate()
   const { lines, subtotal, count } = useCartLines()
@@ -34,6 +35,7 @@ export default function Checkout() {
   const [name, setName] = useState(me ? me.name.ar || me.name.en : '')
   const [phone, setPhone] = useState(me?.phone ?? '')
   const [gov, setGov] = useState(me?.governorateId ?? '')
+  const [district, setDistrict] = useState('')
   const [address, setAddress] = useState('')
   const [email, setEmail] = useState(me?.email ?? '')
   const [payment, setPayment] = useState<PaymentMethod>('cod')
@@ -86,6 +88,7 @@ export default function Checkout() {
     if (!ph) e.phone = tx('اكتبي رقم موبايلك.', 'Enter your mobile number.')
     else if (!PHONE_RE.test(ph)) e.phone = tx('الرقم لازم يكون موبايل مصري من ١١ رقم ويبدأ بـ 010 أو 011 أو 012 أو 015.', 'Use an 11-digit Egyptian mobile starting with 010, 011, 012 or 015.')
     if (!gov) e.gov = tx('اختاري المحافظة عشان نحسب الشحن.', 'Choose your governorate so we can price delivery.')
+    if (gov && districtsOf(gov).length && !district) e.district = tx('اختاري المركز أو المدينة.', 'Choose your district or city.')
     if (address.trim().length < 8) e.address = tx('اكتبي العنوان بالتفصيل: الحي، الشارع، رقم العمارة والشقة.', 'Enter the full address: area, street, building and flat.')
     if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = tx('الإيميل مش مكتوب صح.', 'This email address does not look right.')
     return e
@@ -133,6 +136,7 @@ export default function Checkout() {
         phone: normalizePhone(phone),
         email: email.trim() || undefined,
         governorateId: gov,
+        districtId: district || undefined,
         address: address.trim(),
         payment: method,
         code,
@@ -180,7 +184,9 @@ export default function Checkout() {
       icon: <Banknote size={20} aria-hidden="true" />,
       label: tx('الدفع عند الاستلام', 'Cash on delivery'),
       note: codAllowed
-        ? tx(`ادفعي للمندوب لما الطلب يوصل. رسوم ${money(zone.codFee)}.`, `Pay the courier when it arrives. ${money(zone.codFee)} fee.`)
+        ? zone.codFee > 0
+          ? tx(`ادفعي للمندوب لما الطلب يوصل. رسوم ${money(zone.codFee)}.`, `Pay the courier when it arrives. ${money(zone.codFee)} fee.`)
+          : tx('ادفعي للمندوب لما الطلب يوصل.', 'Pay the courier when it arrives.')
         : tx(`الدفع عند الاستلام متاح للطلبات لحد ${money(settings.codMax)}.`, `Cash on delivery is available for orders up to ${money(settings.codMax)}.`),
       disabled: !codAllowed,
     },
@@ -329,7 +335,7 @@ export default function Checkout() {
             </div>
             <div className="sf-field">
               <label htmlFor="f-gov">{tx('المحافظة', 'Governorate')}</label>
-              <select id="f-gov" name="gov" value={gov} onChange={(e) => { setGov(e.target.value); clearErr('gov') }} autoComplete="address-level1" {...aria('gov')}>
+              <select id="f-gov" name="gov" value={gov} onChange={(e) => { setGov(e.target.value); setDistrict(''); clearErr('gov') }} autoComplete="address-level1" {...aria('gov')}>
                 <option value="">{tx('اختاري المحافظة', 'Choose governorate')}</option>
                 {GOVERNORATES.map((g) => (
                   <option key={g.id} value={g.id}>
@@ -344,6 +350,21 @@ export default function Checkout() {
               )}
               {err('gov')}
             </div>
+            {gov && districtsOf(gov).length > 0 && (
+              <div className="sf-field">
+                <label htmlFor="f-district">{tx('المركز / المدينة', 'District / city')}</label>
+                <select id="f-district" name="district" value={district} onChange={(e) => { setDistrict(e.target.value); clearErr('district') }} autoComplete="address-level2" {...aria('district')}>
+                  <option value="">{tx('اختاري المركز أو المدينة', 'Choose district or city')}</option>
+                  {districtsOf(gov).map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {lang === 'ar' ? d.ar : d.en}
+                    </option>
+                  ))}
+                  <option value={OTHER_DISTRICT}>{pick(OTHER_DISTRICT_NAME)}</option>
+                </select>
+                {err('district')}
+              </div>
+            )}
             <div className="sf-field">
               <label htmlFor="f-address">{tx('العنوان بالتفصيل', 'Full address')}</label>
               <textarea id="f-address" name="address" rows={3} autoComplete="street-address" value={address} onChange={(e) => { setAddress(e.target.value); clearErr('address') }} {...aria('address')} />

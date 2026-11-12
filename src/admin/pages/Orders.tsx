@@ -1,3 +1,4 @@
+import { districtLabel } from '../../data/districts'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { AlertTriangle, Download, MessageCircle, PackageCheck, Printer, Search, Truck, X } from 'lucide-react'
@@ -194,7 +195,7 @@ export default function Orders() {
 
   const exportCSV = (list: Order[]) => {
     downloadCSV(`nuri-orders-${today()}.csv`, [
-      ['Order', 'Date', 'Customer', 'Phone', 'Governorate', 'Channel', 'Payment method', 'Payment status', 'Fulfillment', 'Status', 'Items', 'Subtotal', 'Discount', 'Shipping', 'COD fee', 'Total', 'Courier', 'Tracking'],
+      ['Order', 'Date', 'Customer', 'Phone', 'Governorate', 'District', 'Channel', 'Payment method', 'Payment status', 'Fulfillment', 'Status', 'Items', 'Subtotal', 'Discount', 'Shipping', 'COD fee', 'Total', 'Courier', 'Tracking'],
       ...list.map((o) => {
         const c = custById.get(o.customerId)
         return [
@@ -203,6 +204,7 @@ export default function Orders() {
           c?.name.en,
           c?.phone,
           gov(o.governorateId)?.name.en,
+          districtLabel(o.governorateId, o.districtId, 'en'),
           o.channel,
           o.payment,
           o.paymentStatus,

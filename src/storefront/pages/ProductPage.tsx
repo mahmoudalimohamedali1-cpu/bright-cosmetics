@@ -282,7 +282,7 @@ export function ProductView({ id, draft }: { id: string; draft?: Product }) {
                       ? tx('الشحن مجاني للطلب ده', 'Free delivery on this order')
                       : tx(`الشحن ${money(zone.rate)}، ومجاني فوق ${money(zone.freeOver)}`, `Delivery ${money(zone.rate)}, free over ${money(zone.freeOver)}`)}
                   </li>
-                  <li>{tx(`الدفع عند الاستلام برسوم ${money(zone.codFee)}`, `Cash on delivery for a ${money(zone.codFee)} fee`)}</li>
+                  <li>{zone.codFee > 0 ? tx(`الدفع عند الاستلام برسوم ${money(zone.codFee)}`, `Cash on delivery for a ${money(zone.codFee)} fee`) : tx('الدفع عند الاستلام متاح', 'Cash on delivery available')}</li>
                 </ul>
               </div>
             </div>

@@ -1,4 +1,5 @@
 import { GOVERNORATES } from '../data/seed'
+import { districtsOf, isDistrictOf } from '../data/districts'
 import type {
   Activity,
   CartLine,
@@ -27,6 +28,8 @@ export type CheckoutInput = {
   phone: string
   email?: string
   governorateId: string
+  /** District or city under the governorate (see data/districts), or 'other' */
+  districtId?: string
   address: string
   payment: PaymentMethod
   code?: string
@@ -224,6 +227,7 @@ export function buildOrder(ctx: OrderContext, input: CheckoutInput, cart: CartLi
     fulfillment: 'unfulfilled',
     status: 'open',
     governorateId: input.governorateId,
+    districtId: input.districtId,
     address: input.address,
     channel: 'web',
     events: [event],
@@ -290,6 +294,9 @@ export function validateOrder(
   const zone = zoneFor(governorateId, ctx.zones)
   if (!zone || !zone.enabled)
     return { ok: false, error: err('zone_disabled', 'للأسف مش بنوصّل للمحافظة دي دلوقتي.', 'Sorry, we do not deliver to this governorate right now.', 'gov') }
+  const districtId = str(b.districtId, 60) || undefined
+  if (districtsOf(governorateId).length && (!districtId || !isDistrictOf(governorateId, districtId)))
+    return { ok: false, error: err('bad_district', 'اختاري المركز أو المدينة.', 'Choose your district or city.', 'district') }
   const address = str(b.address, 300)
   if (address.length < 8) return { ok: false, error: err('bad_address', 'اكتبي العنوان بالتفصيل: الحي، الشارع، رقم العمارة والشقة.', 'Enter the full address: area, street, building and flat.', 'address') }
   const payment = b.payment as PaymentMethod
@@ -329,7 +336,7 @@ export function validateOrder(
       }
   }
 
-  return { ok: true, input: { name, phone, email: email || undefined, governorateId, address, payment, code, note }, cart }
+  return { ok: true, input: { name, phone, email: email || undefined, governorateId, districtId, address, payment, code, note }, cart }
 }
 
 /* ───────────── Cancel and return (shared by the server and demo mode) ───────────── */

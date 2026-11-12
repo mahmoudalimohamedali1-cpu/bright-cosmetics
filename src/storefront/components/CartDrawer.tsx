@@ -36,6 +36,7 @@ export function FreeShipMeter({ subtotal }: { subtotal: number }) {
 export function CartDrawer() {
   const { tx, pick, money, num } = useI18n()
   const open = useStore((s) => s.cartOpen)
+  const codFees = useStore((s) => s.zones.some((z) => z.enabled && z.codFee > 0))
   const setCartOpen = useStore((s) => s.setCartOpen)
   const setQty = useStore((s) => s.setQty)
   const remove = useStore((s) => s.removeFromCart)
@@ -55,7 +56,7 @@ export function CartDrawer() {
               <span>{tx('المجموع', 'Subtotal')}</span>
               <strong className="tabular">{money(subtotal)}</strong>
             </div>
-            <p className="sf-cartfoot__fine">{tx('الشحن ورسوم الدفع عند الاستلام بتتحسب في الخطوة الجاية.', 'Delivery and cash-on-delivery fee are added at checkout.')}</p>
+            <p className="sf-cartfoot__fine">{codFees ? tx('الشحن ورسوم الدفع عند الاستلام بتتحسب في الخطوة الجاية.', 'Delivery and cash-on-delivery fee are added at checkout.') : tx('الشحن بيتحسب في الخطوة الجاية.', 'Delivery is added at checkout.')}</p>
             <button
               type="button"
               className="sf-btn sf-btn--lemon sf-btn--block sf-btn--lg"

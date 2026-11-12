@@ -1,3 +1,4 @@
+import { districtLabel } from '../../data/districts'
 import { useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { GOVERNORATES } from '../../data/seed'
@@ -11,7 +12,7 @@ import { Arrow, Forward, Sticker } from '../components/bits'
 
 export default function OrderConfirmation() {
   const { id } = useParams()
-  const { tx, pick, money, num, date } = useI18n()
+  const { tx, pick, money, num, date, lang } = useI18n()
   const order = useStore((s) => s.orders.find((o) => o.id === id))
   const products = useStore((s) => s.products)
   const customer = useStore((s) => s.customers.find((c) => c.id === order?.customerId))
@@ -192,7 +193,7 @@ export default function OrderConfirmation() {
               <dd className="tabular">{money(order.total)}</dd>
             </div>
           </dl>
-          <p className="sf-small sf-muted">{order.address}</p>
+          <p className="sf-small sf-muted">{[order.address, districtLabel(order.governorateId, order.districtId, lang), gov ? pick(gov.name) : ''].filter(Boolean).join(lang === 'ar' ? '، ' : ', ')}</p>
         </section>
       </div>
 

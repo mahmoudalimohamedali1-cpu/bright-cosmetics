@@ -1,4 +1,5 @@
 import type { Customer, Order } from '../../src/data/types'
+import { districtLabel } from '../../src/data/districts'
 import { GOVERNORATES } from '../../src/data/seed'
 import { env } from '../env'
 import { ProviderError } from '../http'
@@ -26,7 +27,7 @@ export async function createDelivery(order: Order, customer: Customer) {
     specs: { packageType: 'Parcel', size: 'SMALL', packageDetails: { itemsCount: items, description: `Bright order #${order.number}` } },
     notes: order.note ?? '',
     cod,
-    dropOffAddress: { city: CITY[order.governorateId] ?? gov?.name.en ?? 'Cairo', firstLine: order.address },
+    dropOffAddress: { city: CITY[order.governorateId] ?? gov?.name.en ?? 'Cairo', firstLine: [districtLabel(order.governorateId, order.districtId, 'en'), order.address].filter(Boolean).join(', ') },
     receiver: { firstName: firstName || 'Bright', lastName: rest.join(' ') || 'Customer', phone: customer.phone, email: customer.email || undefined },
     businessReference: `BRIGHT-${order.number}`,
   }

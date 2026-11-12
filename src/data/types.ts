@@ -168,6 +168,8 @@ export type Order = {
   customerId: string
   /** The checkout attempt that created it (see CheckoutInput.requestId) */
   requestId?: string
+  /** District or city under governorateId (data/districts); 'other' means it is in the address */
+  districtId?: string
   createdAt: string
   lines: OrderLine[]
   subtotal: number

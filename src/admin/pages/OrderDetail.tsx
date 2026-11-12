@@ -1,3 +1,4 @@
+import { districtLabel } from '../../data/districts'
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
@@ -28,7 +29,7 @@ const CANCEL_REASONS: { id: string; ar: string; en: string }[] = [
 
 export default function OrderDetail() {
   const { id } = useParams()
-  const { tx, pick, money, num, pct, date, relTime, dir } = useI18n()
+  const { tx, pick, money, num, pct, date, relTime, dir, lang } = useI18n()
   const { toast, staff, online, can } = useAdmin()
   const canEdit = can('orders.edit')
   const integrations = useIntegrations()
@@ -102,12 +103,12 @@ export default function OrderDetail() {
   const waText = [
     `أهلًا ${customer?.name.ar ?? ''}، معاك فريق برايت.`,
     `بنأكد طلب رقم #${o.number} بإجمالي ${o.total} ج.م ${o.payment === 'cod' ? 'والدفع عند الاستلام' : o.paymentStatus === 'paid' ? 'مدفوع مسبقًا' : 'والدفع الأونلاين لسه ما وصلناش'}.`,
-    `العنوان: ${o.address}، ${g?.name.ar ?? ''}.`,
+    `العنوان: ${o.address}، ${[districtLabel(o.governorateId, o.districtId, 'ar'), g?.name.ar].filter(Boolean).join('، ')}.`,
     'برجاء الرد بكلمة "تمام" للتأكيد.',
     '',
     `Hi ${customer?.name.en ?? ''}, this is Bright.`,
     `Confirming order #${o.number}, total EGP ${o.total}${o.payment === 'cod' ? ', cash on delivery' : o.paymentStatus === 'paid' ? ', prepaid' : ', online payment not received yet'}.`,
-    `Address: ${o.address}, ${g?.name.en ?? ''}.`,
+    `Address: ${o.address}, ${[districtLabel(o.governorateId, o.districtId, 'en'), g?.name.en].filter(Boolean).join(', ')}.`,
     'Reply OK to confirm.',
   ].join('\n')
 
@@ -600,7 +601,7 @@ export default function OrderDetail() {
               <div className="stack" style={{ gap: 4 }}>
                 <span>{cname}</span>
                 <span>{o.address}</span>
-                <span>{pick(g?.name)}</span>
+                <span>{lang === 'ar' ? [districtLabel(o.governorateId, o.districtId, 'ar'), g?.name.ar].filter(Boolean).join('، ') : [districtLabel(o.governorateId, o.districtId, 'en'), g?.name.en].filter(Boolean).join(', ')}</span>
                 <span className="small muted">
                   {tx(`منطقة ${pick(zone?.name)}، توصيل ${zone?.etaDays[0]}–${zone?.etaDays[1]} أيام`, `${pick(zone?.name)} zone, ${zone?.etaDays[0]}–${zone?.etaDays[1]} day delivery`)}
                 </span>
